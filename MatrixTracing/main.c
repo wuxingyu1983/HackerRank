@@ -45,6 +45,10 @@ int main() {
       div_up[j] = curr->n + curr->m + j - m + 1;
     }
 
+    clock_t start;
+    start = clock();
+    printf("start at %fs\n", (double)start / CLOCKS_PER_SEC);
+
     unsigned int prime;
     for (prime = 2; prime <= m; prime ++) {
       if (1 == div_down[prime - 1]) {
@@ -52,23 +56,33 @@ int main() {
       }
       else {
         // prime
-        clock_t start;
-        start = clock();
-        printf("the prime :%d start at %fs\n", prime, (double)start / CLOCKS_PER_SEC);
-        for (j = prime - 1; j < m;) {
-          if (0 == div_down[j] % prime) {
-            div_down[j] = div_down[j] / prime;
+        unsigned int max_exp = log10(m) / log10(prime);
+        unsigned int exp;
 
+        unsigned int tmp = pow(prime, max_exp);
+        for (exp = max_exp; exp > 0; exp --, tmp = tmp / prime) {
+          for (j = tmp - 1; j < m;) {
             int k;
-            for (k = 0; k < m; k++) {
-              if (0 == div_up[k] % prime) {
-                div_up[k] = div_up[k] / prime;
-                break;
+            if (0 == (curr->n + curr->m - m + 1) % tmp) {
+                k = 0;
+            }
+            else {
+                k = ((curr->n + curr->m - m + 1) / tmp + 1) * tmp - (curr->n + curr->m - m + 1);
+            }
+            int step = 1;
+            if (0 == div_down[j] % tmp) {
+              for (; k < m; k = k + step) {
+                if (0 == div_up[k] % tmp) {
+                  div_up[k] = div_up[k] / tmp;
+                  div_down[j] = div_down[j] / tmp;
+                  step = tmp;
+                  break;
+                }
               }
             }
-          }
-          else {
-            j = j + prime;
+            else {
+              j = j + tmp;
+            }
           }
         }
       }
@@ -85,6 +99,10 @@ int main() {
   }
 
   free(nms);
+
+  clock_t end;
+  end = clock();
+  printf("end at %fs\n", (double)end / CLOCKS_PER_SEC);
 
   return 0;
 }
