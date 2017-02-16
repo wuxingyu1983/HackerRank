@@ -12,7 +12,7 @@ struct nm {
 unsigned int pcount(unsigned int prime, unsigned int max) {
   unsigned int ret = 0;
 
-  unsigned int i;
+  unsigned long long i;
   for (i = prime; max >= i; i = i * prime) {
     ret += max / i;
   }
@@ -23,8 +23,8 @@ unsigned int pcount(unsigned int prime, unsigned int max) {
 int main() {
 
   /* Enter your code here. Read input from STDIN. Print output to STDOUT */
-  int t;
-  int i,j;
+  unsigned int t;
+  unsigned int i,j;
   struct nm *nms;
 
   scanf("%d", &t);
@@ -48,14 +48,10 @@ int main() {
       max_mn = m + n -2;
     }
   }
-/*
-  clock_t start;
-  start = clock();
-  printf("start at %fs\n", (double)start / CLOCKS_PER_SEC);
-*/
+
   // 找到 max_m 以内所有的质数
-  char *primes = malloc(max_mn * sizeof(char));
-  memset(primes, 1, max_mn);
+  unsigned char *primes = malloc(max_mn * sizeof(unsigned char));
+  memset(primes, 1, max_mn * sizeof(unsigned char));
 
   for (i = 2; i <= max_mn; i++) {
     if (primes[i - 1]) {
@@ -77,12 +73,10 @@ int main() {
       if (primes[p - 1]) {
         // 质数
         unsigned int c = pcount(p, n + m) - pcount(p, n) - pcount(p, m);
-        printf("the count of %d is %d\n", p, c);
         unsigned int k;
         for (k = 0; k < c; k ++) {
-          res = res * (unsigned long long)p % 1000000007;
+          res = res * p % 1000000007;
         }
-        printf("the res is %llu\n", res);
       }
     }
     printf("%llu\n", res);
@@ -90,10 +84,6 @@ int main() {
 
   free(primes);
   free(nms);
-/*
-  clock_t end;
-  end = clock();
-  printf("end at %fs\n", (double)end / CLOCKS_PER_SEC);
-*/
+
   return 0;
 }
