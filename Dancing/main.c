@@ -18,36 +18,16 @@ int main() {
 
   for (unsigned int i = 0; i < t; i ++) {
     unsigned long long middle = sqrtl(days[i]);
-    printf("the middle is %llu\n", middle);
+//    printf("the middle is %llu\n", middle);
     if (1 == middle) {
       printf("odd\n");
     }
     else {
       if ( 0 == middle % 2) {
-        if (days[i] == middle * middle) {
-          if (0 == days[i] % 2) {
-            printf("even\n");
-          }
-          else {
-            printf("odd\n");
-          }
-        }
-        else {
-          if (0 == days[i] % 2) {
-            printf("odd\n");
-          }
-          else {
-            printf("even\n");
-          }
-        }
+        printf("event\n");
       }
       else {
-        if (0 == days[i] % 2) {
-          printf("even\n");
-        }
-        else {
-          printf("odd\n");
-        }
+        printf("odd\n");
       }
     }
   }
