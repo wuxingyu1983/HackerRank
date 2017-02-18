@@ -2,7 +2,6 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include <time.h>
 
 int main() {
   unsigned int t;
@@ -18,13 +17,12 @@ int main() {
 
   for (unsigned int i = 0; i < t; i ++) {
     unsigned long long middle = sqrtl(days[i]);
-//    printf("the middle is %llu\n", middle);
     if (1 == middle) {
       printf("odd\n");
     }
     else {
       if ( 0 == middle % 2) {
-        printf("event\n");
+        printf("even\n");
       }
       else {
         printf("odd\n");
