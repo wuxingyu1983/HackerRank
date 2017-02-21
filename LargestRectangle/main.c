@@ -21,7 +21,6 @@ struct building * top(struct building * * stk) {
 }
 
 void push(struct building * * stk, struct building * node) {
-//  printf("push h is %u, push is %u\n", node->height, node->pos);
   stk[++ pos] = node;
 }
 
@@ -30,7 +29,6 @@ struct building * pop(struct building * * stk) {
 
   if (0 <= pos) {
     ret = stk[pos];
-//    printf("pop h is %u, push is %u\n", ret->height, ret->pos);
     stk[pos --] = NULL;
   }
 
@@ -69,13 +67,11 @@ int main() {
         if (ppre) {
           if (max < (pre->height * (now->pos - ppre->pos - 1))) {
             max = pre->height * (now->pos - ppre->pos - 1);
-//            printf("the max is %llu\n", max);
           }
         }
         else {
           if (max < (pre->height * (now->pos - 1))) {
             max = pre->height * (now->pos - 1);
-//            printf("the max is %llu\n", max);
           }
         }
 
@@ -96,13 +92,11 @@ int main() {
     if (ppre) {
       if (max < (pre->height * (n - ppre->pos))) {
         max = pre->height * (n - ppre->pos);
-//        printf("the max is %llu\n", max);
       }
     }
     else {
       if (max < (pre->height * n)) {
         max = pre->height * n;
-//        printf("the max is %llu\n", max);
       }
     }
 
