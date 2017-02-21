@@ -86,6 +86,7 @@ int main() {
 
   struct building * pre;
   struct building * ppre = NULL;
+  
   while (pre = pop(hs)) {
     ppre = top(hs);
     if (ppre) {
