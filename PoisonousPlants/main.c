@@ -45,21 +45,50 @@ int main() {
 
   unsigned long long max = 0;
 
-  for (unsigned int i = 0; i < n; i++) {
-    unsigned int p;
-    scanf("%u", &p);
-
+  for (unsigned int i = 0; i <= n; i++) {
     struct plant * now = malloc(sizeof(struct plant));
-    now->p = p;
-    now->day = 0;
 
+    if (i < n) {
+      unsigned int p;
+      scanf("%u", &p);
+      
+      now->p = p;
+      now->day = 0;
+    }
+    else {
+      now->p = 0;
+      now->day = 0;
+    }
     struct plant * left = top(plants);
 
     if (NULL == left || left->p <= now->p) {
       push(plants, now);
     }
     else {
+      struct plant * lleft;
 
+      unsigned int tmp = 0;
+
+      while (1) {
+        left = pop(plants);
+        lleft = top(plants);
+
+        if (NULL == lleft || lleft->p >= left->p) {
+          push(plants, left);
+          now->day = tmp;
+          if (max < tmp) {
+            max = tmp;
+          }
+          push(plants, now);
+          break;
+        }
+        else {
+          if (tmp < (left->day + 1)) {
+            tmp = left->day + 1;
+          }
+          free(left);
+        }
+      }
     }
   }
 
