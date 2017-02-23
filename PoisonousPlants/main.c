@@ -73,7 +73,7 @@ int main() {
         left = pop(plants);
         lleft = top(plants);
 
-        if (NULL == lleft || lleft->p >= left->p) {
+        if (NULL == lleft || lleft->p >= left->p || (0 < tmp && left->day > tmp)) {
           push(plants, left);
 
           now->day = tmp;
