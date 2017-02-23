@@ -51,7 +51,7 @@ int main() {
     if (i < n) {
       unsigned int p;
       scanf("%u", &p);
-      
+
       now->p = p;
       now->day = 0;
     }
@@ -61,7 +61,7 @@ int main() {
     }
     struct plant * left = top(plants);
 
-    if (NULL == left || left->p <= now->p) {
+    if (NULL == left || left->p < now->p) {
       push(plants, now);
     }
     else {
@@ -75,17 +75,20 @@ int main() {
 
         if (NULL == lleft || lleft->p >= left->p) {
           push(plants, left);
+
           now->day = tmp;
           if (max < tmp) {
             max = tmp;
           }
+
           push(plants, now);
           break;
         }
         else {
-          if (tmp < (left->day + 1)) {
+          if (tmp < left->day + 1) {
             tmp = left->day + 1;
           }
+
           free(left);
         }
       }
