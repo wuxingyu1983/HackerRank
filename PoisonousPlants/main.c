@@ -66,7 +66,7 @@ int main() {
 
     if (NULL == left || left->p < now->p) {
       // 如果当前plant比左边的农药多，先push到栈中，等待时机进行生死的判断
-//      printf("push node, p is %u, day is %u\n", now->p, now->day);
+      //      printf("push node, p is %u, day is %u\n", now->p, now->day);
       push(plants, now);
     }
     else {
@@ -79,7 +79,7 @@ int main() {
 
         if (lleft && lleft->p < left->p/*&& (lleft->day >= left->day || left->p > now->p)*/) {
           if (i == n || 0 == now->day || left->day < now->day || (left->day == now->day && left->p >= now->p)) {
-//          if (left->day <= now->day || 0 == now->day || i == n) {
+            //          if (left->day <= now->day || 0 == now->day || i == n) {
             // 要 pop 的 left plant，存活的 day 应该小于等于当前的 day，避免pop掉将来的plant
             if (now->day < left->day + 1) {
               now->day = left->day + 1;
@@ -89,7 +89,7 @@ int main() {
               max = now->day;
             }
 
-//            printf("pop node, p is %u, day is %u\n", left->p, left->day);
+            //            printf("pop node, p is %u, day is %u\n", left->p, left->day);
 
             free(left);
           }
@@ -97,7 +97,7 @@ int main() {
             push(plants, left);
             push(plants, now);
 
-//            printf("push node, p is %u, day is %u\n", now->p, now->day);
+            //            printf("push node, p is %u, day is %u\n", now->p, now->day);
 
             break;
           }
@@ -106,24 +106,24 @@ int main() {
           push(plants, left);
           push(plants, now);
 
-//          printf("push node, p is %u, day is %u\n", now->p, now->day);
+          //          printf("push node, p is %u, day is %u\n", now->p, now->day);
 
           break;
         }
       }
     }
   }
-/*
+  /*
   struct plant * now;
   while(now = pop(plants)) {
-    if (max < now->day) {
-      max = now->day;
-    }
-  }
+  if (max < now->day) {
+  max = now->day;
+}
+}
 */
-  printf("%llu\n", max);
+printf("%llu\n", max);
 
-  free(plants);
+free(plants);
 
-  return 0;
+return 0;
 }
