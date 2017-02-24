@@ -6,7 +6,7 @@ int pos = -1;
 
 struct plant {
   unsigned int p;       //pesticide
-  unsigned int day;
+  unsigned int day;     // 第day天还没死
 };
 
 struct plant * top(struct plant * * stk) {
@@ -21,6 +21,7 @@ struct plant * top(struct plant * * stk) {
 
 void push(struct plant * * stk, struct plant * node) {
   stk[++ pos] = node;
+//  printf("push node, p is %u, day is %u\n", node->p, node->day);
 }
 
 struct plant * pop(struct plant * * stk) {
@@ -30,6 +31,8 @@ struct plant * pop(struct plant * * stk) {
     ret = stk[pos];
     stk[pos --] = NULL;
   }
+
+//  printf("pop node, p is %u, day is %u\n", ret->p, ret->day);
 
   return ret;
 }
@@ -62,39 +65,62 @@ int main() {
     struct plant * left = top(plants);
 
     if (NULL == left || left->p < now->p) {
+      // 如果当前plant比左边的农药多，先push到栈中，等待时机进行生死的判断
+//      printf("push node, p is %u, day is %u\n", now->p, now->day);
       push(plants, now);
     }
     else {
+      // now->p <= left->p
       struct plant * lleft;
-
-      unsigned int tmp = 0;
 
       while (1) {
         left = pop(plants);
         lleft = top(plants);
 
-        if (NULL == lleft || lleft->p >= left->p || (0 < tmp && left->day > tmp)) {
-          push(plants, left);
+        if (lleft && lleft->p < left->p/*&& (lleft->day >= left->day || left->p > now->p)*/) {
+          if (i == n || 0 == now->day || left->day < now->day || (left->day == now->day && left->p >= now->p)) {
+//          if (left->day <= now->day || 0 == now->day || i == n) {
+            // 要 pop 的 left plant，存活的 day 应该小于等于当前的 day，避免pop掉将来的plant
+            if (now->day < left->day + 1) {
+              now->day = left->day + 1;
+            }
 
-          now->day = tmp;
-          if (max < tmp) {
-            max = tmp;
+            if (max < now->day) {
+              max = now->day;
+            }
+
+//            printf("pop node, p is %u, day is %u\n", left->p, left->day);
+
+            free(left);
           }
+          else {
+            push(plants, left);
+            push(plants, now);
 
-          push(plants, now);
-          break;
+//            printf("push node, p is %u, day is %u\n", now->p, now->day);
+
+            break;
+          }
         }
         else {
-          if (tmp < left->day + 1) {
-            tmp = left->day + 1;
-          }
+          push(plants, left);
+          push(plants, now);
 
-          free(left);
+//          printf("push node, p is %u, day is %u\n", now->p, now->day);
+
+          break;
         }
       }
     }
   }
-
+/*
+  struct plant * now;
+  while(now = pop(plants)) {
+    if (max < now->day) {
+      max = now->day;
+    }
+  }
+*/
   printf("%llu\n", max);
 
   free(plants);
