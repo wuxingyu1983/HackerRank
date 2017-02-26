@@ -103,12 +103,7 @@ int main() {
           }
         }
         if (left) {
-          min = left;
-          tmp = min ^ a;
-          if (max < tmp) {
-            max = tmp;
-//            printf("4: max is %u, min is %u, a is %u\n", max, min, a);
-          }
+          push(as, left);
           if (min <= min1) {
             min2 = min1;
             min1 = min;
@@ -149,6 +144,10 @@ int main() {
             }
           }
         }
+
+        if (left) {
+          push(as, left);
+        }
       }
 
       while (tmp = pop(tmps)) {
@@ -160,7 +159,9 @@ int main() {
 
   printf("%u\n", max);
 
+  free(tmps->ptr);
   free(tmps);
+  free(as->ptr);
   free(as);
 
   return 0;
