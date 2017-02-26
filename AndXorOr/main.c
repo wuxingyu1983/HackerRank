@@ -68,7 +68,7 @@ int main() {
       push(as, left);
       push(as, a);
       max = left ^ a;
-      printf("1: max is %u\n", max);
+//      printf("1: max is %u\n", max);
       if (a < left) {
         min1 = a;
         min2 = left;
@@ -83,7 +83,7 @@ int main() {
       unsigned int tmp = min ^ a;
       if (max < tmp) {
         max = tmp;
-        printf("2: max is %u, min is %u, a is %u\n", max, min, a);
+//        printf("2: max is %u, min is %u, a is %u\n", max, min, a);
       }
       if (a <= min1 || a <= min2) {
         while (left > a) {
@@ -98,26 +98,33 @@ int main() {
             tmp = min ^ a;
             if (max < tmp) {
               max = tmp;
-              printf("3: max is %u, min is %u, a is %u\n", max, min, a);
+//              printf("3: max is %u, min is %u, a is %u\n", max, min, a);
             }
           }
         }
-        min = left;
-        tmp = min ^ a;
-        if (max < tmp) {
-          max = tmp;
-          printf("4: max is %u, min is %u, a is %u\n", max, min, a);
-        }
-        if (min <= min1) {
-          min2 = min1;
-          min1 = min;
-        }
-        else {
-          min2 = min;
+        if (left) {
+          min = left;
+          tmp = min ^ a;
+          if (max < tmp) {
+            max = tmp;
+//            printf("4: max is %u, min is %u, a is %u\n", max, min, a);
+          }
+          if (min <= min1) {
+            min2 = min1;
+            min1 = min;
+          }
+          else {
+            min2 = min;
+          }
         }
       }
       else {
         unsigned int cnt = 0;
+
+        if (left <= a) {
+          cnt ++;
+        }
+
         while (cnt < 2) {
           push(tmps, left);
 
@@ -125,17 +132,21 @@ int main() {
           if (0 == left) {
             break;
           }
+
+          if (left <= a) {
+            cnt ++;
+            if (2 == cnt) {
+              break;
+            }
+          }
+
           if (left < min) {
             min = left;
             tmp = min ^ a;
             if (max < tmp) {
               max = tmp;
-              printf("5: max is %u, min is %u, a is %u\n", max, min, a);
+//              printf("5: max is %u, min is %u, a is %u\n", max, min, a);
             }
-          }
-
-          if (left <= a) {
-            cnt ++;
           }
         }
       }
