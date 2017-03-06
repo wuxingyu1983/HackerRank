@@ -9,11 +9,13 @@ int main() {
   scanf("%d", &K);
   int arr[N];
 
-  int * * s;
-  int * * f;
+  unsigned long long * s;
+  unsigned long long * f;
 
-  s = malloc(sizeof(int *) * N);
-  f = malloc(sizeof(int *) * N);
+  s = malloc(sizeof(unsigned long long) * N);
+  memset(s, 0, sizeof(unsigned long long) * N);
+  f = malloc(sizeof(unsigned long long) * N);
+  memset(f, 0, sizeof(unsigned long long) * N);
 
   for(int i = 0; i < N; i++) {
     int tmp;
@@ -30,36 +32,26 @@ int main() {
       }
     }
     arr[j] = tmp;
-
-    s[i] = malloc(sizeof(int) * N);
-    memset(s[i], 0, sizeof(int) * N);
-
-    f[i] = malloc(sizeof(int) * N);
-    memset(f[i], 0, sizeof(int) * N);
   }
-/*
-  for(int i = 0; i < N; i++) {
-    printf("%d ", arr[i]);
-  }
-*/
+
   unsigned long long unfair = 0;
   for (unsigned int i = 0; i < K; i ++) {
     for (unsigned int j = 0; j < N - i; j ++) {
       if (0 == i) {
-        f[j][j] = 0;
-        s[j][j] = 0;
+        f[j] = 0;
+        s[j] = 0;
       }
       else {
-        f[j][j + i] = f[j][j + i - 1] + s[j][j + i - 1] + i * (arr[j + i - 1] - arr[j + i]);
-        s[j][j + i] = s[j][j + i - 1] + i * (arr[j + i - 1] - arr[j + i]);
+        f[j] = f[j] + s[j] + i * (arr[j + i - 1] - arr[j + i]);
+        s[j] = s[j] + i * (arr[j + i - 1] - arr[j + i]);
 
         if (K - 1 == i) {
           if (0 == j) {
-            unfair = f[j][j + i];
+            unfair = f[j];
           }
           else {
-            if (unfair > f[j][j + i]) {
-              unfair = f[j][j + i];
+            if (unfair > f[j]) {
+              unfair = f[j];
             }
           }
         }
@@ -69,10 +61,6 @@ int main() {
 
   printf("%llu\n", unfair);
 
-  for(int i = 0; i < N; i++) {
-    free(s[i]);
-    free(f[i]);
-  }
   free(s);
   free(f);
 
