@@ -19,7 +19,8 @@ long long proc(int * x, unsigned long long * s, int start, int n, int k, int las
   }
   else {
     for (int i = start; i <= n - k; i ++) {
-      long long tmp = (x[i] - x[last_s]) * (w - s[i - 1]);
+      long long tmp = (x[i] - x[last_s]);
+      tmp *= (w - s[i - 1]);
       if (k > 1) {
         tmp += proc(x, s, i + 1, n, k - 1, i);
       }
@@ -62,7 +63,7 @@ int main(){
         scanf("%d %d",&x_i,&w_i);
 
         x[a0] = x_i;
-        min += (x[a0] - x[0]) * w_i;
+        min += (unsigned long long)(x[a0] - x[0]) * (unsigned long long)w_i;
 
         tmp += w_i;
         s[a0] = tmp;
