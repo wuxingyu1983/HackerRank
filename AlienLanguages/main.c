@@ -27,36 +27,19 @@ int main() {
     unsigned long long sum;
     unsigned long long tmp;
 
-    // init
-    tmp = 0;
-    for (int j = 0; j < s; j ++) {
-      if (s < (j + 1) * 2) {
-        a[j] = n_i - (j + 1) * 2 + 1;
-      }
-      else {
-        a[j] = n_i - s;
-      }
-      tmp += a[j];
-      tmp = tmp % modulo;
-      if (0 == j % 2) {
-        b[j / 2] = tmp;
-      }
+    if (1 == m_i) {
+      printf("%d\n", n_i - s);
     }
-
-    for (int j = s; j < n_i; j ++) {
-      a[j] = n_i - s;
-      tmp += a[j];
-      tmp = tmp % modulo;
-      if (0 == j % 2) {
-        b[j / 2] = tmp;
-      }
-    }
-    b[s] = tmp;   // sum
-
-    for (int k = 0; k < m_i - 2; k ++) {
+    else {
+      // init
       tmp = 0;
       for (int j = 0; j < s; j ++) {
-        a[j] = (b[s] + modulo - b[j]) % modulo;
+        if (s < (j + 1) * 2) {
+          a[j] = n_i - (j + 1) * 2 + 1;
+        }
+        else {
+          a[j] = n_i - s;
+        }
         tmp += a[j];
         tmp = tmp % modulo;
         if (0 == j % 2) {
@@ -65,17 +48,39 @@ int main() {
       }
 
       for (int j = s; j < n_i; j ++) {
-        a[j] = b[s];
+        a[j] = n_i - s;
         tmp += a[j];
         tmp = tmp % modulo;
         if (0 == j % 2) {
           b[j / 2] = tmp;
         }
       }
-      b[s] = tmp;
-    }
+      b[s] = tmp;   // sum
 
-    printf("%llu\n", b[s]);
+      for (int k = 0; k < m_i - 2; k ++) {
+        tmp = 0;
+        for (int j = 0; j < s; j ++) {
+          a[j] = (b[s] + modulo - b[j]) % modulo;
+          tmp += a[j];
+          tmp = tmp % modulo;
+          if (0 == j % 2) {
+            b[j / 2] = tmp;
+          }
+        }
+
+        for (int j = s; j < n_i; j ++) {
+          a[j] = b[s];
+          tmp += a[j];
+          tmp = tmp % modulo;
+          if (0 == j % 2) {
+            b[j / 2] = tmp;
+          }
+        }
+        b[s] = tmp;
+      }
+
+      printf("%llu\n", b[s]);
+    }
 
     free(b);
     free(a);
