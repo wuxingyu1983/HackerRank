@@ -3,6 +3,44 @@
 #include <math.h>
 #include <stdlib.h>
 
+int min_l;
+int min_r[32];
+
+void proc(int remain, int a[], int len, int curr, int now, int r[]) {
+  int max = 0;
+  int v = a[curr];
+  int tmp = remain;
+
+  if (curr == len) {
+    return;
+  }
+
+  while (0 == tmp % v) {
+    tmp /= v;
+    max ++;
+  }
+
+  if (max) {
+    for (int i = max; i > 0; i --) {
+      for (int j = now; j < now + i; j ++) {
+        r[j] = v;
+      }
+      tmp = pow(v, i);
+      if (1 == remain / tmp) {
+        if (0 == min_l || min_l > (now + i)) {
+          min_l = now + i;
+          for (int j = 0; j < min_l; j ++) {
+            min_r[j] = r[j];
+          }
+        }
+      }
+      proc(remain / tmp, a, len, curr + 1, now + i, r);
+    }
+  }
+
+  proc(remain, a, len, curr + 1, now, r);
+}
+
 int main() {
   int n,k;
   scanf("%d %d", &n, &k);
@@ -37,73 +75,15 @@ int main() {
     printf("-1\n");
   }
   else {
-    int actived = 0;
-    int **t;
-    t = malloc(2 * sizeof(int *));
-    t[0] = malloc(sizeof(int) * pow(2,len));
-    t[1] = malloc(sizeof(int) * pow(2,len));
-    int **p;
-    p = malloc(2 * sizeof(int *));
-    p[0] = malloc(sizeof(int) * pow(2,len));
-    p[1] = malloc(sizeof(int) * pow(2,len));
-    int result = 0;
-
-    for (int i = 0; i < len; i ++) {
-      if (0 == i) {
-        t[actived][0] = n / a[i];
-        p[actived][0] = 1 * pow(2, (len - i - 1));
-//        printf("t[0] is %d\n", t[actived][0] );
-//        printf("p[0] is %d\n", p[actived][0] );
-        if (1 == n / a[i]) {
-          result = p[actived][0];
-          break;
-        }
-        t[actived][1] = n;
-        p[actived][1] = 0;
-//        printf("t[1] is %d\n", t[actived][1] );
-//        printf("p[1] is %d\n", p[actived][1]);
-      }
-      else {
-        int max = pow(2, i);
-        int last = 1 - actived;
-        for (int j = 0; j < max; j ++) {
-          if (t[last][j] && 0 == t[last][j] % a[i]) {
-            t[actived][2 * j] = t[last][j] / a[i];
-            p[actived][2 * j] = p[last][j] + 1 * pow(2, len - i - 1);
-//            printf("t[%d] is %d\n", 2 * j, t[actived][2 * j]);
- //           printf("p[%d] is %d\n", 2 * j, p[actived][2 * j]);
-
-            if (1 == t[actived][2 * j]) {
-              if (0 == result || result < p[actived][2 * j]) {
-                result = p[actived][2 * j];
-              }
-            }
-          }
-          else {
-            t[actived][2 * j] = 0;
-            p[actived][2 * j] = 0;
-          }
-
-          t[actived][2 * j + 1] = t[last][j];
-          p[actived][2 * j + 1] = p[last][j];
-//          printf("t[%d] is %d\n", 2 * j + 1, t[actived][2 * j + 1]);
- //         printf("p[%d] is %d\n", 2 * j + 1, p[actived][2 * j + 1]);
-        }
-      }
-      actived = 1 - actived;
-    }
-
-    if (result) {
+    min_l = 0;
+    int result[32];
+    proc(n, a, len, 0, 0, result);
+    if (min_l) {
       int tmp = 1;
-      int index = 0;
       printf("%d", tmp);
-      while (0 < result) {
-        if (1 == result / ((int)pow(2, len - index - 1))) {
-          tmp *= a[index];
-          printf(" %d", tmp);
-        }
-        result %= ((int)pow(2, len - index - 1));
-        index ++;
+      for (int i = 0; i < min_l; i ++) {
+        tmp *= min_r[i];
+        printf(" %d", tmp);
       }
       printf("\n");
     }
