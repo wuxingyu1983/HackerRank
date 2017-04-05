@@ -8,7 +8,8 @@ void quick_sort(unsigned long long s[], int l, int r)
 {
   if (l < r)
   {
-    int i = l, j = r, x = s[l];
+    int i = l, j = r;
+    unsigned long long x = s[l];
     while (i < j)
     {
       while(i < j && s[j] > x)
@@ -69,9 +70,9 @@ void mark(unsigned long long *a, unsigned char *flag, unsigned long long value, 
     output - output array
     io - 当前 output 数组中确定的下标
 */
-void func(unsigned long long *a, unsigned char *flag, int *output, int io, int total, int N, int K, int k, unsigned long long sum, int last) {
+void func(unsigned long long *a, unsigned char *flag, unsigned long long *output, int io, int total, int N, int K, int k, unsigned long long sum, int last) {
     if (0 == io) {
-        sum += ((unsigned long long)output[io]) * k;
+        sum += output[io] * k;
 
         // mark sum
         mark(a, flag, sum, total);
@@ -79,11 +80,11 @@ void func(unsigned long long *a, unsigned char *flag, int *output, int io, int t
     else {
         if (K == k) {
             for (int i = 1; i <= K; i ++) {
-                func(a, flag, output, io - 1, total, N, K, k - i, sum + ((unsigned long long)output[io]) * i, last);
+                func(a, flag, output, io - 1, total, N, K, k - i, sum + output[io] * i, last);
             }
             while (flag[++ last]) {
             }
-            output[++io] = a[last] - ((unsigned long long)output[0]) * (K - 1);
+            output[++io] = a[last] - output[0] * (K - 1);
 //            printf("output[%d] is %d, last is %d\n", io, output[io], last);
             if (io < N - 1) {
                 func(a, flag, output, io, total, N, K, K, 0, last);
@@ -96,7 +97,7 @@ void func(unsigned long long *a, unsigned char *flag, int *output, int io, int t
             }
             else {
                 for (int i = 0; i <= k; i ++) {
-                    func(a, flag, output, io - 1, total, N, K, k - i, sum + ((unsigned long long)output[io]) * i, last);
+                    func(a, flag, output, io - 1, total, N, K, k - i, sum + output[io] * i, last);
                 }
             }
         }
@@ -124,7 +125,7 @@ int main() {
     unsigned int n[100000];
 
     scanf("%d", &T);
-    int ** output = malloc(T * sizeof(int *));
+    unsigned long long ** output = malloc(T * sizeof(unsigned long long *));
     for (int i = 0; i < T; i ++) {
         scanf("%d %d", &N, &K);
         memset(a, 0, sizeof(unsigned long long) * 100000);
@@ -138,15 +139,15 @@ int main() {
         }
 
         // quick sort
-        quick_sort(a, 0, total - 1);
+//        quick_sort(a, 0, total - 1);
 
-        output[i] = malloc(sizeof(int) * N + 1);
-        memset(output[i], 0, sizeof(int) * (N + 1));
+        output[i] = malloc(sizeof(unsigned long long) * N + 1);
+        memset(output[i], 0, sizeof(unsigned long long) * (N + 1));
 
         output[i][0] = a[0] / K;
         f[0] = 1;
         if (1 < N) {
-            output[i][1] = a[1] - ((unsigned long long)output[i][0]) * (K - 1);
+            output[i][1] = a[1] - output[i][0] * (K - 1);
         }
 
         if (2 < N) {
@@ -155,10 +156,10 @@ int main() {
     }
 
     for (int i = 0; i < T; i ++) {
-        printf("%d", output[i][0]);
+        printf("%llu", output[i][0]);
         if (n[i] > 1) {
             for (int j = 1; j < n[i]; j ++) {
-                printf(" %d", output[i][j]);
+                printf(" %llu", output[i][j]);
             }
         }
         printf("\n");
