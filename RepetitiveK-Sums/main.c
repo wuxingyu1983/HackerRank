@@ -32,7 +32,6 @@ void mark(unsigned long long *a, unsigned char *flag, unsigned long long value, 
     int start = 0;
     int end = total - 1;
 
-//    printf("want to value is %llu\n", value);
     while (start <= end) {
         int middle = (start + end) / 2;
         if (a[middle] > value) {
@@ -46,6 +45,7 @@ void mark(unsigned long long *a, unsigned char *flag, unsigned long long value, 
             }
         }
         else {
+//            printf("want to mark value is %llu, middle is %d\n", value, middle);
             while (middle > 0 && value == a[middle - 1]) {
                 middle --;
             }
@@ -84,6 +84,7 @@ void func(unsigned long long *a, unsigned char *flag, int *output, int io, int t
             while (flag[++ last]) {
             }
             output[++io] = a[last] - ((unsigned long long)output[0]) * (K - 1);
+//            printf("output[%d] is %d, last is %d\n", io, output[io], last);
             if (io < N - 1) {
                 func(a, flag, output, io, total, N, K, K, 0, last);
             }
@@ -146,7 +147,6 @@ int main() {
         f[0] = 1;
         if (1 < N) {
             output[i][1] = a[1] - ((unsigned long long)output[i][0]) * (K - 1);
-            f[1] = 1;
         }
 
         if (2 < N) {
