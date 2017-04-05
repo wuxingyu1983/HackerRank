@@ -24,7 +24,7 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
         else {
             // start < end
             if (p->val <= t[start]) {
-                t[-- start] = p->val;
+                t[-- start - 1] = p->val;
                 pos = start;
                 flag = 0;
             }
@@ -34,12 +34,16 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
                 flag = 1;
             }
             else {
+                int lt = start;
+                while (lt < end) {
+                    
+                }
 
             }
         }
 
         // 还原
-        
+
     } while (NULL != (p = p->brother));
 
     return ret;
