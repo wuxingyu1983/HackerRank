@@ -23,8 +23,61 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
         }
         else {
             // start < end
+            // 计算有几个满足条件的 pair,再插入
+
+            int min = p->val - k;
+            int max = p->val + k;
+
+            int lt;     // 小于 min 最大数的位置
+            {
+                int llt = start;
+                int rlt = end - 1;
+                while (llt <= rlt) {
+                    int middle = (llt + rlt) / 2;
+                    if (t[middle] >= min) {
+                        rlt = middle - 1;
+                        lt = rlt;
+                    }
+                    else {
+                        llt = middle + 1;
+                        lt = llt;
+                    }
+                }
+
+                while (lt < end && lt >= start && t[lt] >= min) {
+                    lt --;
+                }
+            }
+            int bg;     // 大于 max 最小数的位置
+            {
+                int lbg = start;
+                int rbg = end - 1;
+                while (lbg <= rbg) {
+                    int middle = (lbg + rbg) / 2;
+                    if (t[middle] > max) {
+                        rbg = middle - 1;
+                        bg = rbg;
+                    }
+                    else {
+                        lbg = middle + 1;
+                        bg = lbg;
+                    }
+                }
+
+                while (bg >= start && bg <= (end - 1) && t[bg] <= max) {
+                    bg ++;
+                }
+
+                if (lt == bg) {
+                    ret += 0;
+                }
+                else {
+                    ret += bg - lt - 1;
+                }
+            }
+
             if (p->val <= t[start]) {
-                t[-- start - 1] = p->val;
+                t[-- start] = p->val;
                 pos = start;
                 flag = 0;
             }
@@ -34,16 +87,67 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
                 flag = 1;
             }
             else {
-                int lt = start;
-                while (lt < end) {
-                    
+                //  计算 pos
+                int left = start;
+                int right = end - 1;
+                while (left <= right) {
+                    int middle = (left + right) / 2;
+                    if (t[middle] >= p->val) {
+                        right = middle - 1;
+                        if (left == right) {
+                            pos = right;
+                            break;
+                        }
+                    }
+                    else {
+                        left = middle + 1;
+                        if (left == right) {
+                            pos = right;
+                            break;
+                        }
+                    }
                 }
 
+                // 移动
+                if ((pos - start) < (end - pos)) {
+                    // 左移
+                    for (int i = start; i <= pos; i ++) {
+                        t[i - 1] = t[i];
+                    }
+                    t[pos] = p->val;
+                    start --;
+                    flag = 0;
+                }
+                else {
+                    // 右移
+                    for (int i = end - 1; i <= pos; i --) {
+                        t[i + 1] = t[i];
+                    }
+                    t[pos] = p->val;
+                    end ++;
+                    flag = 1;
+                }
             }
         }
 
-        // 还原
+        // 计算子 node
+        if (p->children) {
+            ret += func(t, start, end, p->children, k);
+        }
 
+        // 还原
+        if (0 == flag) {
+            for (int i = pos; i > start; i --) {
+                t[i] = t[i - 1];
+            }
+            start ++;
+        }
+        else {
+            for (int i = pos; i < end - 1; i ++) {
+                t[i] = t[i + 1];
+            }
+            end --;
+        }
     } while (NULL != (p = p->brother));
 
     return ret;
@@ -93,6 +197,7 @@ int main() {
     int * t = malloc(sizeof(int) * 2 * (n + 1));
     memset(t, 0, sizeof(int) * 2 * (n + 1));
 
+    ret = func(t, n, n, root, k);
 
     printf("%llu\n", ret);
 
