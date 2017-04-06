@@ -16,14 +16,20 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
     int flag = 0;       // 0 - 向左侧延伸，1 - 向右侧延伸
 
     do {
+        printf("处理子node, p->val = %d, start = %d, end = %d the t[] is ", p->val, start, end);
         if (start == end) {
             t[end] = p->val;
             pos = end ++;
             flag = 1;
+            printf("null\n");
         }
         else {
             // start < end
             // 计算有几个满足条件的 pair,再插入
+            for (int i = start; i < end; i ++) {
+                printf("%d ", t[i]);
+            }
+            printf("\n");
 
             int min = p->val - k;
             int max = p->val + k;
@@ -48,6 +54,7 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
                     lt --;
                 }
             }
+
             int bg;     // 大于 max 最小数的位置
             {
                 int lbg = start;
@@ -67,13 +74,15 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
                 while (bg >= start && bg <= (end - 1) && t[bg] <= max) {
                     bg ++;
                 }
+            }
 
-                if (lt == bg) {
-                    ret += 0;
-                }
-                else {
-                    ret += bg - lt - 1;
-                }
+            printf("lt is %d, bg is %d\n", lt, bg);
+
+            if (lt == bg) {
+                ret += 0;
+            }
+            else {
+                ret += bg - lt - 1;
             }
 
             if (p->val <= t[start]) {
@@ -108,6 +117,8 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
                     }
                 }
 
+                printf("start is %d, end is %d, pos is %d\n", start, end, pos);
+
                 // 移动
                 if ((pos - start) < (end - pos)) {
                     // 左移
@@ -120,7 +131,7 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
                 }
                 else {
                     // 右移
-                    for (int i = end - 1; i <= pos; i --) {
+                    for (int i = end - 1; i >= pos; i --) {
                         t[i + 1] = t[i];
                     }
                     t[pos] = p->val;
@@ -129,6 +140,12 @@ unsigned long long  func(int * t, int start, int end, struct node * p, int k) {
                 }
             }
         }
+
+        printf("移动后 : ");
+        for (int i = start; i < end; i ++) {
+            printf("%d ", t[i]);
+        }
+        printf("\n");
 
         // 计算子 node
         if (p->children) {
