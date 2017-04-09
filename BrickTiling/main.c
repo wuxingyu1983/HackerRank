@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 const int MOD = 1000000007;
-unsigned long long tmp[22][1 << 8][1<< 8];
+unsigned long long tmp[25][1 << 8][1 << 8];
 int n, m;
 int curr, next;
 
@@ -13,12 +13,14 @@ int valid(int s, int pos) {
 }
 
 void func(int p, int s1, int s2, int s3, int initk, int initl) {
+//    printf("p = %d, s1 = %d, s2 = %d, s3 = %d\n", p, s1, s2, s3);
     if (s1 == ((1 << m) - 1)) {
         tmp[next][s2][s3] = (tmp[next][s2][s3] + tmp[curr][initk][initl]) % MOD;
+//        printf("tmp[%d][%d][%d] is %llu\n", next, s2, s3, tmp[next][s2][s3]);
         return;
     }
 
-    if (s1 & (1 << p)) {
+    if (s1 & (1 << p) && p < m - 1) {
         func(p + 1, s1, s2, s3, initk, initl);
     }
     else {
@@ -84,14 +86,18 @@ int main() {
     for (int i = 0; i < t; i ++) {
         scanf("%d %d", &n, &m);
 
-        int state[20];
+        int state[25];
         int cnt = 0;
+
+        memset(state, 0, sizeof(state));
+
         for (int j = 0; j < n; j ++) {
             state[j] = 0;
+            char str[10];
+            memset(str, 0, sizeof(str));
+            scanf("%s", str);
             for (int k = 0; k < m; k ++) {
-                char p;
-                scanf("%c", &p);
-                if ('#' == p) {
+                if ('#' == str[k]) {
                     state[j] |= (1 << k);
                 }
                 else {
@@ -105,7 +111,7 @@ int main() {
             continue;
         }
 
-        if (0 != (cnt % 4)) {
+        if (n < 2 || m < 2 || 0 != (cnt % 4)) {
             outputs[i] = 0;
             continue;
         }
@@ -114,12 +120,12 @@ int main() {
 
         tmp[1][state[0]][state[1]] = 1;
 
-        for (int j = 1; j < n - 1; j ++) {
+        for (int j = 1; j < n; j ++) {
             curr = j;
             next = j + 1;
             for (int k = 0; k < (1 << m); k ++) {
                 for (int l = 0; l < (1 << m); l ++) {
-                    if (0 == tmp[1][k][l]) {
+                    if (0 == tmp[curr][k][l]) {
                         continue;
                     }
                     func(0, k, l, state[j + 1], k, l);
@@ -127,7 +133,7 @@ int main() {
             }
         }
 
-        outputs[i] = tmp[n- 1][(1 << m) - 1][(1 << m) - 1];
+        outputs[i] = tmp[n][(1 << m) - 1][0];
     }
 
     for (int i = 0; i < t; i ++) {
