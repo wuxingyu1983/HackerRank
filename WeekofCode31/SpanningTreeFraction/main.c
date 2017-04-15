@@ -6,7 +6,9 @@
 #include <limits.h>
 #include <stdbool.h>
 
-#define  E 0.000001
+#define  E 0.0000001
+
+#define DEBUG   0
 
 struct line {
     int u, v, a, b;
@@ -28,26 +30,27 @@ bool fequal(double a, double b) {
 void quick_sort(struct line * s, int l, int r) {
     if (l < r)
     {
-      int i = l, j = r;
-      struct line x = s[l];
-      while (i < j)
-      {
-        while(i < j && s[j].d <= x.d)
-        j--;
-        if(i < j)
-//        s[i++] = s[j];
-        memcpy(&s[i++], &s[j], sizeof(struct line));
+        int i = l, j = r;
+        struct line x;
+        memcpy(&x, &s[l], sizeof(struct line));
+        while (i < j)
+        {
+            while(i < j && s[j].d <= x.d)
+            j--;
+            if(i < j)
+            //        s[i++] = s[j];
+            memcpy(&s[i++], &s[j], sizeof(struct line));
 
-        while(i < j && s[i].d > x.d)
-        i++;
-        if(i < j)
-//        s[j--] = s[i];
-        memcpy(&s[j--], &s[i], sizeof(struct line));
-      }
-//      s[i] = x;
-      memcpy(&s[i], &x, sizeof(struct line));
-      quick_sort(s, l, i - 1);
-      quick_sort(s, i + 1, r);
+            while(i < j && s[i].d > x.d)
+            i++;
+            if(i < j)
+            //        s[j--] = s[i];
+            memcpy(&s[j--], &s[i], sizeof(struct line));
+        }
+        //      s[i] = x;
+        memcpy(&s[i], &x, sizeof(struct line));
+        quick_sort(s, l, i - 1);
+        quick_sort(s, i + 1, r);
     }
 }
 
@@ -62,17 +65,27 @@ void funion(int x, int y, int * p) {
 double kruskal(int n, int m, struct line * l, double r) {
     double ret;
 
+#if DEBUG
+    printf("r = %f\n", r);
+#endif
+
     // init
     int * points = malloc(sizeof(int) * n);
     for (size_t i = 0; i < n; i++) {
         points[i] = i;
     }
     for (size_t i = 0; i < m; i++) {
-        l[i].d = (double)l[i].a - r * (double)l[i].b;
+        l[i].d = (double)l[i].a - r * ((double)l[i].b);
     }
 
     // sort
     quick_sort(l, 0, m - 1);
+
+#if DEBUG
+    for (int i = 0; i < m; i++) {
+        printf("l[%d] is u = %d, v = %d, a = %d, b = %d, d = %f\n", i, l[i].u, l[i].v, l[i].a, l[i].b, l[i].d);
+    }
+#endif
 
     max_a = 0;
     max_b = 0;
@@ -122,8 +135,7 @@ int main(){
         lines[a0].a = a;
         lines[a0].b = b;
 
-
-        if (fequal(0, (double)a/(double)b) || start_r < (double)a/(double)b) {
+        if (fequal(0, start_r) || start_r > (double)a/(double)b) {
             start_r = (double)a/(double)b;
             max_a = a;
             max_b = b;
