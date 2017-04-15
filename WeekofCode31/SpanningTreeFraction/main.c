@@ -6,7 +6,7 @@
 #include <limits.h>
 #include <stdbool.h>
 
-#define  E 0.0000001
+#define  E 0.00001
 
 #define DEBUG   0
 
@@ -135,7 +135,7 @@ int main(){
         lines[a0].a = a;
         lines[a0].b = b;
 
-        if (fequal(0, start_r) || start_r > (double)a/(double)b) {
+        if (start_r < (double)a/(double)b) {
             start_r = (double)a/(double)b;
             max_a = a;
             max_b = b;
