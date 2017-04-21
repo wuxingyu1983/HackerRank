@@ -12,48 +12,14 @@ struct point {
     struct point * parent;
 };
 
-// pdh[point index][distance][height] = point count
-int pdh[101][101][101];
+// phd[point index][height][distance] = point count
+int phd[101][101][101];
 
 void rfn(struct point * parent) {
     if (parent) {
-        pdh[parent->index][0][0] = 1;
         struct point * child = parent->child;
         while (child) {
             rfn(child);
-
-            for (size_t d = 0; d <= K; d++) {
-                for (size_t h = 0; h < 101; h++) {
-                    if (pdh[child->index][d][h]) {
-                        if (d < h + 1) {
-                            if (0 == pdh[parent->index][h + 1][h + 1]) {
-                                pdh[parent->index][h + 1][h + 1] = pdh[child->index][d][h] + 1;
-                            }
-                            else {
-                                pdh[parent->index][h + 1][h + 1] += pdh[child->index][d][h];
-                            }
-
-                            if (h + 1 <= K) {
-                                if (max < pdh[parent->index][h + 1][h + 1]) {
-                                    max = pdh[parent->index][h + 1][h + 1];
-                                }
-                            }
-                        }
-                        else {
-                            if (0 == pdh[parent->index][d][h + 1]) {
-                                pdh[parent->index][d][h + 1] = pdh[child->index][d][h] + 1;
-                            }
-                            else {
-                                pdh[parent->index][d][h + 1] += pdh[child->index][d][h];
-                            }
-
-                            if (max < pdh[parent->index][d][h + 1]) {
-                                max = pdh[parent->index][d][h + 1];
-                            }
-                        }
-                    }
-                }
-            }
 
             child = child->brother;
         }
@@ -98,9 +64,11 @@ int main() {
     }
 
     max = 0;
-    memset(pdh, 0, sizeof(pdh));
+    memset(phd, 0, sizeof(phd));
 
     rfn(root);
+
+    printf("%d\n", N - max);
 
     for (size_t i = 1; i <= N; i++) {
         free(points[i]);
