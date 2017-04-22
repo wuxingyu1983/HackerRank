@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define DEBUG   1
+
 int N, K, max;
 
 struct point {
@@ -28,8 +30,8 @@ void rfn(struct point * parent) {
             rfn(child);
 
             // 处理parent自己的 height 和 distance
-            for (size_t h = 0; h <= K && h <= child->max_height; h++) {
-                for (size_t d = h; d <= h * 2 && d <= child->max_distance && d <= K; d++){
+            for (size_t h = 0; h <= K /*&& h <= child->max_height*/; h++) {
+                for (size_t d = h; d <= h * 2 /*&& d <= child->max_distance*/ && d <= K; d++){
                     if (phd[child->index][h][d]) {
                         int cnt = phd[child->index][h][d];
                         int p_h, p_d;  // 该 child 加入到 parent 后对应的 height 和 distance
@@ -43,8 +45,8 @@ void rfn(struct point * parent) {
 
                         // 遍历 parent 已经有的情况,计算新的
                         int max_h = p_h, max_d = p_d;
-                        for (int ph = parent->max_height; ph >= 0; ph --) {
-                            for (int pd = parent->max_distance; pd >= 0; pd --) {
+                        for (int ph = K /*parent->max_height*/; ph >= 0; ph --) {
+                            for (int pd = K /*parent->max_distance*/; pd >= 0; pd --) {
                                 if (phd[parent->index][ph][pd]) {
                                     int new_h, new_d;
 
@@ -68,6 +70,9 @@ void rfn(struct point * parent) {
                                     int new_cnt = cnt + phd[parent->index][ph][pd];
                                     if (phd[parent->index][new_h][new_d] < new_cnt) {
                                         phd[parent->index][new_h][new_d] = new_cnt;
+#if DEBUG
+                                        printf("pdh[%d][%d][%d] is %d\n", parent->index, new_h, new_d, phd[parent->index][new_h][new_d]);
+#endif
                                         if (new_d <= K && new_cnt > max) {
                                             max = new_cnt;
                                         }
@@ -87,6 +92,9 @@ void rfn(struct point * parent) {
                         // 处理 自己
                         if (cnt > phd[parent->index][p_h][p_d]) {
                             phd[parent->index][p_h][p_d] = cnt;
+#if DEBUG
+                            printf("pdh[%d][%d][%d] is %d\n", parent->index, p_h, p_d, phd[parent->index][p_h][p_d]);
+#endif
                             if (p_d <= K && cnt > max) {
                                 max = cnt;
                             }
