@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define DEBUG   1
+#define DEBUG   0
 
 int N, K, max;
 
@@ -29,26 +29,28 @@ void rfn(int p, int pp) {
 				rfn(child, p);
 
 				// 处理parent自己的 height 和 distance
-				for (size_t h = 0; h <= K /*&& h <= child->max_height*/; h++) {
-					for (size_t d = h; d <= h * 2 /*&& d <= child->max_distance*/ && d <= K; d++){
-						if (phd[child][h][d]) {
-							int cnt = phd[child][h][d];
-							int p_h, p_d;  // 该 child 加入到 parent 后对应的 height 和 distance
-							p_h = h + 1;
-							if (h + 1 > d) {
-								p_d = h + 1;
-							}
-							else {
-								p_d = d;
-							}
+				// 遍历 parent 已经有的情况,计算新的
+                int tmp[101][101];
+                memcpy(tmp, phd[p], 101 * 101 * sizeof(int));
+				for (int ph = K /*parent->max_height*/; ph >= 0; ph --) {
+					for (int pd = K /*parent->max_distance*/; pd >= 0; pd --) {
+						if (phd[p][ph][pd]) {
+                            // phd[p][ph][pd] 为截止到计算 child 前的一种可能性
+							for (size_t h = 0; h <= K /*&& h <= child->max_height*/; h++) {
+								for (size_t d = h; d <= h * 2 /*&& d <= child->max_distance*/ && d <= K; d++){
+									if (phd[child][h][d]) {
+										int cnt = phd[child][h][d];
+										int p_h, p_d;  // 该 child 加入到 parent 后对应的 height 和 distance
+										p_h = h + 1;
+										if (h + 1 > d) {
+											p_d = h + 1;
+										}
+										else {
+											p_d = d;
+										}
 
-							// 遍历 parent 已经有的情况,计算新的
-							int max_h = p_h, max_d = p_d;
-							for (int ph = K /*parent->max_height*/; ph >= 0; ph --) {
-								for (int pd = K /*parent->max_distance*/; pd >= 0; pd --) {
-									if (phd[p][ph][pd]) {
+										// 该 child 加入到 parent 后,对应的整个树的 height 和 distance
 										int new_h, new_d;
-
 										if (p_h > ph) {
 											new_h = p_h;
 										}
@@ -67,49 +69,33 @@ void rfn(int p, int pp) {
 										}
 
 										int new_cnt = cnt + phd[p][ph][pd];
-										if (new_d <= K && phd[p][new_h][new_d] < new_cnt) {
-											phd[p][new_h][new_d] = new_cnt;
+										if (new_d <= K && tmp[new_h][new_d] < new_cnt) {
+											tmp[new_h][new_d] = new_cnt;
 #if DEBUG
-											printf("pdh[%d][%d][%d] is %d\n", p, new_h, new_d, phd[p][new_h][new_d]);
+											printf("pdh[%d][%d][%d] is %d\n", p, new_h, new_d, tmp[new_h][new_d]);
 #endif
 											if (new_d <= K && new_cnt > max) {
 												max = new_cnt;
 											}
 										}
 
-										if (new_h > max_h) {
-											max_h = new_h;
-										}
-
-										if (new_d > max_d) {
-											max_d = new_d;
-										}
+                                        // 处理 自己
+                                        if (p_d <= K && cnt > tmp[p_h][p_d]) {
+                                            tmp[p_h][p_d] = cnt;
+#if DEBUG
+                                            printf("pdh[%d][%d][%d] is %d\n", p, p_h, p_d, phd[p][p_h][p_d]);
+#endif
+                                            if (p_d <= K && cnt > max) {
+                                                max = cnt;
+                                            }
+                                        }
 									}
 								}
 							}
-
-							// 处理 自己
-							if (p_d <= K && cnt > phd[p][p_h][p_d]) {
-								phd[p][p_h][p_d] = cnt;
-#if DEBUG
-								printf("pdh[%d][%d][%d] is %d\n", p, p_h, p_d, phd[p][p_h][p_d]);
-#endif
-								if (p_d <= K && cnt > max) {
-									max = cnt;
-								}
-							}
-							/*
-							   if (max_h > parent->max_height) {
-							   parent->max_height = max_h;
-							   }
-
-							   if (max_d > parent->max_distance) {
-							   parent->max_distance = max_d;
-							   }
-							 */
 						}
 					}
 				}
+                memcpy(phd[p], tmp, 101 * 101 * sizeof(int));
 			}
 		}
 	}
