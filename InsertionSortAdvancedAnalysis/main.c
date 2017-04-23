@@ -5,87 +5,63 @@
 
 unsigned long long getMoves(int * a, int len) {
     unsigned long long ret = 0;
-    int * s = malloc(sizeof(int) * len);
-    memset(s, 0, sizeof(int) * len);
+    int * s = malloc(sizeof(int) * len * 2);
+    memset(s, 0, sizeof(int) * len * 2);
 
     int start = -1, end = -1;
 
     for (size_t i = 0; i < len; i++) {
         if (0 > start) {
-            start = 0;
+            start = len;
             s[start] = a[i];
-            end = 0;
+            end = len;
         }
         else {
             int add = 0;
-/*
-            if (a[i] <= s[start]) {
-                s[-- start] = a[i];
-                int tmp = start;
-                while (tmp <= end && s[tmp] == a[i]) {
-                    tmp ++;
+            // 二分法找到位置
+            int l, r, m;
+            l = start;
+            r = end;
+            while (l <= r) {
+                m = (l + r) / 2;
+                if (a[i] == s[m]) {
+                    break;
                 }
-                add = end - tmp + 1;
-            }
-            else if (a[i] >= s[end]) {
-                s[++ end] = a[i];
-            }
-            else */
-            {
-                // 二分法找到位置
-                int l, r, m;
-                l = start;
-                r = end;
-                while (l <= r) {
-                    m = (l + r) / 2;
-                    if (a[i] == s[m]) {
-                        break;
-                    }
-                    else if (a[i] < s[m]) {
-                        r = m - 1;
-                    }
-                    else {
-                        l = m + 1;
-                    }
-                }
-
-                if (s[m] == a[i]) {
-                    while (s[m] == a[i]) {
-                        m ++;
-                    }
-                }
-                else if (s[m] > a[i]) {
+                else if (a[i] < s[m]) {
+                    r = m - 1;
                 }
                 else {
+                    l = m + 1;
+                }
+            }
+
+            if (s[m] == a[i]) {
+                while (s[m] == a[i]) {
                     m ++;
                 }
+            }
+            else if (s[m] > a[i]) {
+            }
+            else {
+                m ++;
+            }
 
+            if (end - m + 1 <= m - start) {
                 for (size_t j = end + 1; j > m; j --) {
                     s[j] = s[j - 1];
                 }
                 s[m] = a[i];
                 add = end - m + 1;
                 end ++;
-/*
-                if (end - m + 1 <= m - start) {
-                    memcpy(&s[m + 1], &s[m], sizeof(int) * (end - m + 1));
-                    add = end - m + 1;
-                    end ++;
-                }
-                else {
-                    memcpy(&s[start - 1], &s[start], sizeof(int) * (m - start));
-                    add = end - m + 1;
-                    start --;
-                }
-*/
-/*
-            for (size_t i = start; i <= end; i ++){
-                printf("%d ", s[i]);
             }
-            printf(", add is %d, m is %d\n", add, m);
-*/
+            else {
+                for (size_t j = start; j < m; j ++) {
+                    s[j - 1] = s[j];
+                }
+                s[m - 1] = a[i];
+                add = end - m + 1;
+                start --;
             }
-
             ret += add;
         }
     }
