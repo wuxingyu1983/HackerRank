@@ -3,7 +3,9 @@
 #include <math.h>
 #include <stdlib.h>
 
-int M;
+#define DEBUG       0
+
+long long M;
 
 void merge_func(long long * a, int s, int e, long long * max) {
     if (s < e) {
@@ -54,21 +56,40 @@ void merge_func(long long * a, int s, int e, long long * max) {
 }
 
 int main() {
+#if DEBUG
+    FILE * fp = fopen("input.txt", "r");
+#endif
     int T;
+
+#if DEBUG
+    fscanf(fp, "%d", &T);
+#else
     scanf("%d", &T);
+#endif
 
     long long * output = malloc(sizeof(long long) * T);
     long long input[100000];
 
     for (size_t ti = 0; ti < T; ti++) {
         int N;
-        scanf("%d %d", &N, &M);
+
+#if DEBUG
+        fscanf(fp, "%d %lld", &N, &M);
+#else
+        scanf("%d %lld", &N, &M);
+#endif
 
         long long sum = 0;
         long long max = 0;
         for (size_t ni = 0; ni < N; ni++) {
             long long n;
+
+#if DEBUG
+            fscanf(fp, "%lld", &n);
+#else
             scanf("%lld", &n);
+#endif
+
             n = n % M;
 
             if (n > max) {
@@ -96,6 +117,10 @@ int main() {
     }
 
     free(output);
+
+#if DEBUG
+    fclose(fp);
+#endif
 
     return 0;
 }
