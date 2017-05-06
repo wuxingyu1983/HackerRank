@@ -38,17 +38,55 @@ unsigned long long makingCandy( unsigned long long m,
                         break;
                     }
 
-                    if (0 == added % 2){
-                        days += makingCandy(m + added / 2, w + added / 2, p, sum + days * (m * w) - added * p, n);
+                    unsigned long long new_m = m, new_w = w;
+                    if (m == w) {
+                        if (0 == added % 2){
+                            new_m += added / 2;
+                            new_w += added / 2;
+                        }
+                        else {
+                            new_m += added / 2 + 1;
+                            new_w += added / 2;
+                        }
                     }
                     else {
                         if (m > w) {
-                            days += makingCandy(m + added / 2, w + added / 2 + 1, p, sum + days * (m * w) - added * p, n);
+                            if (added <= m - w) {
+                                new_w += added;
+                            }
+                            else {
+                                unsigned long long new_added = added - m + w;
+                                new_w = new_m;
+                                if (0 == new_added % 2) {
+                                    new_m += new_added / 2;
+                                    new_w += new_added / 2;
+                                }
+                                else {
+                                    new_m += new_added / 2 + 1;
+                                    new_w += new_added / 2;
+                                }
+                            }
                         }
                         else {
-                            days += makingCandy(m + added / 2 + 1, w + added / 2, p, sum + days * (m * w) - added * p, n);
+                            if (added <= w - m) {
+                                new_m += added;
+                            }
+                            else {
+                                unsigned long long new_added = added - w + m;
+                                new_m = new_w;
+                                if (0 == new_added % 2) {
+                                    new_m += new_added / 2;
+                                    new_w += new_added / 2;
+                                }
+                                else {
+                                    new_m += new_added / 2 + 1;
+                                    new_w += new_added / 2;
+                                }
+                            }
                         }
                     }
+
+                    days += makingCandy(new_m, new_w, p, sum + days * (m * w) - added * p, n);
 
                     if (days < ret) {
                         ret = days;
