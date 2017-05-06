@@ -27,11 +27,11 @@ unsigned long long makingCandy( unsigned long long m,
                 unsigned long long added = 1;
                 while (added <= (n - sum) / p + 1) {
                     unsigned long long days = 0;
-                    if (0 == (p * added) % (m * w)) {
-                        days = (p * added) / (m * w);
+                    if (0 == (p * added - sum) % (m * w)) {
+                        days = (p * added - sum) / (m * w);
                     }
                     else {
-                        days = (p * added) / (m * w) + 1;
+                        days = (p * added - sum) / (m * w) + 1;
                     }
 
                     if (days >= ret) {
@@ -100,13 +100,13 @@ unsigned long long makingCandy( unsigned long long m,
         return ret;
     }
 
-int main() {
-    unsigned long long m, w, p, n;
-    scanf("%llu %llu %llu %llu", &m, &w, &p, &n);
+    int main() {
+        unsigned long long m, w, p, n;
+        scanf("%llu %llu %llu %llu", &m, &w, &p, &n);
 
-    unsigned long long min = makingCandy(m, w, p, 0, n);
+        unsigned long long min = makingCandy(m, w, p, 0, n);
 
-    printf("%llu\n", min);
+        printf("%llu\n", min);
 
-    return 0;
-}
+        return 0;
+    }
