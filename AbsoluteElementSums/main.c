@@ -3,27 +3,27 @@
 #include <math.h>
 #include <stdlib.h>
 
-int UpperBound(int A[],int N,int K){
+int LowerBound(int A[],int N,int K){
     int low , high , mid ;
-    low = 1 ;
+    low = 0 ;
     high = N ;
     while(low <= high){
         mid = ( low + high ) / 2 ; // finding middle element
-        if(A[mid] > K && ( mid == 1 || A[mid-1] <= K )) // checking conditions for upperbound
+        if(A[mid] >= K && ( mid == 0 || A[mid-1] < K )) // checking conditions for lowerbound
             return mid ;
-        else if(A[mid] > K) // answer should be in left part
+        else if(A[mid] >= K) // answer should be in left part
             high = mid - 1 ;
         else                // answer should in right part if it exists
             low = mid + 1 ;
     }
-    return mid ; // this will execute when there is no element in the given array which > K
+    return mid ; // this will execute when there is no element in the given array which >= K
 }
 
 int getEQTPos(int A[], int N, int K) {
     int pos = -1;
 
-    if (A[N - 1] >= K) {
-        pos = UpperBound(A, N, 0);
+    if (A[N] >= K) {
+        pos = LowerBound(A, N, K);
     }
 
     return pos;
@@ -79,7 +79,12 @@ int main() {
 
     // quick sort
     quick_sort(n, 0, N - 1);
-
+/*
+    for (size_t i = 0; i < N; i++) {
+        printf("%d ", n[i]);
+    }
+    printf("\n");
+*/
     unsigned int * sums = malloc(sizeof(unsigned int) * N);
     for (size_t i = 0; i < N; i++) {
         if (0 == i) {
@@ -89,7 +94,12 @@ int main() {
             sums[i] = sums[i - 1] + abs(n[i]);
         }
     }
-
+/*
+   for (size_t i = 0; i < N; i++) {
+        printf("%d ", sums[i]);
+    }
+    printf("\n");
+*/
     // find >= 0 pos
     int egt0_pos = getEQTPos(n, N - 1, 0);
 
@@ -98,7 +108,7 @@ int main() {
             printf("%d\n", sums[N - 1]);
         }
         else if (0 < q[i]) {
-            int pos = UpperBound(n, N - 1, (-1) * q[i]);
+            int pos = getEQTPos(n, N - 1, (-1) * q[i]);
 
             unsigned int sum = 0;
 
@@ -119,7 +129,7 @@ int main() {
                     }
                 }
 
-                if (0 > egt0_pos) {
+                if (0 < egt0_pos) {
                     if (0 < pos) {
                         sum += q[i] * (egt0_pos - pos) - (sums[egt0_pos - 1] - sums[pos - 1]);
                     }
@@ -141,7 +151,7 @@ int main() {
         }
         else {
             // 0 > q[i]
-            int pos = UpperBound(n, N - 1, (-1) * q[i]);
+            int pos = getEQTPos(n, N - 1, (-1) * q[i]);
 
             unsigned int sum = 0;
 
