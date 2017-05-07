@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define DEBUG       0
+
 int LowerBound(int A[],int N,int K){
     int low , high , mid ;
     low = 0 ;
@@ -53,21 +55,27 @@ void quick_sort(int s[], int l, int r)
 }
 
 int main() {
+    FILE * fp = stdin;
+
+#if DEBUG
+    fp = fopen("input.txt", "r");
+#endif
+
     int N;
-    scanf("%d", &N);
+    fscanf(fp, "%d", &N);
 
     int * n = malloc(sizeof(int) * N);
     for (size_t i = 0; i < N; i++) {
-        scanf("%d", &n[i]);
+        fscanf(fp, "%d", &n[i]);
     }
 
     int Q;
-    scanf("%d", &Q);
+    fscanf(fp, "%d", &Q);
 
-    int * q = malloc(sizeof(int) * Q);
+    long long * q = malloc(sizeof(long long) * Q);
     for (size_t i = 0; i < Q; i++) {
-        int tmp;
-        scanf("%d", &tmp);
+        long long tmp;
+        fscanf(fp, "%lld", &tmp);
 
         if (0 == i) {
             q[i] = tmp;
@@ -79,13 +87,8 @@ int main() {
 
     // quick sort
     quick_sort(n, 0, N - 1);
-/*
-    for (size_t i = 0; i < N; i++) {
-        printf("%d ", n[i]);
-    }
-    printf("\n");
-*/
-    unsigned int * sums = malloc(sizeof(unsigned int) * N);
+
+    unsigned long long * sums = malloc(sizeof(unsigned long long) * N);
     for (size_t i = 0; i < N; i++) {
         if (0 == i) {
             sums[i] = abs(n[i]);
@@ -94,23 +97,18 @@ int main() {
             sums[i] = sums[i - 1] + abs(n[i]);
         }
     }
-/*
-   for (size_t i = 0; i < N; i++) {
-        printf("%d ", sums[i]);
-    }
-    printf("\n");
-*/
+
     // find >= 0 pos
     int egt0_pos = getEQTPos(n, N - 1, 0);
 
     for (size_t i = 0; i < Q; i++) {
         if (0 == q[i]) {
-            printf("%d\n", sums[N - 1]);
+            printf("%llu\n", sums[N - 1]);
         }
         else if (0 < q[i]) {
             int pos = getEQTPos(n, N - 1, (-1) * q[i]);
 
-            unsigned int sum = 0;
+            unsigned long long sum = 0;
 
             if (-1 == pos) {
                 sum = sums[N - 1] - q[i] * N;
@@ -147,13 +145,13 @@ int main() {
                 }
             }
 
-            printf("%d\n", sum);
+            printf("%llu\n", sum);
         }
         else {
             // 0 > q[i]
             int pos = getEQTPos(n, N - 1, (-1) * q[i]);
 
-            unsigned int sum = 0;
+            unsigned long long sum = 0;
 
             if (-1 == egt0_pos) {
                 sum += sums[N - 1] - N * q[i];
@@ -190,9 +188,13 @@ int main() {
                 }
             }
 
-            printf("%d\n", sum);
+            printf("%llu\n", sum);
         }
     }
+
+#if DEBUG
+    fclose(fp);
+#endif
 
     free(n);
     free(q);
