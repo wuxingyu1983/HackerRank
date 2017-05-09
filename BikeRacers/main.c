@@ -8,7 +8,8 @@ struct point {
 };
 
 struct distance {
-    int biker, bike, distance;
+    int biker, bike;
+    unsigned long long distance;
 };
 
 void quick_sort(struct distance s[], int l, int r)
@@ -35,15 +36,15 @@ void quick_sort(struct distance s[], int l, int r)
   }
 }
 
-int LowerBound(struct distance A[],int l, int r,int K) {
+int LowerBound(struct distance A[],int l, int r,unsigned long long val) {
     int low , high , mid ;
     low = l ;
     high = r ;
     while(low <= high){
         mid = ( low + high ) / 2 ; // finding middle element
-        if(A[mid].distance >= K && ( mid == l || A[mid-1].distance < K )) // checking conditions for lowerbound
+        if(A[mid].distance >= val && ( mid == l || A[mid-1].distance < val )) // checking conditions for lowerbound
             return mid ;
-        else if(A[mid].distance >= K) // answer should be in left part
+        else if(A[mid].distance >= val) // answer should be in left part
             high = mid - 1 ;
         else                // answer should in right part if it exists
             low = mid + 1 ;
@@ -79,7 +80,9 @@ int main() {
         for (size_t j = 0; j < M; j++) {
             dist[index].biker = i;
             dist[index].bike = j;
-            dist[index].distance = abs(biker[i].x - bike[j].x) + abs(biker[i].y - bike[j].y);
+            long long llx = biker[i].x - bike[j].x;
+            long long lly = biker[i].y - bike[j].y;
+            dist[index].distance = llx * llx + lly * lly;
 
             index ++;
         }
@@ -87,15 +90,19 @@ int main() {
 
     // quick sort
     quick_sort(dist, 0, N * M - 1);
-
+/*
+    for (size_t i = 0; i < N * M; i++) {
+        printf("biker is %d, bike is %d, distance is %llu\n", dist[i].biker, dist[i].bike, dist[i].distance);
+    }
+*/
     int l = 0;
     int r = N * M - 1;
     unsigned long long ret = 0;
 
     while (l <= r) {
-        int min = dist[l].distance;
-        int max = dist[r].distance;
-        int mid = (min + max) / 2;
+        unsigned long long min = dist[l].distance;
+        unsigned long long max = dist[r].distance;
+        unsigned long long mid = (min + max) / 2;
 
         // binary search
         int pos = LowerBound(dist, l, r, mid);
@@ -119,14 +126,14 @@ int main() {
                 }
             }
 
-            if (i < 0) {
-                // failed
-                l = pos + 1;
-            }
-            else {
+            if (K == cnt) {
                 // success
                 r = pos - 1;
                 ret = dist[pos].distance;
+            }
+            else {
+                // failed
+                l = pos + 1;
             }
 
             free(fbr);
@@ -134,7 +141,7 @@ int main() {
         }
     }
 
-    printf("%llu\n", ret * ret);
+    printf("%llu\n", ret);
 
     free(biker);
     free(bike);
