@@ -2,6 +2,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct point {
     int x, y;
@@ -50,6 +51,36 @@ int LowerBound(struct distance A[],int l, int r,unsigned long long val) {
             low = mid + 1 ;
     }
     return mid ; // this will execute when there is no element in the given array which >= K
+}
+
+bool rfunc(struct distance A[], unsigned char * fbr, unsigned char * fb, int pos, int cnt, int K) {
+    bool ret = false;
+
+    if (0 <= pos) {
+        if (0 == fbr[A[pos].biker] && 0 == fb[A[pos].bike]) {
+            fbr[A[pos].biker] = 1;
+            fb[A[pos].bike] = 1;
+
+            if (K == (cnt + 1)) {
+                return true;
+            }
+
+            ret = rfunc(A, fbr, fb, pos - 1, cnt + 1, K);
+            if (true == ret) {
+                return true;
+            }
+
+            fbr[A[pos].biker] = 0;
+            fb[A[pos].bike] = 0;
+
+            ret = rfunc(A, fbr, fb, pos - 1, cnt, K);
+        }
+        else {
+            ret = rfunc(A, fbr, fb, pos - 1, cnt, K);
+        }
+    }
+
+    return ret;
 }
 
 int main() {
@@ -115,18 +146,14 @@ int main() {
             memset(fbr, 0, sizeof(unsigned char) * N);
             memset(fb, 0, sizeof(unsigned char) * M);
 
-            int cnt = 0;
-            int i;
-            for (i = pos; i >= 0 && cnt < K; i--) {
-                if (0 == fbr[dist[i].biker] && 0 == fb[dist[i].bike]) {
-                    cnt ++;
+            bool bOK = false;
+            fbr[dist[pos].biker] = 1;
+            fb[dist[pos].bike] = 1;
+            int cnt = 1;
 
-                    fbr[dist[i].biker] = 1;
-                    fb[dist[i].bike] = 1;
-                }
-            }
+            bOK = rfunc(dist, fbr, fb, pos - 1, cnt, K);
 
-            if (K == cnt) {
+            if (true == bOK) {
                 // success
                 r = pos - 1;
                 ret = dist[pos].distance;
