@@ -4,29 +4,27 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+int mx[250], my[250];   // X各點的配對對象、Y各點的配對對象
+bool vy[250];           // 記錄Graph Traversal拜訪過的點
+
 struct point {
     int x, y;
 };
 
-struct distance {
-    int biker, bike;
-    unsigned long long distance;
-};
-
-void quick_sort(struct distance s[], int l, int r)
+void quick_sort(unsigned long long s[], int l, int r)
 {
   if (l < r)
   {
     int i = l, j = r;
-    struct distance x = s[l];
+    unsigned long long x = s[l];
     while (i < j)
     {
-      while(i < j && s[j].distance >= x.distance)
+      while(i < j && s[j] >= x)
       j--;
       if(i < j)
       s[i++] = s[j];
 
-      while(i < j && s[i].distance < x.distance)
+      while(i < j && s[i] < x)
       i++;
       if(i < j)
       s[j--] = s[i];
@@ -37,15 +35,15 @@ void quick_sort(struct distance s[], int l, int r)
   }
 }
 
-int LowerBound(struct distance A[],int l, int r,unsigned long long val) {
+int LowerBound(unsigned long long A[],int l, int r,unsigned long long val) {
     int low , high , mid ;
     low = l ;
     high = r ;
     while(low <= high){
         mid = ( low + high ) / 2 ; // finding middle element
-        if(A[mid].distance >= val && ( mid == l || A[mid-1].distance < val )) // checking conditions for lowerbound
+        if(A[mid] >= val && ( mid == l || A[mid-1] < val )) // checking conditions for lowerbound
             return mid ;
-        else if(A[mid].distance >= val) // answer should be in left part
+        else if(A[mid] >= val) // answer should be in left part
             high = mid - 1 ;
         else                // answer should in right part if it exists
             low = mid + 1 ;
@@ -53,30 +51,46 @@ int LowerBound(struct distance A[],int l, int r,unsigned long long val) {
     return mid ; // this will execute when there is no element in the given array which >= K
 }
 
-bool rfunc(struct distance A[], unsigned char * fbr, unsigned char * fb, int pos, int cnt, int K) {
+// 以DFS建立一棵交錯樹
+bool DFS(int x, int n, int m, int k, unsigned long long * d, unsigned long long threhold)
+{
+    for (int y=0; y<m; ++y)
+        if (d[x * m + y] <= threhold && !vy[y])
+        {
+            vy[y] = true;
+
+            // 找到擴充路徑
+            if (my[y] == -1 || DFS(my[y], n, m, k, d, threhold))
+            {
+                mx[x] = y; my[y] = x;
+                return true;
+            }
+        }
+
+    return false;
+}
+
+// Ford-Fulkerson Algorithm
+bool FFA(int n, int m, int k, unsigned long long * d, unsigned long long threhold) {
     bool ret = false;
 
-    if (0 <= pos) {
-        if (0 == fbr[A[pos].biker] && 0 == fb[A[pos].bike]) {
-            fbr[A[pos].biker] = 1;
-            fb[A[pos].bike] = 1;
+    // 全部的點初始化為未匹配點。
+    memset(mx, -1, sizeof(mx));
+    memset(my, -1, sizeof(my));
 
-            if (K == (cnt + 1)) {
-                return true;
+    // 依序把X中的每一個點作為擴充路徑的端點，
+    // 並嘗試尋找擴充路徑。
+    int c = 0;
+    for (int x=0; x<n; ++x)
+    {
+        // 開始Graph Traversal
+        memset(vy, false, sizeof(vy));
+        if (DFS(x, n, m, k, d, threhold)) {
+            c++;
+            if (k <= c) {
+                ret = true;
+                break;
             }
-
-            ret = rfunc(A, fbr, fb, pos - 1, cnt + 1, K);
-            if (true == ret) {
-                return true;
-            }
-
-            fbr[A[pos].biker] = 0;
-            fb[A[pos].bike] = 0;
-
-            ret = rfunc(A, fbr, fb, pos - 1, cnt, K);
-        }
-        else {
-            ret = rfunc(A, fbr, fb, pos - 1, cnt, K);
         }
     }
 
@@ -105,66 +119,51 @@ int main() {
         bike[i].y = y;
     }
 
-    struct distance * dist = malloc(sizeof(struct distance) * M * N);
+    unsigned long long * dist = malloc(sizeof(unsigned long long) * N * M);
+    unsigned long long * sorted = malloc(sizeof(unsigned long long) * N * M);
     size_t index = 0;
     for (size_t i = 0; i < N; i++) {
         for (size_t j = 0; j < M; j++) {
-            dist[index].biker = i;
-            dist[index].bike = j;
             long long llx = biker[i].x - bike[j].x;
             long long lly = biker[i].y - bike[j].y;
-            dist[index].distance = llx * llx + lly * lly;
+            dist[index] = llx * llx + lly * lly;
+            sorted[index] = dist[index];
 
             index ++;
         }
     }
 
     // quick sort
-    quick_sort(dist, 0, N * M - 1);
-/*
-    for (size_t i = 0; i < N * M; i++) {
-        printf("biker is %d, bike is %d, distance is %llu\n", dist[i].biker, dist[i].bike, dist[i].distance);
-    }
-*/
+    quick_sort(sorted, 0, N * M - 1);
+
     int l = 0;
     int r = N * M - 1;
     unsigned long long ret = 0;
 
     while (l <= r) {
-        unsigned long long min = dist[l].distance;
-        unsigned long long max = dist[r].distance;
+        unsigned long long min = sorted[l];
+        unsigned long long max = sorted[r];
         unsigned long long mid = (min + max) / 2;
 
         // binary search
-        int pos = LowerBound(dist, l, r, mid);
+        int pos = LowerBound(sorted, l, r, mid);
         if (pos < K - 1) {
             l = pos + 1;
         }
         else {
-            unsigned char * fbr = malloc(sizeof(unsigned char) * N);
-            unsigned char * fb = malloc(sizeof(unsigned char) * M);
-            memset(fbr, 0, sizeof(unsigned char) * N);
-            memset(fb, 0, sizeof(unsigned char) * M);
-
             bool bOK = false;
-            fbr[dist[pos].biker] = 1;
-            fb[dist[pos].bike] = 1;
-            int cnt = 1;
 
-            bOK = rfunc(dist, fbr, fb, pos - 1, cnt, K);
+            bOK = FFA(N, M, K, dist, sorted[pos]);
 
             if (true == bOK) {
                 // success
                 r = pos - 1;
-                ret = dist[pos].distance;
+                ret = sorted[pos];
             }
             else {
                 // failed
                 l = pos + 1;
             }
-
-            free(fbr);
-            free(fb);
         }
     }
 
@@ -173,6 +172,7 @@ int main() {
     free(biker);
     free(bike);
     free(dist);
+    free(sorted);
 
     return 0;
 }
