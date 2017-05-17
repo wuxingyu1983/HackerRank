@@ -45,11 +45,17 @@ int main() {
     int result = 0;
 
     while (t > 0 && result < n) {
-        h[result] -= hit;
-        if (0 >= h[result]) {
+        int need_day = h[result] / hit;
+
+        if (0 != h[result] % hit) {
+            need_day ++;
+        }
+
+        t -= need_day;
+        
+        if (0 <= t) {
             result ++;
         }
-        t --;
     }
 
     printf("%d\n", result);
