@@ -32,6 +32,19 @@ bool inRange(int n, int s, int t, int min, int max) {
     return ret;
 }
 
+int getIndex(int n, int index) {
+    int ret = 0;
+
+    if (0 <= index) {
+        ret = index % n;
+    }
+    else {
+        ret = index % n + n;
+    }
+
+    return ret;
+}
+
 int main() {
     int n;
     int s;
@@ -56,7 +69,7 @@ int main() {
 
     if (s != t) {
         int min, old_min, max, old_max;
-        min = -1 * r[s];
+        min = 0 - r[s];
         old_min = 0;
         max = r[s];
         old_max = 0;
@@ -73,14 +86,11 @@ int main() {
                 new_min = min;
                 new_max = max;
                 for (int i = min; i < old_min; i++) {
-                    int index = i + s;
-                    if (0 > index) {
-                        index += n;
-                    }
+                    int index = getIndex(n, i + s);
 
                     if ((i - r[index]) < new_min) {
                         new_min = i - r[index];
-                        if (true == inRange(n, s, t,  new_min, new_max)) {
+                        if (true == inRange(n, s, t, new_min, new_max)) {
                             go_on = false;
                             break;
                         }
@@ -96,10 +106,7 @@ int main() {
                 }
 
                 for (int i = max; i > old_max; i--) {
-                    int index = i + s;
-                    if (n <= index) {
-                        index -= n;
-                    }
+                    int index = getIndex(n, i + s);
 
                     if ((i - r[index]) < new_min) {
                         new_min = i - r[index];
