@@ -80,7 +80,7 @@ void dfsFactor(LL j, LL i, LL r) {
 int solve() {
 	calPrimes();
 	result = 0;
-	for (int j = 2; j <= n; j++) if (S[j] == 'b') {
+	for (int j = 2; j <= n; j++) if (S[j] == 'b' && false == isprime[j]) {
 		decompose(j);
 		FOR(i, factorN) expo[i] *= 2;
 		dfsFactor(j, 0, 1);

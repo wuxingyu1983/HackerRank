@@ -113,7 +113,7 @@ int main() {
 
     result = 0;
     for (size_t j = 2; j <= n; j++) {
-        if ('b' == s[j] && 0 == isPrime[j]) {
+        if ('b' == s[j]) {
             // not primes
             dfsFactor(j, 0, 1);
         }
