@@ -58,15 +58,22 @@ int result;
 
 void dfsFactor(LL j, LL i, LL r) {
 	if (i == factorN) {
-		if (r > n || S[r] != 'a') return;
+		if (r >= j) return;
 		LL k = j * j / r;
-		if (k <= n && S[k] == 'c') result++;
+        if (k <= n) {
+            if ('a' == S[r] && 'c' == S[k]) {
+                result++;
+            }
+            else if ('c' == S[r] && 'a' == S[k]) {
+                result++;
+            }
+        }
 		return;
 	}
 	for (int t = 0; t <= expo[i]; t++) {
 		dfsFactor(j, i+1, r);
 		r = r * factor[i];
-		if (r > n) break;
+		if (r >= j) break;
 	}
 }
 
