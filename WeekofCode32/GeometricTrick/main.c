@@ -34,13 +34,14 @@ int getPrimes(int n) {
             while (times_i <= n) {
                 int j = 0;
                 while (0 != nums[times_i].factor[j]) {
-                    if (i == nums[times_i].factor[j]) {
-                        break;
-                    }
                     j ++;
                 }
                 nums[times_i].factor[j] = i;
-                nums[times_i].expo[j] ++;
+                int now = times_i;
+                while (0 == now % i) {
+                    nums[times_i].expo[j] ++;
+                    now /= i;
+                }
                 nums[times_i].factorN = j + 1;
                 times_i += i;
             }
