@@ -83,7 +83,7 @@ int main() {
 				int max_box = 0;
 				int max_color = 0;
 				for (size_t i = 0; i < n; i++) {
-						if (A[i] && b[i][curr[i]].earn > max) {
+						if (A[i] && curr[i] < m && b[i][curr[i]].earn > max) {
 								max = b[i][curr[i]].earn;
 								max_box = b[i][curr[i]].box_index;
 								max_color = i;
@@ -95,12 +95,12 @@ int main() {
 
 						curr[max_color] ++;
 						A[max_color] --;
-
 						C[max_box] --;
+
 						if (0 >= C[max_box]) {
 								// recalc, sort
 								for (size_t i = 0; i < n; i++) {
-										if (A[i]) {
+										if (A[i] && curr[i] < m) {
 												size_t j = 0;
 												for (j = curr[i]; j < m; j++) {
 														if (b[i][j].box_index == max_box) {
