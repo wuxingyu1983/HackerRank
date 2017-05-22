@@ -53,6 +53,8 @@ int main() {
 
 		int * curr = malloc(sizeof(int) * n);
 		struct ballInBall b[n][m];
+		int indexes[n][m];
+
 		for(int B_i = 0; B_i < n; B_i++){
 				curr[B_i] = 0;
 				for(int B_j = 0; B_j < m; B_j++){
@@ -71,12 +73,16 @@ int main() {
 
 				// sort desc
 				quick_sort(b[B_i], 0, m - 1);
+				for(int B_j = 0; B_j < m; B_j++){
+					indexes[B_i][b[B_i][B_j].box_index] = B_j;
+				}
 		}
+
 #if DEBUG
 for (int i = 0; i < n; i++) {
 	printf("the %d color is :\n", i);
 	for (int j = 0; j < m; j++) {
-		printf("  put in %d box earn %d\n", b[i][j].box_index, b[i][j].earn);
+		printf("  put in %d box earn %d, in sort %d\n", b[i][j].box_index, b[i][j].earn, indexes[i][b[i][j].box_index]);
 	}
 }
 #endif
@@ -108,14 +114,15 @@ for (int i = 0; i < n; i++) {
 								// recalc, sort
 								for (int i = 0; i < n; i++) {
 										if (A[i] && curr[i] < m) {
-												size_t j = 0;
+												size_t j = indexes[i][max_box];
+/*
 												for (j = curr[i]; j < m && b[i][j].earn > 0; j++) {
 														if (b[i][j].box_index == max_box) {
 																break;
 														}
 												}
-
-												if (j < m && b[i][j].earn > 0) {
+*/
+												if (j >= curr[i] && j < m && b[i][j].earn > 0) {
 														// discard earn <= 0
 														if (0 == C[max_box]) {
 																b[i][j].earn = b[i][j].origin_earn - 1;
@@ -127,14 +134,16 @@ for (int i = 0; i < n; i++) {
 														struct ballInBall x = b[i][j];
 														while (j < m - 1 && x.earn < b[i][j + 1].earn) {
 															b[i][j] = b[i][j + 1];
+															indexes[i][b[i][j].box_index] = j;
 															j ++;
 														}
 														b[i][j] = x;
+														indexes[i][b[i][j].box_index] = j;
 
 														#if DEBUG
 															printf("the %d color is :\n", i);
 															for (int j = curr[i]; j < m; j++) {
-																printf("  put in %d box earn %d\n", b[i][j].box_index, b[i][j].earn);
+																printf("  put in %d box earn %d, in sort %d\n", b[i][j].box_index, b[i][j].earn, indexes[i][b[i][j].box_index]);
 															}
 														#endif
 												}
