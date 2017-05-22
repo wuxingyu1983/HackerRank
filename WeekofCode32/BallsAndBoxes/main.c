@@ -109,13 +109,14 @@ for (int i = 0; i < n; i++) {
 								for (int i = 0; i < n; i++) {
 										if (A[i] && curr[i] < m) {
 												size_t j = 0;
-												for (j = curr[i]; j < m; j++) {
+												for (j = curr[i]; j < m && b[i][j].earn > 0; j++) {
 														if (b[i][j].box_index == max_box) {
 																break;
 														}
 												}
 
-												if (j < m) {
+												if (j < m && b[i][j].earn > 0) {
+														// discard earn <= 0
 														if (0 == C[max_box]) {
 																b[i][j].earn = b[i][j].origin_earn - 1;
 														}
@@ -123,7 +124,7 @@ for (int i = 0; i < n; i++) {
 																b[i][j].earn = b[i][j].origin_earn + (abs(C[max_box]) * abs(C[max_box])) - (abs(C[max_box] - 1) * abs(C[max_box] - 1));
 														}
 
-														quick_sort(b[i], curr[i], m - 1);
+														quick_sort(b[i], j, m - 1);
 
 														#if DEBUG
 															printf("the %d color is :\n", i);
