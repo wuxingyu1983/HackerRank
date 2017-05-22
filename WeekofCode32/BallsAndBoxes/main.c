@@ -6,9 +6,12 @@
 #include <limits.h>
 #include <stdbool.h>
 
+#define DEBUG	0
+
 struct ballInBall {
 		int box_index;
 		int earn;
+		int origin_earn;
 };
 
 void quick_sort(struct ballInBall s[], int l, int r)
@@ -57,6 +60,7 @@ int main() {
 						scanf("%d",&earn);
 
 						b[B_i][B_j].box_index = B_j;
+						b[B_i][B_j].origin_earn = earn;
 						if (0 == C[B_j]) {
 								b[B_i][B_j].earn = earn - 1;
 						}
@@ -68,14 +72,14 @@ int main() {
 				// sort desc
 				quick_sort(b[B_i], 0, m - 1);
 		}
-		/*
-		   for (int i = 0; i < n; i++) {
-		   printf("the %d color is :\n", i);
-		   for (int j = 0; j < m; j++) {
-		   printf("  put in %d box earn %d\n", b[i][j].box_index, b[i][j].earn);
-		   }
-		   }
-		   */
+#if DEBUG
+for (int i = 0; i < n; i++) {
+	printf("the %d color is :\n", i);
+	for (int j = 0; j < m; j++) {
+		printf("  put in %d box earn %d\n", b[i][j].box_index, b[i][j].earn);
+	}
+}
+#endif
 		int result = 0;
 
 		while (true) {
@@ -92,6 +96,9 @@ int main() {
 
 				if (max > 0) {
 						result += max;
+#if DEBUG
+						printf("put %d color into box %d, result is %d\n", max_color, max_box, result);
+#endif
 
 						curr[max_color] ++;
 						A[max_color] --;
@@ -99,7 +106,7 @@ int main() {
 
 						if (0 >= C[max_box]) {
 								// recalc, sort
-								for (size_t i = 0; i < n; i++) {
+								for (int i = 0; i < n; i++) {
 										if (A[i] && curr[i] < m) {
 												size_t j = 0;
 												for (j = curr[i]; j < m; j++) {
@@ -110,13 +117,20 @@ int main() {
 
 												if (j < m) {
 														if (0 == C[max_box]) {
-																b[i][j].earn --;
+																b[i][j].earn = b[i][j].origin_earn - 1;
 														}
 														else {
-																b[i][j].earn = b[i][j].earn + (abs(C[max_box]) * abs(C[max_box])) - (abs(C[max_box] - 1) * abs(C[max_box] - 1));
+																b[i][j].earn = b[i][j].origin_earn + (abs(C[max_box]) * abs(C[max_box])) - (abs(C[max_box] - 1) * abs(C[max_box] - 1));
 														}
 
 														quick_sort(b[i], curr[i], m - 1);
+
+														#if DEBUG
+															printf("the %d color is :\n", i);
+															for (int j = curr[i]; j < m; j++) {
+																printf("  put in %d box earn %d\n", b[i][j].box_index, b[i][j].earn);
+															}
+														#endif
 												}
 										}
 								}
