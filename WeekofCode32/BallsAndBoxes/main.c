@@ -124,7 +124,12 @@ for (int i = 0; i < n; i++) {
 																b[i][j].earn = b[i][j].origin_earn + (abs(C[max_box]) * abs(C[max_box])) - (abs(C[max_box] - 1) * abs(C[max_box] - 1));
 														}
 
-														quick_sort(b[i], j, m - 1);
+														struct ballInBall x = b[i][j];
+														while (j < m - 1 && x.earn < b[i][j + 1].earn) {
+															b[i][j] = b[i][j + 1];
+															j ++;
+														}
+														b[i][j] = x;
 
 														#if DEBUG
 															printf("the %d color is :\n", i);
