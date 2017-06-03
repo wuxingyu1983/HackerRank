@@ -54,41 +54,13 @@ int main() {
         quick_sort(y, 0, m - 2);
         quick_sort(x, 0, n - 2);
 
-        unsigned long long * sumy = malloc(sizeof(unsigned long long) * (m - 1));
-        unsigned long long * sumx = malloc(sizeof(unsigned long long) * (n - 1));
-
-        for (int j = m - 2; j >= 0; j --) {
-            if (m - 2 == j) {
-                sumy[j] = y[j];
-            }
-            else {
-                sumy[j] = y[j] + sumy[j + 1];
-            }
-        }
-
-        for (int j = n - 2; j >= 0; j --) {
-            if (n - 2 == j) {
-                sumx[j] = x[j];
-            }
-            else {
-                sumx[j] = x[j] + sumx[j + 1];
-            }
-        }
-
         int yi = 0;
         int xi = 0;
         unsigned long long sum = 0;
 
         while (m - 2 >= yi || n - 2 >= xi) {
-            long long costy = 0;
-            long long costx = 0;
-
             if (m - 2 >= yi && n - 2 >= xi) {
-                costy = ((long long)sumx[xi]) * (1 + yi);
-
-                costx = ((long long)sumy[yi]) * (1 + xi);
-
-                if (costy <= costx) {
+                if (y[yi] >= x[xi]) {
                     sum += ((long long)y[yi]) * (1 + xi);
                     yi ++;
                 }
@@ -113,8 +85,6 @@ int main() {
 
         free(y);
         free(x);
-        free(sumy);
-        free(sumx);
     }
 
     for (size_t i = 0; i < q; i++) {
