@@ -42,7 +42,7 @@ int main() {
     // quick sort
     quick_sort(a, 0, n - 1);
 
-    int max = 0;
+    int max = -1;
     int ans = 0;
 
     if (a[0] >= p) {
@@ -56,15 +56,74 @@ int main() {
     for (size_t i = 1; i < n; i++) {
         right = a[i];
 
-        if (left >= q) {
-            break;
+        if (p <= left && q >= right) {
+            int mid = (left + right) / 2;
+            if ((mid - left) > max) {
+                max = mid - left;
+                ans = mid;
+            }
         }
-        else if (right <= ) {
-            /* code */
+        else if (left < p && right > q) {
+            int mid = (left + right) / 2;
+            if (mid >= p && mid <= q) {
+                if ((mid - left) > max) {
+                    max = mid - left;
+                    ans = mid;
+                }
+            }
+            else if (mid > q) {
+                if ((q - left) > max) {
+                    max = q - left;
+                    ans = q;
+                }
+            }
+            else {
+                // mid < p
+                if ((right - p) > max) {
+                    max = right - p;
+                    ans = p;
+                }
+            }
         }
-
+        else if (right > q && left <= q) {
+            int mid = (left + right) / 2;
+            if (mid <= q) {
+                if ((mid - left) > max) {
+                    max = mid - left;
+                    ans = mid;
+                }
+            }
+            else {
+                if ((q - left) > max) {
+                    max = q - left;
+                    ans = q;
+                }
+            }
+        }
+        else if (left < p && p <= right) {
+            int mid = (left + right) / 2;
+            if (mid >= p) {
+                if ((mid - left) > max) {
+                    max = mid - left;
+                    ans = mid;
+                }
+            }
+            else {
+                if ((right - p) > max) {
+                    max = right - p;
+                    ans = p;
+                }
+            }
+        }
 
         left = a[i];
+    }
+
+    if (q >= a[n - 1]) {
+        if ((q - a[n - 1]) > max) {
+            max = q - a[n - 1];
+            ans = q;
+        }
     }
 
     printf("%d\n", ans);
