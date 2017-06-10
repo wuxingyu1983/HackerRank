@@ -3,8 +3,10 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define DEBUG       0
+
 int getMin(int x[], int n) {
-    int min = 1000001;
+    int min = 0;
 
     int N = n;
     int count = 0;
@@ -39,7 +41,7 @@ int getMin(int x[], int n) {
             if ((num[index] != (num[index + 1] - 1)) || (cnt[index] > cnt[index + 1])) {
                 // stop
                 tmp ++;
-                if (tmp < min) {
+                if (0 == min || tmp < min) {
                     min = tmp;
                     if (1 == min) {
                         break;
@@ -47,13 +49,12 @@ int getMin(int x[], int n) {
                 }
                 cnt[index] --;
                 if (0 == cnt[index]) {
-                    start = index ++;
+                    start =  ++ index;
                 }
-                else {
-                    // restart
-                    index = start;
-                    tmp = 0;
-                }
+
+                // restart
+                index = start;
+                tmp = 0;
             }
             else {
                 tmp ++;
@@ -66,7 +67,7 @@ int getMin(int x[], int n) {
         }
         else {
             tmp ++;
-            if (tmp < min) {
+            if (0 == min || tmp < min) {
                 min = tmp;
                 if (1 == min) {
                     break;
@@ -74,6 +75,8 @@ int getMin(int x[], int n) {
             }
 
             cnt[index] --;
+
+            // restart
             index = start;
             tmp = 0;
         }
@@ -111,18 +114,37 @@ void quick_sort(int s[], int l, int r) {
 }
 
 int main() {
+#if DEBUG
+    FILE * fp = fopen("input.txt", "r");
+#endif
+
     int t;
+
+#if DEBUG
+    fscanf(fp, "%d", &t);
+#else
     scanf("%d", &t);
+#endif
 
     int * output = malloc(sizeof(int) * t);
     int x[1000000];
 
     for (size_t i = 0; i < t; i++) {
         int n;
+
+#if DEBUG
+        fscanf(fp, "%d", &n);
+#else
         scanf("%d", &n);
+#endif
 
         for (size_t j = 0; j < n; j++) {
+
+#if DEBUG
+            fscanf(fp, "%d", x + j);
+#else
             scanf("%d", x + j);
+#endif
         }
 
         // quick sort
@@ -134,6 +156,10 @@ int main() {
     for (size_t i = 0; i < t; i++) {
         printf("%d\n", output[i]);
     }
+
+#if DEBUG
+    fclose(fp);
+#endif
 
     free(output);
 
