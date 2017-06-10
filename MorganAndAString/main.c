@@ -3,6 +3,22 @@
 #include <math.h>
 #include <stdlib.h>
 
+char getNextDiff(char s[], char letter) {
+    char ret = letter;
+
+    int i = 0;
+    while (s[i]) {
+        if (s[i] != letter) {
+            ret = letter;
+            break;
+        }
+
+        i ++;
+    }
+
+    return ret;
+}
+
 int main() {
     int t;
     scanf("%d", &t);
@@ -23,35 +39,16 @@ int main() {
         while (a[i][a_i] || b[i][b_i]) {
             if (a[i][a_i] && b[i][b_i]) {
                 if (a[i][a_i] == b[i][b_i]) {
-                    if (a[i][a_i + 1] && b[i][b_i + 1]) {
-                        if (a[i][a_i + 1] < b[i][b_i + 1]) {
-                            printf("%c", a[i][a_i]);
-                            a_i ++;
-                        }
-                        else {
-                            printf("%c", b[i][b_i]);
-                            b_i ++;
-                        }
-                    }
-                    else if (a[i][a_i + 1]) {
-                        if (a[i][a_i + 1] < b[i][b_i]) {
-                            printf("%c", a[i][a_i]);
-                            a_i ++;
-                        }
-                        else {
-                            printf("%c", b[i][b_i]);
-                            b_i ++;
-                        }
+                    char next_a = getNextDiff(&a[i][a_i + 1], a[i][a_i]);
+                    char next_b = getNextDiff(&b[i][b_i + 1], b[i][b_i]);
+
+                    if (next_a < next_b) {
+                        printf("%c", a[i][a_i]);
+                        a_i ++;
                     }
                     else {
-                        if (b[i][b_i + 1] < a[i][a_i]) {
-                            printf("%c", b[i][b_i]);
-                            b_i ++;
-                        }
-                        else {
-                            printf("%c", a[i][a_i]);
-                            a_i ++;
-                        }
+                        printf("%c", b[i][b_i]);
+                        b_i ++;
                     }
                 }
                 else {
