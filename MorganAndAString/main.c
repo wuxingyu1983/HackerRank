@@ -3,9 +3,9 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define DEBUG       1
+#define DEBUG       0
 
-int getNextDiff(char * s, int index) {
+int getNextDiff(char s[], int index) {
     int ret = index + 1;
 
     while (s[ret]) {
@@ -16,7 +16,38 @@ int getNextDiff(char * s, int index) {
         ret ++;
     }
 
-//   printf("\nthe next diff from %c at %d is %c\n", s[index], index, ret);
+//    printf("\nthe next diff from %c at %d is %c at %d\n", s[index], index, s[ret], ret);
+
+    return ret;
+}
+
+int aOrB(char a[], int a_i, char b[], int b_i, int val) {
+    int ret = 0;
+
+    while (a[a_i] || b[b_i]) {
+        if (a[a_i] && b[b_i]) {
+            if (a[a_i] == b[b_i] && a[a_i] < val) {
+                a_i ++;
+                b_i ++;
+            }
+            else if (a[a_i] < b[b_i]) {
+                ret = -1;
+                break;
+            }
+            else {
+                ret = 1;
+                break;
+            }
+        }
+        else if (a[a_i]) {
+            ret = -1;
+            break;
+        }
+        else {
+            ret = 1;
+            break;
+        }
+    }
 
     return ret;
 }
@@ -69,7 +100,8 @@ int main() {
                         }
                         else if (a[i][next_a] < a[i][a_i] && b[i][next_b] < b[i][b_i]) {
                             if ((next_a - a_i) == (next_b - b_i)) {
-                                if (a[i][next_a] < b[i][next_b]) {
+//                                if (a[i][next_a] < b[i][next_b]) {
+                                if (0 > aOrB(a[i], next_a, b[i], next_b, a[i][a_i])) {
                                     while (a_i < next_a) {
                                         printf("%c", a[i][a_i ++]);
                                     }
@@ -144,12 +176,12 @@ int main() {
                 }
             }
             else if (a[i][a_i]) {
-                printf("%c", a[i][a_i]);
-                a_i ++;
+                printf("%s", &a[i][a_i]);
+                break;
             }
             else {
-                printf("%c", b[i][b_i]);
-                b_i ++;
+                printf("%s", &b[i][b_i]);
+                break;
             }
         }
 
