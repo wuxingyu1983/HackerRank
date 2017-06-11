@@ -16,8 +16,6 @@ int getNextDiff(char s[], int index) {
         ret ++;
     }
 
-//    printf("\nthe next diff from %c at %d is %c at %d\n", s[index], index, s[ret], ret);
-
     return ret;
 }
 
@@ -26,7 +24,7 @@ int aOrB(char a[], int a_i, char b[], int b_i, int val) {
 
     while (a[a_i] || b[b_i]) {
         if (a[a_i] && b[b_i]) {
-            if (a[a_i] == b[b_i] && a[a_i] < val) {
+            if (a[a_i] == b[b_i] && a[a_i] <= val) {
                 a_i ++;
                 b_i ++;
             }
@@ -50,6 +48,113 @@ int aOrB(char a[], int a_i, char b[], int b_i, int val) {
     }
 
     return ret;
+}
+
+void morgan(char a[], char b[]) {
+    int a_i = 0, b_i = 0;
+    while (a[a_i] || b[b_i]) {
+        if (a[a_i] && b[b_i]) {
+            if (a[a_i] == b[b_i]) {
+                int next_a = getNextDiff(a, a_i);
+                int next_b = getNextDiff(b, b_i);
+
+                if (a[next_a] && b[next_b]) {
+                    if (a[next_a] > a[a_i] && b[next_b] > b[b_i]) {
+                        while (a_i < next_a) {
+                            printf("%c", a[a_i ++]);
+                        }
+                        while (b_i < next_b) {
+                            printf("%c", b[b_i ++]);
+                        }
+                    }
+                    else if (a[next_a] < a[a_i] && b[next_b] < b[b_i]) {
+                        if ((next_a - a_i) == (next_b - b_i)) {
+                            if (0 > aOrB(a, next_a, b, next_b, a[a_i])) {
+                                while (a_i < next_a) {
+                                    printf("%c", a[a_i ++]);
+                                }
+                            }
+                            else {
+                                while (b_i < next_b) {
+                                    printf("%c", b[b_i ++]);
+                                }
+                            }
+                        }
+                        else if ((next_a - a_i) < (next_b - b_i)) {
+                            while (a_i < next_a) {
+                                printf("%c", a[a_i ++]);
+                            }
+                        }
+                        else {
+                            while (b_i < next_b) {
+                                printf("%c", b[b_i ++]);
+                            }
+                        }
+                    }
+                    else if (a[next_a] < b[next_b] ) {
+                        while (a_i < next_a) {
+                            printf("%c", a[a_i ++]);
+                        }
+                    }
+                    else {
+                        while (b_i < next_b) {
+                            printf("%c", b[b_i ++]);
+                        }
+                    }
+                }
+                else if (a[next_a]) {
+                    if (a[next_a] > a[a_i]) {
+                        printf("%s", &b[b_i]);
+                        printf("%s", &a[a_i]);
+                        break;
+                    }
+                    else {
+                        while (a_i < next_a) {
+                            printf("%c", a[a_i ++]);
+                        }
+                    }
+                }
+                else if (b[next_b]) {
+                    if (b[next_b] > b[b_i]) {
+                        printf("%s", &a[a_i]);
+                        printf("%s", &b[b_i]);
+                        break;
+                    }
+                    else {
+                        while (b_i < next_b) {
+                            printf("%c", b[b_i ++]);
+                        }
+                    }
+                }
+                else {
+                    printf("%s", &a[a_i]);
+                    printf("%s", &b[b_i]);
+                    break;
+                }
+            }
+            else {
+                if (a[a_i] < b[b_i]) {
+                    printf("%c", a[a_i]);
+                    a_i ++;
+                }
+                else {
+                    // a[a_i] > b[b_i]
+                    printf("%c", b[b_i]);
+                    b_i ++;
+                }
+            }
+        }
+        else if (a[a_i]) {
+            printf("%s", &a[a_i]);
+            break;
+        }
+        else {
+            printf("%s", &b[b_i]);
+            break;
+        }
+    }
+
+    printf("\n");
 }
 
 int main() {
@@ -82,110 +187,7 @@ int main() {
     }
 
     for (size_t i = 0; i < t; i++) {
-        int a_i = 0, b_i = 0;
-        while (a[i][a_i] || b[i][b_i]) {
-            if (a[i][a_i] && b[i][b_i]) {
-                if (a[i][a_i] == b[i][b_i]) {
-                    int next_a = getNextDiff(a[i], a_i);
-                    int next_b = getNextDiff(b[i], b_i);
-
-                    if (a[i][next_a] && b[i][next_b]) {
-                        if (a[i][next_a] > a[i][a_i] && b[i][next_b] > b[i][b_i]) {
-                            while (a_i < next_a) {
-                                printf("%c", a[i][a_i ++]);
-                            }
-                            while (b_i < next_b) {
-                                printf("%c", b[i][b_i ++]);
-                            }
-                        }
-                        else if (a[i][next_a] < a[i][a_i] && b[i][next_b] < b[i][b_i]) {
-                            if ((next_a - a_i) == (next_b - b_i)) {
-//                                if (a[i][next_a] < b[i][next_b]) {
-                                if (0 > aOrB(a[i], next_a, b[i], next_b, a[i][a_i])) {
-                                    while (a_i < next_a) {
-                                        printf("%c", a[i][a_i ++]);
-                                    }
-                                }
-                                else {
-                                    while (b_i < next_b) {
-                                        printf("%c", b[i][b_i ++]);
-                                    }
-                                }
-                            }
-                            else if ((next_a - a_i) < (next_b - b_i)) {
-                                while (a_i < next_a) {
-                                    printf("%c", a[i][a_i ++]);
-                                }
-                            }
-                            else {
-                                while (b_i < next_b) {
-                                    printf("%c", b[i][b_i ++]);
-                                }
-                            }
-                        }
-                        else if (a[i][next_a] < b[i][next_b] ) {
-                            while (a_i < next_a) {
-                                printf("%c", a[i][a_i ++]);
-                            }
-                        }
-                        else {
-                            while (b_i < next_b) {
-                                printf("%c", b[i][b_i ++]);
-                            }
-                        }
-                    }
-                    else if (a[i][next_a]) {
-                        if (a[i][next_a] > a[i][a_i]) {
-                            printf("%s", &b[i][b_i]);
-                            printf("%s", &a[i][a_i]);
-                            break;
-                        }
-                        else {
-                            while (a_i < next_a) {
-                                printf("%c", a[i][a_i ++]);
-                            }
-                        }
-                    }
-                    else if (b[i][next_b]) {
-                        if (b[i][next_b] > b[i][b_i]) {
-                            printf("%s", &a[i][a_i]);
-                            printf("%s", &b[i][b_i]);
-                            break;
-                        }
-                        else {
-                            while (b_i < next_b) {
-                                printf("%c", b[i][b_i ++]);
-                            }
-                        }
-                    }
-                    else {
-                        printf("%s", &a[i][a_i]);
-                        printf("%s", &b[i][b_i]);
-                        break;
-                    }
-                }
-                else {
-                    if (a[i][a_i] < b[i][b_i]) {
-                        printf("%c", a[i][a_i]);
-                        a_i ++;
-                    }
-                    else {
-                        printf("%c", b[i][b_i]);
-                        b_i ++;
-                    }
-                }
-            }
-            else if (a[i][a_i]) {
-                printf("%s", &a[i][a_i]);
-                break;
-            }
-            else {
-                printf("%s", &b[i][b_i]);
-                break;
-            }
-        }
-
-        printf("\n");
+        morgan(a[i], b[i]);
     }
 
 #if DEBUG
