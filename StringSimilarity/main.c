@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define DEBUG   1
+#define DEBUG   0
 
 struct myTuple {
     int originalIndex;   // stores original index of suffix
@@ -25,32 +25,33 @@ int cmp(struct myTuple a, struct myTuple b) {
 
 void quick_sort(struct myTuple s[], int l, int r)
 {
-  if (l < r)
-  {
-    int i = l, j = r;
-    struct myTuple x = s[l];
-    while (i < j)
+    if (l < r)
     {
-      while(i < j && !cmp(s[j], x))
-      j--;
-      if(i < j)
-      s[i++] = s[j];
+        int i = l, j = r;
+        struct myTuple x = s[l];
+        while (i < j)
+        {
+            while(i < j && !cmp(s[j], x))
+                j--;
+            if(i < j)
+                s[i++] = s[j];
 
-      while(i < j && cmp(s[i], x))
-      i++;
-      if(i < j)
-      s[j--] = s[i];
+            while(i < j && cmp(s[i], x))
+                i++;
+            if(i < j)
+                s[j--] = s[i];
+        }
+        s[i] = x;
+        quick_sort(s, l, i - 1);
+        quick_sort(s, i + 1, r);
     }
-    s[i] = x;
-    quick_sort(s, l, i - 1);
-    quick_sort(s, i + 1, r);
-  }
 }
 
 void radix_sort(struct myTuple s[], int len) {
     struct myTuple * negative = NULL;
-    struct myTuple * * buckets = malloc(sizeof(struct myTuple * ) * len);
-    memset(buckets, 0, sizeof(struct myTuple * ) * len);
+    int buckket_size = len < 26 ? 26 : len;
+    struct myTuple * * buckets = malloc(sizeof(struct myTuple * ) * buckket_size);
+    memset(buckets, 0, sizeof(struct myTuple * ) * buckket_size);
 
     for (size_t i = 0; i < len; i++) {
         if (-1 == s[i].secondHalf) {
@@ -102,7 +103,7 @@ void radix_sort(struct myTuple s[], int len) {
     }
     negative = NULL;
 
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < buckket_size; i++) {
         if (buckets[i]) {
             p = buckets[i];
 
@@ -137,7 +138,7 @@ void radix_sort(struct myTuple s[], int len) {
     }
 
     index = 0;
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < buckket_size; i++) {
         if (buckets[i]) {
             p = buckets[i];
 
@@ -157,7 +158,7 @@ struct myTuple LS[18][100000];
 struct myTuple L[100000];
 
 unsigned long long getSubSimilarity(int len, int stp, int left, int right) {
-//    printf("stp = %d, left = %d, right = %d\n", stp, left, right);
+    //    printf("stp = %d, left = %d, right = %d\n", stp, left, right);
     unsigned long long ret = 0;
 
     if (0 == stp) {
@@ -199,7 +200,7 @@ unsigned long long stringSimilarity(char a[]) {
     long long ret = len;
 
     int suffixRank[18][len];
-//    printf("ret is %llu\n", ret);
+    //    printf("ret is %llu\n", ret);
 
     // Initialize suffix ranking on the basis of only single character
     // for single character ranks will be 'a' = 0, 'b' = 1, 'c' = 2 ... 'z' = 25
@@ -220,7 +221,7 @@ unsigned long long stringSimilarity(char a[]) {
         L[i].originalIndex = i;
     }
 
-//    printf("00 ret is %llu\n", ret);
+    //    printf("00 ret is %llu\n", ret);
 
     for (int i = 1; i < len; i++) {
         if (LS[0][0].firstHalf == LS[0][i].firstHalf) {
@@ -229,21 +230,21 @@ unsigned long long stringSimilarity(char a[]) {
             }
         }
     }
-//    printf("11 ret is %llu\n", ret);
+    //    printf("11 ret is %llu\n", ret);
 
     // Create a tuple array for each suffix
 
     for(int cnt = 1, stp = 1; cnt < len; cnt *= 2, ++stp) {
         // On the basis of tuples obtained sort the tuple array
 
-//        quick_sort(L, 0, len - 1);
+        //        quick_sort(L, 0, len - 1);
         radix_sort(L, len);
-/*
-        for (int i = 0; i < len; i++) {
-            printf("L[%d] is [%d, %d], index is %d\n", i, L[i].firstHalf, L[i].secondHalf, L[i].originalIndex);
-        }
-        printf("\n");
-*/
+        /*
+         for (int i = 0; i < len; i++) {
+         printf("L[%d] is [%d, %d], index is %d\n", i, L[i].firstHalf, L[i].secondHalf, L[i].originalIndex);
+         }
+         printf("\n");
+         */
         // Initialize rank for rank 0 suffix after sorting to its original index
         // in suffixRank array
 
@@ -256,7 +257,7 @@ unsigned long long stringSimilarity(char a[]) {
             // else rank for ith will be currRank ( i.e. rank of (i - 1)th ) plus 1, i.e ( currRank + 1 )
 
             if(L[i - 1].firstHalf != L[i].firstHalf || L[i - 1].secondHalf != L[i].secondHalf)
-            ++currRank;
+                ++currRank;
 
             suffixRank[stp][L[i].originalIndex] = currRank;
         }
@@ -271,9 +272,9 @@ unsigned long long stringSimilarity(char a[]) {
             LS[stp][i].originalIndex = i;
         }
 
-//        printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, 0, LS[stp][0].firstHalf, LS[stp][0].secondHalf, LS[stp][0].originalIndex);
+        //        printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, 0, LS[stp][0].firstHalf, LS[stp][0].secondHalf, LS[stp][0].originalIndex);
         for (int i = 1; i < len; i++) {
-//            printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, i, LS[stp][i].firstHalf, LS[stp][i].secondHalf, LS[stp][i].originalIndex);
+            //            printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, i, LS[stp][i].firstHalf, LS[stp][i].secondHalf, LS[stp][i].originalIndex);
             if (LS[stp][0].firstHalf == LS[stp][i].firstHalf) {
                 if (LS[stp][0].secondHalf == LS[stp][i].secondHalf) {
                     ret += cnt * 2;
@@ -287,7 +288,7 @@ unsigned long long stringSimilarity(char a[]) {
                 }
             }
         }
-//        printf("22 : ret is %llu\n", ret);
+        //        printf("22 : ret is %llu\n", ret);
     }
 
     return ret;
