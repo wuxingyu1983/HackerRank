@@ -4,10 +4,14 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define DEBUG   1
+
 struct myTuple {
     int originalIndex;   // stores original index of suffix
     int firstHalf;       // store rank for first half of suffix
     int secondHalf;      // store rank for second half of suffix
+    struct myTuple * next;
+    struct myTuple * last;
 };
 
 int cmp(struct myTuple a, struct myTuple b) {
@@ -43,7 +47,114 @@ void quick_sort(struct myTuple s[], int l, int r)
   }
 }
 
+void radix_sort(struct myTuple s[], int len) {
+    struct myTuple * negative = NULL;
+    struct myTuple * * buckets = malloc(sizeof(struct myTuple * ) * len);
+    memset(buckets, 0, sizeof(struct myTuple * ) * len);
+
+    for (size_t i = 0; i < len; i++) {
+        if (-1 == s[i].secondHalf) {
+            if (NULL == negative) {
+                negative = malloc(sizeof(struct myTuple));
+                negative->firstHalf = s[i].firstHalf;
+                negative->secondHalf = s[i].secondHalf;
+                negative->originalIndex = s[i].originalIndex;
+                negative->next = NULL;
+                negative->last = negative;
+            }
+            else {
+                negative->last->next = malloc(sizeof(struct myTuple));
+                negative->last->next->firstHalf = s[i].firstHalf;
+                negative->last->next->secondHalf = s[i].secondHalf;
+                negative->last->next->originalIndex = s[i].originalIndex;
+                negative->last->next->next = NULL;
+                negative->last = negative->last->next;
+            }
+        }
+        else {
+            if (NULL == buckets[s[i].secondHalf]) {
+                buckets[s[i].secondHalf] = malloc(sizeof(struct myTuple));
+                buckets[s[i].secondHalf]->firstHalf = s[i].firstHalf;
+                buckets[s[i].secondHalf]->secondHalf = s[i].secondHalf;
+                buckets[s[i].secondHalf]->originalIndex = s[i].originalIndex;
+                buckets[s[i].secondHalf]->next = NULL;
+                buckets[s[i].secondHalf]->last = buckets[s[i].secondHalf];
+            }
+            else {
+                buckets[s[i].secondHalf]->last->next = malloc(sizeof(struct myTuple));
+                buckets[s[i].secondHalf]->last->next->firstHalf = s[i].firstHalf;
+                buckets[s[i].secondHalf]->last->next->secondHalf = s[i].secondHalf;
+                buckets[s[i].secondHalf]->last->next->originalIndex = s[i].originalIndex;
+                buckets[s[i].secondHalf]->last->next->next = NULL;
+                buckets[s[i].secondHalf]->last = buckets[s[i].secondHalf]->last->next;
+            }
+        }
+    }
+
+    int index = 0;
+    struct myTuple * p = negative;
+    struct myTuple * next;
+    while (p) {
+        s[index ++] = *p;
+        next = p->next;
+        free(p);
+        p = next;
+    }
+    negative = NULL;
+
+    for (size_t i = 0; i < len; i++) {
+        if (buckets[i]) {
+            p = buckets[i];
+
+            while (p) {
+                s[index ++] = *p;
+                next = p->next;
+                free(p);
+                p = next;
+            }
+
+            buckets[i] = NULL;
+        }
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        if (NULL == buckets[s[i].firstHalf]) {
+            buckets[s[i].firstHalf] = malloc(sizeof(struct myTuple));
+            buckets[s[i].firstHalf]->firstHalf = s[i].firstHalf;
+            buckets[s[i].firstHalf]->secondHalf = s[i].secondHalf;
+            buckets[s[i].firstHalf]->originalIndex = s[i].originalIndex;
+            buckets[s[i].firstHalf]->next = NULL;
+            buckets[s[i].firstHalf]->last = buckets[s[i].firstHalf];
+        }
+        else {
+            buckets[s[i].firstHalf]->last->next = malloc(sizeof(struct myTuple));
+            buckets[s[i].firstHalf]->last->next->firstHalf = s[i].firstHalf;
+            buckets[s[i].firstHalf]->last->next->secondHalf = s[i].secondHalf;
+            buckets[s[i].firstHalf]->last->next->originalIndex = s[i].originalIndex;
+            buckets[s[i].firstHalf]->last->next->next = NULL;
+            buckets[s[i].firstHalf]->last = buckets[s[i].firstHalf]->last->next;
+        }
+    }
+
+    index = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (buckets[i]) {
+            p = buckets[i];
+
+            while (p) {
+                s[index ++] = *p;
+                next = p->next;
+                free(p);
+                p = next;
+            }
+
+            buckets[i] = NULL;
+        }
+    }
+}
+
 struct myTuple LS[18][100000];
+struct myTuple L[100000];
 
 unsigned long long getSubSimilarity(int len, int stp, int left, int right) {
 //    printf("stp = %d, left = %d, right = %d\n", stp, left, right);
@@ -99,8 +210,6 @@ unsigned long long stringSimilarity(char a[]) {
         }
     }
 
-    struct myTuple L[len];
-
     for(int i = 0; i < len; ++i) {
         LS[0][i].firstHalf = suffixRank[0][i];
         LS[0][i].secondHalf = i + 1 < len ? suffixRank[0][i + 1] : -1;
@@ -127,7 +236,8 @@ unsigned long long stringSimilarity(char a[]) {
     for(int cnt = 1, stp = 1; cnt < len; cnt *= 2, ++stp) {
         // On the basis of tuples obtained sort the tuple array
 
-        quick_sort(L, 0, len - 1);
+//        quick_sort(L, 0, len - 1);
+        radix_sort(L, len);
 /*
         for (int i = 0; i < len; i++) {
             printf("L[%d] is [%d, %d], index is %d\n", i, L[i].firstHalf, L[i].secondHalf, L[i].originalIndex);
@@ -185,12 +295,25 @@ unsigned long long stringSimilarity(char a[]) {
 
 int main() {
     int t, i;
+
+#if DEBUG
+    FILE * fp = fopen("input.txt", "r");
+    fscanf(fp,"%d",&t);
+#else
     scanf("%d",&t);
+#endif
+
     char a[100001];
     unsigned long long * res = malloc(sizeof(unsigned long long) * t);
     for (i=0;i<t;i++) {
         memset(a, 0, 100001);
+
+#if DEBUG
+        fscanf(fp,"%s",a);
+#else
         scanf("%s",a);
+#endif
+
         res[i] = stringSimilarity(a);
     }
 
@@ -198,6 +321,10 @@ int main() {
         printf("%llu\n", res[i]);
     }
     free(res);
+
+#if DEBUG
+    fclose(fp);
+#endif
 
     return 0;
 }
