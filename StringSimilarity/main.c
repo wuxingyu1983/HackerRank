@@ -43,12 +43,50 @@ void quick_sort(struct myTuple s[], int l, int r)
   }
 }
 
+struct myTuple LS[14][100000];
+
+unsigned long long getSubSimilarity(int stp, int left, int right) {
+//    printf("stp = %d, left = %d, right = %d\n", stp, left, right);
+    unsigned long long ret = 0;
+
+    if (0 == stp) {
+        if (LS[stp][left].firstHalf == LS[stp][right].firstHalf) {
+            ret ++;
+
+            if (LS[stp][left].secondHalf == LS[stp][right].secondHalf) {
+                ret ++;
+            }
+        }
+    }
+    else {
+        if (LS[stp][left].firstHalf == LS[stp][right].firstHalf) {
+            ret += pow(2, stp);
+
+            if (LS[stp][left].secondHalf == LS[stp][right].secondHalf && -1 != LS[stp][right].secondHalf) {
+                ret += pow(2, stp);
+            }
+            else {
+                // LS[stp][left].secondHalf == LS[stp][right].secondHalf
+                if (-1 != LS[stp][left].secondHalf && -1 != LS[stp][right].secondHalf) {
+                    ret += getSubSimilarity(stp - 1, left + pow(2, stp), right + pow(2, stp));
+                }
+            }
+        }
+        else {
+            // LS[stp][left].firstHalf != LS[stp][right].firstHalf
+            ret = getSubSimilarity(stp - 1, left, right);
+        }
+    }
+
+    return ret;
+}
+
 unsigned long long stringSimilarity(char a[]) {
-    int suffixRank[13][100000];
     int len = strlen(a);
     long long ret = len;
 
-    printf("ret is %llu\n", ret);
+    int suffixRank[14][len];
+//    printf("ret is %llu\n", ret);
 
     // Initialize suffix ranking on the basis of only single character
     // for single character ranks will be 'a' = 0, 'b' = 1, 'c' = 2 ... 'z' = 25
@@ -59,27 +97,41 @@ unsigned long long stringSimilarity(char a[]) {
         }
     }
 
-    printf("ret is %llu\n", ret);
-
-    // Create a tuple array for each suffix
     struct myTuple L[len];
 
-    for(int cnt = 1, stp = 1; cnt < len; cnt *= 2, ++stp) {
-        for(int i = 0; i < len; ++i) {
-            L[i].firstHalf = suffixRank[stp - 1][i];
-            L[i].secondHalf = i + cnt < len ? suffixRank[stp - 1][i + cnt] : -1;
-            L[i].originalIndex = i;
-        }
+    for(int i = 0; i < len; ++i) {
+        LS[0][i].firstHalf = suffixRank[0][i];
+        LS[0][i].secondHalf = i + 1 < len ? suffixRank[0][i + 1] : -1;
+        LS[0][i].originalIndex = i;
 
+        L[i].firstHalf = LS[0][i].firstHalf;
+        L[i].secondHalf = LS[0][i].secondHalf;
+        L[i].originalIndex = i;
+    }
+
+//    printf("00 ret is %llu\n", ret);
+
+    for (int i = 1; i < len; i++) {
+        if (LS[0][0].firstHalf == LS[0][i].firstHalf) {
+            if (LS[0][0].secondHalf == LS[0][i].secondHalf) {
+                ret ++;
+            }
+        }
+    }
+//    printf("11 ret is %llu\n", ret);
+
+    // Create a tuple array for each suffix
+
+    for(int cnt = 1, stp = 1; cnt < len; cnt *= 2, ++stp) {
         // On the basis of tuples obtained sort the tuple array
 
         quick_sort(L, 0, len - 1);
-
+/*
         for (int i = 0; i < len; i++) {
             printf("L[%d] is [%d, %d], index is %d\n", i, L[i].firstHalf, L[i].secondHalf, L[i].originalIndex);
         }
         printf("\n");
-
+*/
         // Initialize rank for rank 0 suffix after sorting to its original index
         // in suffixRank array
 
@@ -97,12 +149,31 @@ unsigned long long stringSimilarity(char a[]) {
             suffixRank[stp][L[i].originalIndex] = currRank;
         }
 
+        for(int i = 0; i < len; ++i) {
+            L[i].firstHalf = suffixRank[stp][i];
+            L[i].secondHalf = i + (cnt * 2) < len ? suffixRank[stp][i + (cnt * 2)] : -1;
+            L[i].originalIndex = i;
+
+            LS[stp][i].firstHalf = L[i].firstHalf;
+            LS[stp][i].secondHalf = L[i].secondHalf;
+            LS[stp][i].originalIndex = i;
+        }
+
+//        printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, 0, LS[stp][0].firstHalf, LS[stp][0].secondHalf, LS[stp][0].originalIndex);
         for (int i = 1; i < len; i++) {
-            if (suffixRank[stp][i] == suffixRank[stp][0]) {
-                ret ++;
+//            printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, i, LS[stp][i].firstHalf, LS[stp][i].secondHalf, LS[stp][i].originalIndex);
+            if (LS[stp][0].firstHalf == LS[stp][i].firstHalf) {
+                if (LS[stp][0].secondHalf == LS[stp][i].secondHalf) {
+                    ret += cnt * 2;
+                }
+                else {
+                    if (-1 != LS[stp][i].secondHalf) {
+                        ret += getSubSimilarity(stp - 1, cnt * 2, i + cnt * 2);
+                    }
+                }
             }
         }
-        printf("ret is %llu\n", ret);
+//        printf("22 : ret is %llu\n", ret);
     }
 
     return ret;
