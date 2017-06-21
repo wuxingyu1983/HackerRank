@@ -43,9 +43,9 @@ void quick_sort(struct myTuple s[], int l, int r)
   }
 }
 
-struct myTuple LS[14][100000];
+struct myTuple LS[18][100000];
 
-unsigned long long getSubSimilarity(int stp, int left, int right) {
+unsigned long long getSubSimilarity(int len, int stp, int left, int right) {
 //    printf("stp = %d, left = %d, right = %d\n", stp, left, right);
     unsigned long long ret = 0;
 
@@ -68,13 +68,15 @@ unsigned long long getSubSimilarity(int stp, int left, int right) {
             else {
                 // LS[stp][left].secondHalf == LS[stp][right].secondHalf
                 if (-1 != LS[stp][left].secondHalf && -1 != LS[stp][right].secondHalf) {
-                    ret += getSubSimilarity(stp - 1, left + pow(2, stp), right + pow(2, stp));
+                    if (right + pow(2, stp) < len) {
+                        ret += getSubSimilarity(len, stp - 1, left + pow(2, stp), right + pow(2, stp));
+                    }
                 }
             }
         }
         else {
             // LS[stp][left].firstHalf != LS[stp][right].firstHalf
-            ret = getSubSimilarity(stp - 1, left, right);
+            ret = getSubSimilarity(len, stp - 1, left, right);
         }
     }
 
@@ -85,7 +87,7 @@ unsigned long long stringSimilarity(char a[]) {
     int len = strlen(a);
     long long ret = len;
 
-    int suffixRank[14][len];
+    int suffixRank[18][len];
 //    printf("ret is %llu\n", ret);
 
     // Initialize suffix ranking on the basis of only single character
@@ -168,7 +170,9 @@ unsigned long long stringSimilarity(char a[]) {
                 }
                 else {
                     if (-1 != LS[stp][i].secondHalf) {
-                        ret += getSubSimilarity(stp - 1, cnt * 2, i + cnt * 2);
+                        if (i + cnt * 2 < len) {
+                            ret += getSubSimilarity(len, stp - 1, cnt * 2, i + cnt * 2);
+                        }
                     }
                 }
             }
