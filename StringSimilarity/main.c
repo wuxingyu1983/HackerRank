@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 
 #define DEBUG   0
 
@@ -47,6 +48,9 @@ void quick_sort(struct myTuple s[], int l, int r)
     }
 }
 
+struct myTuple round1[100000];
+struct myTuple round2[100000];
+
 void radix_sort(struct myTuple s[], int len) {
     struct myTuple * negative = NULL;
     int buckket_size = len < 26 ? 26 : len;
@@ -56,7 +60,7 @@ void radix_sort(struct myTuple s[], int len) {
     for (size_t i = 0; i < len; i++) {
         if (-1 == s[i].secondHalf) {
             if (NULL == negative) {
-                negative = malloc(sizeof(struct myTuple));
+                negative = &round1[i];
                 negative->firstHalf = s[i].firstHalf;
                 negative->secondHalf = s[i].secondHalf;
                 negative->originalIndex = s[i].originalIndex;
@@ -64,7 +68,7 @@ void radix_sort(struct myTuple s[], int len) {
                 negative->last = negative;
             }
             else {
-                negative->last->next = malloc(sizeof(struct myTuple));
+                negative->last->next = &round1[i];
                 negative->last->next->firstHalf = s[i].firstHalf;
                 negative->last->next->secondHalf = s[i].secondHalf;
                 negative->last->next->originalIndex = s[i].originalIndex;
@@ -74,7 +78,7 @@ void radix_sort(struct myTuple s[], int len) {
         }
         else {
             if (NULL == buckets[s[i].secondHalf]) {
-                buckets[s[i].secondHalf] = malloc(sizeof(struct myTuple));
+                buckets[s[i].secondHalf] = &round1[i];
                 buckets[s[i].secondHalf]->firstHalf = s[i].firstHalf;
                 buckets[s[i].secondHalf]->secondHalf = s[i].secondHalf;
                 buckets[s[i].secondHalf]->originalIndex = s[i].originalIndex;
@@ -82,7 +86,7 @@ void radix_sort(struct myTuple s[], int len) {
                 buckets[s[i].secondHalf]->last = buckets[s[i].secondHalf];
             }
             else {
-                buckets[s[i].secondHalf]->last->next = malloc(sizeof(struct myTuple));
+                buckets[s[i].secondHalf]->last->next = &round1[i];
                 buckets[s[i].secondHalf]->last->next->firstHalf = s[i].firstHalf;
                 buckets[s[i].secondHalf]->last->next->secondHalf = s[i].secondHalf;
                 buckets[s[i].secondHalf]->last->next->originalIndex = s[i].originalIndex;
@@ -98,7 +102,6 @@ void radix_sort(struct myTuple s[], int len) {
     while (p) {
         s[index ++] = *p;
         next = p->next;
-        free(p);
         p = next;
     }
     negative = NULL;
@@ -110,7 +113,6 @@ void radix_sort(struct myTuple s[], int len) {
             while (p) {
                 s[index ++] = *p;
                 next = p->next;
-                free(p);
                 p = next;
             }
 
@@ -120,7 +122,7 @@ void radix_sort(struct myTuple s[], int len) {
 
     for (size_t i = 0; i < len; i++) {
         if (NULL == buckets[s[i].firstHalf]) {
-            buckets[s[i].firstHalf] = malloc(sizeof(struct myTuple));
+            buckets[s[i].firstHalf] = &round2[i];
             buckets[s[i].firstHalf]->firstHalf = s[i].firstHalf;
             buckets[s[i].firstHalf]->secondHalf = s[i].secondHalf;
             buckets[s[i].firstHalf]->originalIndex = s[i].originalIndex;
@@ -128,7 +130,7 @@ void radix_sort(struct myTuple s[], int len) {
             buckets[s[i].firstHalf]->last = buckets[s[i].firstHalf];
         }
         else {
-            buckets[s[i].firstHalf]->last->next = malloc(sizeof(struct myTuple));
+            buckets[s[i].firstHalf]->last->next = &round2[i];
             buckets[s[i].firstHalf]->last->next->firstHalf = s[i].firstHalf;
             buckets[s[i].firstHalf]->last->next->secondHalf = s[i].secondHalf;
             buckets[s[i].firstHalf]->last->next->originalIndex = s[i].originalIndex;
@@ -145,7 +147,6 @@ void radix_sort(struct myTuple s[], int len) {
             while (p) {
                 s[index ++] = *p;
                 next = p->next;
-                free(p);
                 p = next;
             }
 
@@ -171,17 +172,18 @@ unsigned long long getSubSimilarity(int len, int stp, int left, int right) {
         }
     }
     else {
+        int sum = pow(2, stp);
         if (LS[stp][left].firstHalf == LS[stp][right].firstHalf) {
-            ret += pow(2, stp);
+            ret += sum;
 
             if (LS[stp][left].secondHalf == LS[stp][right].secondHalf && -1 != LS[stp][right].secondHalf) {
-                ret += pow(2, stp);
+                ret += sum;
             }
             else {
                 // LS[stp][left].secondHalf == LS[stp][right].secondHalf
                 if (-1 != LS[stp][left].secondHalf && -1 != LS[stp][right].secondHalf) {
-                    if (right + pow(2, stp) < len) {
-                        ret += getSubSimilarity(len, stp - 1, left + pow(2, stp), right + pow(2, stp));
+                    if (right + sum < len) {
+                        ret += getSubSimilarity(len, stp - 1, left + sum, right + sum);
                     }
                 }
             }
@@ -196,6 +198,9 @@ unsigned long long getSubSimilarity(int len, int stp, int left, int right) {
 }
 
 unsigned long long stringSimilarity(char a[]) {
+    clock_t start,finish;
+    double TheTimes;
+
     int len = strlen(a);
     long long ret = len;
 
@@ -219,17 +224,16 @@ unsigned long long stringSimilarity(char a[]) {
         L[i].firstHalf = LS[0][i].firstHalf;
         L[i].secondHalf = LS[0][i].secondHalf;
         L[i].originalIndex = i;
-    }
 
-    //    printf("00 ret is %llu\n", ret);
-
-    for (int i = 1; i < len; i++) {
-        if (LS[0][0].firstHalf == LS[0][i].firstHalf) {
-            if (LS[0][0].secondHalf == LS[0][i].secondHalf) {
-                ret ++;
+        if (0 < i) {
+            if (LS[0][0].firstHalf == LS[0][i].firstHalf) {
+                if (LS[0][0].secondHalf == LS[0][i].secondHalf) {
+                    ret ++;
+                }
             }
         }
     }
+
     //    printf("11 ret is %llu\n", ret);
 
     // Create a tuple array for each suffix
@@ -238,7 +242,14 @@ unsigned long long stringSimilarity(char a[]) {
         // On the basis of tuples obtained sort the tuple array
 
         //        quick_sort(L, 0, len - 1);
+        start = clock();
         radix_sort(L, len);
+        finish = clock();
+        TheTimes = (double)(finish-start)/CLOCKS_PER_SEC;
+#if DEBUG
+        printf("radix_sort consume : %fs\n", TheTimes);
+#endif
+    //    printf("finish : %f\n", TheTimes);
         /*
          for (int i = 0; i < len; i++) {
          printf("L[%d] is [%d, %d], index is %d\n", i, L[i].firstHalf, L[i].secondHalf, L[i].originalIndex);
@@ -262,6 +273,7 @@ unsigned long long stringSimilarity(char a[]) {
             suffixRank[stp][L[i].originalIndex] = currRank;
         }
 
+        start = clock();
         for(int i = 0; i < len; ++i) {
             L[i].firstHalf = suffixRank[stp][i];
             L[i].secondHalf = i + (cnt * 2) < len ? suffixRank[stp][i + (cnt * 2)] : -1;
@@ -270,25 +282,27 @@ unsigned long long stringSimilarity(char a[]) {
             LS[stp][i].firstHalf = L[i].firstHalf;
             LS[stp][i].secondHalf = L[i].secondHalf;
             LS[stp][i].originalIndex = i;
-        }
 
-        //        printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, 0, LS[stp][0].firstHalf, LS[stp][0].secondHalf, LS[stp][0].originalIndex);
-        for (int i = 1; i < len; i++) {
-            //            printf("LS[%d][%d] is [%d, %d], index is %d\n", stp, i, LS[stp][i].firstHalf, LS[stp][i].secondHalf, LS[stp][i].originalIndex);
-            if (LS[stp][0].firstHalf == LS[stp][i].firstHalf) {
-                if (LS[stp][0].secondHalf == LS[stp][i].secondHalf) {
-                    ret += cnt * 2;
-                }
-                else {
-                    if (-1 != LS[stp][i].secondHalf) {
-                        if (i + cnt * 2 < len) {
-                            ret += getSubSimilarity(len, stp - 1, cnt * 2, i + cnt * 2);
+            if (0 < i) {
+                if (LS[stp][0].firstHalf == LS[stp][i].firstHalf) {
+                    if (LS[stp][0].secondHalf == LS[stp][i].secondHalf) {
+                        ret += cnt * 2;
+                    }
+                    else {
+                        if (-1 != LS[stp][i].secondHalf) {
+                            if (i + cnt * 2 < len) {
+                                ret += getSubSimilarity(len, stp - 1, cnt * 2, i + cnt * 2);
+                            }
                         }
                     }
                 }
             }
         }
-        //        printf("22 : ret is %llu\n", ret);
+        finish = clock();
+        TheTimes = (double)(finish-start)/CLOCKS_PER_SEC;
+#if DEBUG
+        printf("getSubSimilarity consume : %fs\n", TheTimes);
+#endif
     }
 
     return ret;
