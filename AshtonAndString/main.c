@@ -188,7 +188,7 @@ char ashtonAndString(char a[], int k) {
         finish = clock();
         TheTimes = (double)(finish-start)/CLOCKS_PER_SEC;
 #if DEBUG
-        printf("radix_sort consume : %fs\n", TheTimes);
+//        printf("radix_sort consume : %fs\n", TheTimes);
 #endif
 
         if (len <= cnt * 2) {
@@ -223,7 +223,7 @@ char ashtonAndString(char a[], int k) {
     lcp[0] = 0;
     for (int i = 1; i < len; i++){
         lcp[i] = getLcp(L[i - 1].originalIndex, L[i].originalIndex, stp, len);
-//        printf("lcp[%d] = %d\n", i, lcp[i]);
+//        printf("lcp[%d] = %d, prev = %d, curr = %d\n", i, lcp[i], L[i - 1].originalIndex, L[i].originalIndex);
     }
 
     int sum = 0;
@@ -231,36 +231,21 @@ char ashtonAndString(char a[], int k) {
     for (int i = 0; i < len; i++) {
         last_common = lcp[i];
         int round_sum = (len - L[i].originalIndex + 1) * (len - L[i].originalIndex) / 2 - (last_common + 1) * last_common / 2;
-//        printf("%d : round_sum is %d\n", i, round_sum);
         if (round_sum + sum >= k) {
-            int x = k - sum;
-            int l = 1;
-            int r = len - L[i].originalIndex;
-            int mid;
-            while (l <= r) {
-                mid = (l + r) / 2;
-//                printf("l = %d, r = %d, mid = %d\n", l, r, mid);
-                if ((mid + 1) * mid / 2 == x) {
-                    break;
-                }
-                else if ((mid + 1) * mid / 2 > x) {
-                    r = mid - 1;
+            for (size_t j = 1 + last_common; j <= len - L[i].originalIndex; j++) {
+                if (sum + j < k) {
+                    sum += j;
                 }
                 else {
-                    l = mid + 1;
+                    ret = a[L[i].originalIndex + k - sum - 1];
+                    break;
                 }
-            }
-
-            if ((mid + 1) * mid / 2 == x) {
-                ret = a[L[i].originalIndex + mid - 1];
-            }
-            else {
-                ret = a[L[i].originalIndex + (x - (mid - 1) * mid) - 1];
             }
 
             break;
         }
         sum += round_sum;
+//        printf("sum = %d\n", sum);
     }
 
     return ret;
