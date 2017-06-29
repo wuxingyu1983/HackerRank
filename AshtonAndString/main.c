@@ -226,11 +226,11 @@ char ashtonAndString(char a[], int k) {
 //        printf("lcp[%d] = %d, prev = %d, curr = %d\n", i, lcp[i], L[i - 1].originalIndex, L[i].originalIndex);
     }
 
-    int sum = 0;
+    long long sum = 0;
     int last_common = 0;
     for (int i = 0; i < len; i++) {
         last_common = lcp[i];
-        int round_sum = (len - L[i].originalIndex + 1) * (len - L[i].originalIndex) / 2 - (last_common + 1) * last_common / 2;
+        long long round_sum = ((long long)(len - L[i].originalIndex + 1)) * ((long long)(len - L[i].originalIndex)) / 2 - ((long long)(last_common + 1)) * ((long long)last_common) / 2;
         if (round_sum + sum >= k) {
             for (size_t j = 1 + last_common; j <= len - L[i].originalIndex; j++) {
                 if (sum + j < k) {
