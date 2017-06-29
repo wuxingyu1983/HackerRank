@@ -5,6 +5,39 @@
 
 #define DEBUG   0
 
+int pos = -1;
+
+struct building {
+  unsigned int height;
+  unsigned int pos;
+};
+
+struct building * top(struct building * * stk) {
+  struct building * ret = NULL;
+
+  if (0 <= pos) {
+    ret = stk[pos];
+  }
+
+  return ret;
+}
+
+void push(struct building * * stk, struct building * node) {
+  stk[++ pos] = node;
+}
+
+struct building * pop(struct building * * stk) {
+  struct building * ret = NULL;
+
+  if (0 <= pos) {
+    ret = stk[pos];
+    stk[pos --] = NULL;
+  }
+
+  return ret;
+}
+
+
 struct myTuple {
     int originalIndex;   // stores original index of suffix
     int firstHalf;       // store rank for first half of suffix
@@ -15,6 +48,30 @@ struct myTuple {
 
 struct myTuple round1[100000];
 struct myTuple round2[100000];
+
+void quick_sort(int s[], int l, int r)
+{
+    if (l < r)
+    {
+        int i = l, j = r;
+        int x = s[l];
+        while (i < j)
+        {
+            while(i < j && s[j] <= x)
+            j--;
+            if(i < j)
+            s[i++] = s[j];
+
+            while(i < j && s[i] > x)
+            i++;
+            if(i < j)
+            s[j--] = s[i];
+        }
+        s[i] = x;
+        quick_sort(s, l, i - 1);
+        quick_sort(s, i + 1, r);
+    }
+}
 
 void radix_sort(struct myTuple s[], int len) {
     struct myTuple * negative = NULL;
@@ -204,9 +261,68 @@ unsigned long long stringFunctionCalculation(char a[]) {
     stp --;
     int lcp[len];
     lcp[0] = 0;
-    for (int i = 1; i < len; i++){
+
+    struct building * * hs;
+    hs = malloc(len * sizeof(struct building *));
+    memset(hs, 0, len * sizeof(struct building *));
+
+    for (int i = 1; i < len; i++) {
         lcp[i] = getLcp(L[i - 1].originalIndex, L[i].originalIndex, stp, len);
 //        printf("lcp[%d] = %d, prev = %d, curr = %d\n", i, lcp[i], L[i - 1].originalIndex, L[i].originalIndex);
+
+        struct building * now = malloc(sizeof(struct building));
+        now->height = lcp[i];
+        now->pos = i;
+
+        struct building * pre = top(hs);
+        struct building * ppre = NULL;
+        if (NULL == pre || pre->height <= now->height) {
+            push(hs, now);
+        }
+        else {
+            // 开始计算
+            while (pre && pre->height > now->height) {
+                pre = pop(hs);
+                ppre = top(hs);
+                if (ppre) {
+                    if (ret < (pre->height * (now->pos - ppre->pos))) {
+                        ret = pre->height * (now->pos - ppre->pos);
+                    }
+                }
+                else {
+                    if (ret < (pre->height * now->pos)) {
+                        ret = pre->height * now->pos;
+                    }
+                }
+
+                free(pre);
+                pre = NULL;
+
+                pre = ppre;
+            }
+
+            push(hs, now);
+        }
+    }
+
+    struct building * pre;
+    struct building * ppre = NULL;
+
+    while (pre = pop(hs)) {
+      ppre = top(hs);
+      if (ppre) {
+        if (ret < (pre->height * (len - ppre->pos))) {
+          ret = pre->height * (len - ppre->pos);
+        }
+      }
+      else {
+        if (ret < (pre->height * len)) {
+          ret = pre->height * len;
+        }
+      }
+
+      free(pre);
+      pre = NULL;
     }
 
     return ret;
@@ -223,7 +339,11 @@ int main() {
     scanf("%s", a);
 #endif
 
+    int len = strlen(a);
     unsigned long long ret = stringFunctionCalculation(a);
+    if (len > ret) {
+        ret = len;
+    }
 
     printf("%llu\n", ret);
 
