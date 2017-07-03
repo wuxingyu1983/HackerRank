@@ -4,6 +4,9 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <fstream>
+
+#define DEBUG       1
 
 using namespace std;
 
@@ -198,25 +201,55 @@ int main()
     long long max = 0;
 
     int n;
+
+#if DEBUG
+    ifstream fin("input.txt");
+    if (!fin.is_open()) {
+        printf("open file error!\n");
+        return -1;
+    }
+    fin >> n;
+#else
     cin >> n;
+#endif
+
     vector<string> genes(n);
     for(int genes_i = 0; genes_i < n; genes_i++){
+#if DEBUG
+        fin >> genes[genes_i];
+#else
         cin >> genes[genes_i];
+#endif
     }
     vector<int> health(n);
     for(int health_i = 0; health_i < n; health_i++){
+#if DEBUG
+        fin >> health[health_i];
+#else
         cin >> health[health_i];
+#endif
     }
 
     buildMatchingMachine(genes, n);
 
     int s;
+
+#if DEBUG
+    fin >> s;
+#else
     cin >> s;
+#endif
+    
     for(int a0 = 0; a0 < s; a0++){
         int first;
         int last;
         string d;
+
+#if DEBUG
+        fin >> first >> last >> d;
+#else
         cin >> first >> last >> d;
+#endif
         // your code goes here
 
         unsigned long long ret = searchWords(genes, n, d, first, last, health);
