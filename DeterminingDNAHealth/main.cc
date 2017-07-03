@@ -1,6 +1,7 @@
 // C++ program for implementation of Aho Corasick algorithm
 // for string matching
 #include <queue>
+#include <vector>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -20,13 +21,80 @@ const int MAXC = 26;
 // OUTPUT FUNCTION IS IMPLEMENTED USING out[]
 // Bit i in this mask is one if the word with index i
 // appears when the machine enters this state.
-int out[MAXS];
+vector<int> out[MAXS];
+
+// out 数组是否有输出的 flag
+unsigned char flag[MAXS];
 
 // FAILURE FUNCTION IS IMPLEMENTED USING f[]
 int f[MAXS];
 
 // GOTO FUNCTION (OR TRIE) IS IMPLEMENTED USING g[][]
 int g[MAXS][MAXC];
+
+void addToVector(vector<int> &vec, int value) {
+    vector<int>::iterator it = vec.begin();
+
+    while (it != vec.end()) {
+        if (*it == value) {
+            return;
+        }
+        else {
+            if (*it > value) {
+                vec.insert(it, value);
+                return;
+            }
+        }
+        it ++;
+    }
+
+    vec.push_back(value);
+}
+
+void mergeVector(vector<int> &vec_a, vector<int> &vec_b) {
+    vector<int>::iterator it_a = vec_a.begin();
+    vector<int>::iterator it_b = vec_b.begin();
+
+    while (it_a != vec_a.end() && it_b != vec_b.end()) {
+        if (*it_a == *it_b) {
+            it_a ++;
+            it_b ++;
+        }
+        else {
+            if (*it_a < *it_b) {
+                it_a ++;
+            }
+            else {
+                // *it_a > *it_b
+                it_a = vec_a.insert(it_a, *it_b);
+                it_b ++;
+            }
+        }
+    }
+
+    if (it_b != vec_b.end()) {
+        while (it_b != vec_b.end()) {
+            vec_a.push_back(*it_b);
+            it_b ++;
+        }
+    }
+}
+
+int LowerBound(vector<int> &A, int N, int K) {
+    int low , high , mid ;
+    low = 0 ;
+    high = N - 1;
+    while(low <= high){
+        mid = ( low + high ) / 2 ; // finding middle element
+        if(A[mid] >= K && ( mid == 0 || A[mid-1] < K )) // checking conditions for lowerbound
+        return mid ;
+        else if(A[mid] >= K) // answer should be in left part
+        high = mid - 1 ;
+        else                // answer should in right part if it exists
+        low = mid + 1 ;
+    }
+    return mid ; // this will execute when there is no element in the given array which >= K
+}
 
 // Builds the string matching machine.
 // arr -   array of words. The index of each keyword is important:
@@ -37,7 +105,9 @@ int g[MAXS][MAXC];
 int buildMatchingMachine(vector<string> arr, int k)
 {
     // Initialize all values in output function as 0.
-    memset(out, 0, sizeof out);
+//    memset(out, 0, sizeof out);
+
+    memset(flag, 0, sizeof flag);
 
     // Initialize all values in goto function as -1.
     memset(g, -1, sizeof g);
@@ -66,7 +136,10 @@ int buildMatchingMachine(vector<string> arr, int k)
         }
 
         // Add current word in output function
-        out[currentState] |= (1 << i);
+//        out[currentState] |= (1 << i);
+        addToVector(out[currentState], i);
+
+        flag[currentState] = 1;
     }
 
     // For all characters which don't have an edge from
@@ -127,7 +200,10 @@ int buildMatchingMachine(vector<string> arr, int k)
                 f[g[state][ch]] = failure;
 
                 // Merge output values
-                out[g[state][ch]] |= out[failure];
+                mergeVector(out[g[state][ch]], out[failure]);
+//                out[g[state][ch]] |= out[failure];
+
+                flag[g[state][ch]] |= flag[failure];
 
                 // Insert the next level node (of Trie) in Queue
                 q.push(g[state][ch]);
@@ -141,7 +217,7 @@ int buildMatchingMachine(vector<string> arr, int k)
 // Returns the next state the machine will transition to using goto
 // and failure functions.
 // currentState - The current state of the machine. Must be between
-//                0 and the number of states - 1, inclusive.
+//                0 and the Nnumber of states - 1, inclusive.
 // nextInput - The next character that enters into the machine.
 int findNextState(int currentState, char nextInput)
 {
@@ -173,20 +249,20 @@ unsigned long long searchWords(vector<string> arr, int k, string text, int start
         currentState = findNextState(currentState, text[i]);
 
         // If match not found, move to next state
-        if (out[currentState] == 0)
+        if (flag[currentState] == 0)
              continue;
 
         // Match found, print all matching words of arr[]
         // using output function.
-        for (int j = start; j <= end; ++j)
-        {
-            if (out[currentState] & (1 << j))
-            {
-                ret += health[j];
-/*
-                cout << "Word " << arr[j] << " appears from "
-                     << i - arr[j].size() + 1 << " to " << i << endl;
-*/
+
+        int index = LowerBound(out[currentState], out[currentState].size(), start);
+        while (index < out[currentState].size()) {
+            if (out[currentState][index] <= end) {
+                ret += health[out[currentState][index]];
+                index ++;
+            }
+            else {
+                break;
             }
         }
     }
@@ -239,7 +315,7 @@ int main()
 #else
     cin >> s;
 #endif
-    
+
     for(int a0 = 0; a0 < s; a0++){
         int first;
         int last;
