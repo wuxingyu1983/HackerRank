@@ -23,9 +23,6 @@ const int MAXC = 26;
 // appears when the machine enters this state.
 vector<int> out[MAXS];
 
-// out 数组是否有输出的 flag
-unsigned char flag[MAXS];
-
 // FAILURE FUNCTION IS IMPLEMENTED USING f[]
 int f[MAXS];
 
@@ -35,7 +32,7 @@ int g[MAXS][MAXC];
 void addToVector(vector<int> &vec, int value) {
     if (0 < vec.size()) {
         vector<int>::iterator it = vec.begin();
-        
+
         while (it != vec.end()) {
             if (*it == value) {
                 return;
@@ -49,7 +46,7 @@ void addToVector(vector<int> &vec, int value) {
             it ++;
         }
     }
-    
+
     vec.push_back(value);
 }
 
@@ -58,7 +55,7 @@ void mergeVector(vector<int> &vec_a, vector<int> &vec_b) {
         vector<int>::iterator it_b = vec_b.begin();
         if (0 < vec_a.size()) {
             vector<int>::iterator it_a = vec_a.begin();
-            
+
             while (it_a != vec_a.end() && it_b != vec_b.end()) {
                 if (*it_a == *it_b) {
                     it_a ++;
@@ -111,58 +108,54 @@ int buildMatchingMachine(vector<string> arr, int k)
 {
     // Initialize all values in output function as 0.
     //    memset(out, 0, sizeof out);
-    
-    memset(flag, 0, sizeof flag);
-    
+
     // Initialize all values in goto function as -1.
     memset(g, -1, sizeof g);
-    
+
     // Initially, we just have the 0 state
     int states = 1;
-    
+
     // Construct values for goto function, i.e., fill g[][]
     // This is same as building a Trie for arr[]
     for (int i = 0; i < k; ++i)
     {
         const string &word = arr[i];
         int currentState = 0;
-        
+
         // Insert all characters of current word in arr[]
         for (int j = 0; j < word.size(); ++j)
         {
             int ch = word[j] - 'a';
-            
+
             // Allocate a new node (create a new state) if a
             // node for ch doesn't exist.
             if (g[currentState][ch] == -1)
                 g[currentState][ch] = states++;
-            
+
             currentState = g[currentState][ch];
         }
-        
+
         // Add current word in output function
         //        out[currentState] |= (1 << i);
         addToVector(out[currentState], i);
-        
-        flag[currentState] = 1;
     }
-    
+
     // For all characters which don't have an edge from
     // root (or state 0) in Trie, add a goto edge to state
     // 0 itself
     for (int ch = 0; ch < MAXC; ++ch)
         if (g[0][ch] == -1)
             g[0][ch] = 0;
-    
+
     // Now, let's build the failure function
-    
+
     // Initialize values in fail function
     memset(f, -1, sizeof f);
-    
+
     // Failure function is computed in breadth first order
     // using a queue
     queue<int> q;
-    
+
     // Iterate over every possible input
     for (int ch = 0; ch < MAXC; ++ch)
     {
@@ -175,14 +168,14 @@ int buildMatchingMachine(vector<string> arr, int k)
             q.push(g[0][ch]);
         }
     }
-    
+
     // Now queue has states 1 and 3
     while (q.size())
     {
         // Remove the front state from queue
         int state = q.front();
         q.pop();
-        
+
         // For the removed state, find failure function for
         // all those characters for which goto function is
         // not defined.
@@ -194,28 +187,26 @@ int buildMatchingMachine(vector<string> arr, int k)
             {
                 // Find failure state of removed state
                 int failure = f[state];
-                
+
                 // Find the deepest node labeled by proper
                 // suffix of string from root to current
                 // state.
                 while (g[failure][ch] == -1)
                     failure = f[failure];
-                
+
                 failure = g[failure][ch];
                 f[g[state][ch]] = failure;
-                
+
                 // Merge output values
                 mergeVector(out[g[state][ch]], out[failure]);
                 //                out[g[state][ch]] |= out[failure];
-                
-                flag[g[state][ch]] |= flag[failure];
-                
+
                 // Insert the next level node (of Trie) in Queue
                 q.push(g[state][ch]);
             }
         }
     }
-    
+
     return states;
 }
 
@@ -228,11 +219,11 @@ int findNextState(int currentState, char nextInput)
 {
     int answer = currentState;
     int ch = nextInput - 'a';
-    
+
     // If goto is not defined, use failure function
     while (g[answer][ch] == -1)
         answer = f[answer];
-    
+
     return g[answer][ch];
 }
 
@@ -243,20 +234,16 @@ unsigned long long searchWords(vector<string> arr, int k, string text, int start
     unsigned long long ret = 0;
     // Preprocess patterns.
     // Build machine with goto, failure and output functions
-    
+
     // Initialize current state
     int currentState = 0;
-    
+
     // Traverse the text through the nuilt machine to find
     // all occurrences of words in arr[]
     for (int i = 0; i < text.size(); ++i)
     {
         currentState = findNextState(currentState, text[i]);
-        
-        // If match not found, move to next state
-        if (flag[currentState] == 0)
-            continue;
-        
+
         // Match found, print all matching words of arr[]
         // using output function.
         if (0 < out[currentState].size()) {
@@ -276,7 +263,7 @@ unsigned long long searchWords(vector<string> arr, int k, string text, int start
             }
         }
     }
-    
+
     return ret;
 }
 
@@ -285,9 +272,9 @@ int main()
 {
     long long min = -1;
     long long max = 0;
-    
+
     int n;
-    
+
 #if DEBUG
     ifstream fin("input.txt");
     if (!fin.is_open()) {
@@ -298,7 +285,7 @@ int main()
 #else
     cin >> n;
 #endif
-    
+
     vector<string> genes(n);
     for(int genes_i = 0; genes_i < n; genes_i++){
 #if DEBUG
@@ -315,40 +302,40 @@ int main()
         cin >> health[health_i];
 #endif
     }
-    
+
     buildMatchingMachine(genes, n);
-    
+
     int s;
-    
+
 #if DEBUG
     fin >> s;
 #else
     cin >> s;
 #endif
-    
+
     for(int a0 = 0; a0 < s; a0++){
         int first;
         int last;
         string d;
-        
+
 #if DEBUG
         fin >> first >> last >> d;
 #else
         cin >> first >> last >> d;
 #endif
         // your code goes here
-        
+
         unsigned long long ret = searchWords(genes, n, d, first, last, health);
         if (ret > max) {
             max = ret;
         }
-        
+
         if (0 > min || ret < min) {
             min = ret;
         }
     }
-    
+
     printf("%lld %lld\n", min, max);
-    
+
     return 0;
 }
