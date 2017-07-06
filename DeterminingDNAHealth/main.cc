@@ -2,6 +2,7 @@
 // for string matching
 #include <queue>
 #include <vector>
+#include <list>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -25,7 +26,7 @@ const int MAXC = 26;
 // Bit i in this mask is one if the word with index i
 // appears when the machine enters this state.
 //vector<int> out[MAXS];
-vector<int> * out;
+list<int> * out;
 
 // FAILURE FUNCTION IS IMPLEMENTED USING f[]
 int * f;
@@ -34,9 +35,9 @@ int * f;
 //int g[MAXS][MAXC];
 int * * g;
 
-void addToVector(vector<int> &vec, int value) {
+void addToVector(list<int> &vec, int value) {
     if (0 < vec.size()) {
-        vector<int>::iterator it = vec.begin();
+        list<int>::iterator it = vec.begin();
 
         while (it != vec.end()) {
             if (*it == value) {
@@ -55,11 +56,11 @@ void addToVector(vector<int> &vec, int value) {
     vec.push_back(value);
 }
 
-void mergeVector(vector<int> &vec_a, vector<int> &vec_b) {
+void mergeVector(list<int> &vec_a, list<int> &vec_b) {
     if (0 < vec_b.size()) {
-        vector<int>::iterator it_b = vec_b.begin();
+        list<int>::iterator it_b = vec_b.begin();
         if (0 < vec_a.size()) {
-            vector<int>::iterator it_a = vec_a.begin();
+            list<int>::iterator it_a = vec_a.begin();
 
             while (it_a != vec_a.end() && it_b != vec_b.end()) {
                 if (*it_a == *it_b) {
@@ -85,22 +86,6 @@ void mergeVector(vector<int> &vec_a, vector<int> &vec_b) {
             }
         }
     }
-}
-
-int LowerBound(vector<int> &A, int N, int K) {
-    int low , high , mid ;
-    low = 0 ;
-    high = N - 1;
-    while(low <= high){
-        mid = ( low + high ) / 2 ; // finding middle element
-        if(A[mid] >= K && ( mid == 0 || A[mid-1] < K )) // checking conditions for lowerbound
-            return mid ;
-        else if(A[mid] >= K) // answer should be in left part
-            high = mid - 1 ;
-        else                // answer should in right part if it exists
-            low = mid + 1 ;
-    }
-    return mid ; // this will execute when there is no element in the given array which >= K
 }
 
 // Builds the string matching machine.
@@ -246,19 +231,20 @@ unsigned long long searchWords(string text, int start, int end, vector<int>& hea
         // Match found, print all matching words of arr[]
         // using output function.
         if (0 < out[currentState].size()) {
-            if (start > out[currentState][out[currentState].size() - 1] || end < out[currentState][0]) {
-            }
-            else {
-                int index = LowerBound(out[currentState], out[currentState].size(), start);
-                while (index < out[currentState].size()) {
-                    if (out[currentState][index] <= end) {
-                        ret += health[out[currentState][index]];
-                        index ++;
-                    }
-                    else {
-                        break;
-                    }
+            int index = 0;
+            list<int>::iterator it = out[currentState].begin();
+
+            while (it != out[currentState].end()) {
+                if (start > *it) {
                 }
+                else if (*it <= end) {
+                    ret += health[*it];
+                }
+                else {
+                    break;
+                }
+                index ++;
+                it ++;
             }
         }
     }
@@ -305,7 +291,7 @@ int main()
         memset(g[i], -1, MAXC * sizeof(int));
     }
 
-    out = new vector<int>[maxs];
+    out = new list<int>[maxs];
 
     vector<int> health(n);
     for(int health_i = 0; health_i < n; health_i++){
