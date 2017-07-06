@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#include <malloc.h>
 
 #define DEBUG       1
 
@@ -14,7 +15,8 @@ using namespace std;
 
 // Max number of states in the matching machine.
 // Should be equal to the sum of the length of all keywords.
-const int MAXS = 2000000;
+//const int MAXS = 2000000;
+int maxs;
 
 // Maximum number of characters in input alphabet
 const int MAXC = 26;
@@ -22,13 +24,15 @@ const int MAXC = 26;
 // OUTPUT FUNCTION IS IMPLEMENTED USING out[]
 // Bit i in this mask is one if the word with index i
 // appears when the machine enters this state.
-vector<int> out[MAXS];
+//vector<int> out[MAXS];
+vector<int> * out;
 
 // FAILURE FUNCTION IS IMPLEMENTED USING f[]
-int f[MAXS];
+int * f;
 
 // GOTO FUNCTION (OR TRIE) IS IMPLEMENTED USING g[][]
-int g[MAXS][MAXC];
+//int g[MAXS][MAXC];
+int * * g;
 
 void addToVector(vector<int> &vec, int value) {
     if (0 < vec.size()) {
@@ -110,9 +114,6 @@ int buildMatchingMachine(vector<string>& arr, int k)
     // Initialize all values in output function as 0.
     //    memset(out, 0, sizeof out);
 
-    // Initialize all values in goto function as -1.
-    memset(g, -1, sizeof g);
-
     // Initially, we just have the 0 state
     int states = 1;
 
@@ -149,9 +150,6 @@ int buildMatchingMachine(vector<string>& arr, int k)
             g[0][ch] = 0;
 
     // Now, let's build the failure function
-
-    // Initialize values in fail function
-    memset(f, -1, sizeof f);
 
     // Failure function is computed in breadth first order
     // using a queue
@@ -287,6 +285,7 @@ int main()
     cin >> n;
 #endif
 
+    maxs = 0;
     vector<string> genes(n);
     for(int genes_i = 0; genes_i < n; genes_i++){
 #if DEBUG
@@ -294,7 +293,20 @@ int main()
 #else
         cin >> genes[genes_i];
 #endif
+    maxs += genes[genes_i].length();
     }
+
+    f = (int *)malloc(maxs * sizeof(int));
+    memset(f, -1, sizeof(maxs * sizeof(int)));
+
+    g = (int * *)malloc(maxs * sizeof(int *));
+    for (size_t i = 0; i < maxs; i++) {
+        g[i] = (int *)malloc(MAXC * sizeof(int));
+        memset(g[i], -1, MAXC * sizeof(int));
+    }
+
+    out = new vector<int>[maxs];
+
     vector<int> health(n);
     for(int health_i = 0; health_i < n; health_i++){
 #if DEBUG
@@ -343,7 +355,7 @@ int main()
 #if DEBUG
         finish=clock();
         TheTimes=(double)(finish-start)/CLOCKS_PER_SEC;
-        printf("%d : searchWords consume %fs\n", a0, TheTimes);
+//        printf("%d : searchWords consume %fs\n", a0, TheTimes);
 #endif
         if (ret > max) {
             max = ret;
