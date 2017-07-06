@@ -179,7 +179,7 @@ int buildMatchingMachine(vector<string> arr, int k)
         // For the removed state, find failure function for
         // all those characters for which goto function is
         // not defined.
-        for (int ch = 0; ch <= MAXC; ++ch)
+        for (int ch = 0; ch < MAXC; ++ch)
         {
             // If goto function is defined for character 'ch'
             // and 'state'
