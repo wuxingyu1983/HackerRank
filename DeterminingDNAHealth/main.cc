@@ -6,6 +6,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #define DEBUG       1
 
@@ -104,7 +105,7 @@ int LowerBound(vector<int> &A, int N, int K) {
 //         in the text.
 // Returns the number of states that the built machine has.
 // States are numbered 0 up to the return value - 1, inclusive.
-int buildMatchingMachine(vector<string> arr, int k)
+int buildMatchingMachine(vector<string>& arr, int k)
 {
     // Initialize all values in output function as 0.
     //    memset(out, 0, sizeof out);
@@ -229,7 +230,7 @@ int findNextState(int currentState, char nextInput)
 
 // This function finds all occurrences of all array words
 // in text.
-unsigned long long searchWords(vector<string> arr, int k, string text, int start, int end, vector<int> health)
+unsigned long long searchWords(string text, int start, int end, vector<int>& health)
 {
     unsigned long long ret = 0;
     // Preprocess patterns.
@@ -303,7 +304,17 @@ int main()
 #endif
     }
 
+    clock_t start,finish;
+    double TheTimes;
+#if DEBUG
+    start=clock();
+#endif
     buildMatchingMachine(genes, n);
+#if DEBUG
+    finish=clock();
+    TheTimes=(double)(finish-start)/CLOCKS_PER_SEC;
+    printf("buildMatchingMachine consume %fs\n",TheTimes);
+#endif
 
     int s;
 
@@ -325,7 +336,15 @@ int main()
 #endif
         // your code goes here
 
-        unsigned long long ret = searchWords(genes, n, d, first, last, health);
+#if DEBUG
+        start=clock();
+#endif
+        unsigned long long ret = searchWords(d, first, last, health);
+#if DEBUG
+        finish=clock();
+        TheTimes=(double)(finish-start)/CLOCKS_PER_SEC;
+        printf("%d : searchWords consume %fs\n", a0, TheTimes);
+#endif
         if (ret > max) {
             max = ret;
         }
