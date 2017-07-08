@@ -2,7 +2,7 @@
 // for string matching
 #include <queue>
 #include <vector>
-#include <list>
+//#include <list>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -22,11 +22,20 @@ int maxs;
 // Maximum number of characters in input alphabet
 const int MAXC = 26;
 
+const int MAXM = 512;
+const int ONE_MB = 1000000;
+
+struct output {
+    int value;
+    struct output * next;
+};
+
 // OUTPUT FUNCTION IS IMPLEMENTED USING out[]
 // Bit i in this mask is one if the word with index i
 // appears when the machine enters this state.
 //vector<int> out[MAXS];
-list<int> * out;
+struct output * * out;
+struct output * mem[MAXM];
 
 // FAILURE FUNCTION IS IMPLEMENTED USING f[]
 int * f;
@@ -35,60 +44,124 @@ int * f;
 //int g[MAXS][MAXC];
 int * * g;
 
-int cnt_add = 0, cnt_merge = 0;
+int index_in_mem = 0;
+int index_in_1mb = 0;
 
-void addToVector(list<int> &vec, int value) {
-/*
-    if (0 < vec.size()) {
-        list<int>::iterator it = vec.begin();
+struct output * getOneOutput() {
+    struct output * ret = NULL;
 
-        while (it != vec.end()) {
-            if (*it == value) {
-                return;
-            }
-            else {
-                if (*it > value) {
-                    vec.insert(it, value);
-                    return;
+    if (ONE_MB == index_in_1mb) {
+        index_in_mem ++;
+    }
+
+    if (MAXM > index_in_mem)  {
+        if (NULL == mem[index_in_mem]) {
+            mem[index_in_mem] = (struct output *)malloc(ONE_MB * sizeof(struct output));
+            index_in_1mb = 0;
+        }
+
+        ret = &mem[index_in_mem][index_in_1mb];
+        ret->value = 0;
+        ret->next = 0;
+        index_in_1mb ++;
+    }
+
+    return ret;
+}
+
+//void addToOutput(struct output * * l, int value) {
+void addToOutput(int index, int value) {
+    struct output * tmp = getOneOutput();
+    tmp->value = value;
+    if (NULL == out[index]) {
+        out[index] = tmp;
+    }
+    else {
+        if (value < out[index]->value) {
+            tmp->next = out[index];
+            out[index] = tmp;
+        }
+        else {
+            struct output * p = out[index];
+            while (p) {
+                if (NULL == p->next) {
+                    p->next = tmp;
+                    break;
+                }
+                else {
+                    if (value < p->next->value) {
+                        tmp->next = p->next;
+                        p->next = tmp;
+                        break;
+                    }
+                    else {
+                        p = p->next;
+                    }
                 }
             }
-            it ++;
         }
-    }
-*/    
-    if (0 == vec.size()) {
-        vec.push_back(value);
     }
 }
 
-void mergeVector(list<int> &vec_a, list<int> &vec_b) {
-    if (0 < vec_b.size()) {
-        list<int>::iterator it_b = vec_b.begin();
-        if (0 < vec_a.size()) {
-            list<int>::iterator it_a = vec_a.begin();
+void mergeOutput(struct output * * l_a, struct output * * l_b) {
+    if (*l_b) {
+        struct output * p_a = * l_a;
+        struct output * pp_a = NULL;
+        struct output * p_b = * l_b;
 
-            while (it_a != vec_a.end() && it_b != vec_b.end()) {
-                if (*it_a == *it_b) {
-                    it_a ++;
-                    it_b ++;
+        if (NULL == (*l_a)) {
+            *l_a = getOneOutput();
+            (*l_a)->value = p_b->value;
+
+            p_a = *l_a;
+            p_b = p_b->next;
+        }
+
+        while (p_a && p_b) {
+            if (p_b->value == p_a->value) {
+                p_a = p_a->next;
+                p_b = p_b->next;
+                if (pp_a) {
+                    pp_a = pp_a->next;
                 }
                 else {
-                    if (*it_a < *it_b) {
-                        it_a ++;
-                    }
-                    else {
-                        // *it_a > *it_b
-                        it_a = vec_a.insert(it_a, *it_b);
-                        it_b ++;
-                    }
+                    pp_a = *l_a;
                 }
             }
-        }
-        if (it_b != vec_b.end()) {
-            while (it_b != vec_b.end()) {
-                vec_a.push_back(*it_b);
-                it_b ++;
+            else if (p_b->value < p_a->value) {
+                struct output * tmp = getOneOutput();
+                tmp->value = p_b->value;
+                tmp->next = p_a;
+
+                if (pp_a) {
+                    pp_a->next = tmp;
+                }
+                else {
+                    * l_a = tmp;
+                }
+                pp_a = tmp;
+                p_b = p_b->next;
             }
+            else {
+                p_a = p_a->next;
+                if (pp_a) {
+                    pp_a = pp_a->next;
+                }
+                else {
+                    pp_a = *l_a;
+                }
+
+            }
+        }
+
+        while (p_b){
+            struct output * tmp = getOneOutput();
+            tmp->value = p_b->value;
+
+            pp_a->next = tmp;
+            pp_a = tmp;
+
+            p_b = p_b->next;
         }
     }
 }
@@ -122,22 +195,23 @@ int buildMatchingMachine(vector<string>& arr, int k)
             // Allocate a new node (create a new state) if a
             // node for ch doesn't exist.
             if (g[currentState][ch] == -1)
-                g[currentState][ch] = states++;
+            g[currentState][ch] = states++;
 
             currentState = g[currentState][ch];
         }
 
         // Add current word in output function
         //        out[currentState] |= (1 << i);
-        addToVector(out[currentState], i);
+//        addToOutput(&out[currentState], i);
+        addToOutput(currentState, i);
     }
 
     // For all characters which don't have an edge from
     // root (or state 0) in Trie, add a goto edge to state
     // 0 itself
     for (int ch = 0; ch < MAXC; ++ch)
-        if (g[0][ch] == -1)
-            g[0][ch] = 0;
+    if (g[0][ch] == -1)
+    g[0][ch] = 0;
 
     // Now, let's build the failure function
 
@@ -181,13 +255,13 @@ int buildMatchingMachine(vector<string>& arr, int k)
                 // suffix of string from root to current
                 // state.
                 while (g[failure][ch] == -1)
-                    failure = f[failure];
+                failure = f[failure];
 
                 failure = g[failure][ch];
                 f[g[state][ch]] = failure;
 
                 // Merge output values
-                mergeVector(out[g[state][ch]], out[failure]);
+                mergeOutput(&out[g[state][ch]], &out[failure]);
                 //                out[g[state][ch]] |= out[failure];
 
                 // Insert the next level node (of Trie) in Queue
@@ -211,7 +285,7 @@ int findNextState(int currentState, char nextInput)
 
     // If goto is not defined, use failure function
     while (g[answer][ch] == -1)
-        answer = f[answer];
+    answer = f[answer];
 
     return g[answer][ch];
 }
@@ -235,21 +309,20 @@ unsigned long long searchWords(string text, int start, int end, vector<int>& hea
 
         // Match found, print all matching words of arr[]
         // using output function.
-        if (0 < out[currentState].size()) {
-            int index = 0;
-            list<int>::iterator it = out[currentState].begin();
+        if (out[currentState]) {
+            struct output * p = out[currentState];
 
-            while (it != out[currentState].end()) {
-                if (start > *it) {
+            while (p) {
+                if (start > p->value) {
                 }
-                else if (*it <= end) {
-                    ret += health[*it];
+                else if (p->value <= end) {
+                    ret += health[p->value];
                 }
                 else {
                     break;
                 }
-                index ++;
-                it ++;
+
+                p = p->next;
             }
         }
     }
@@ -284,7 +357,7 @@ int main()
 #else
         cin >> genes[genes_i];
 #endif
-    maxs += genes[genes_i].length();
+        maxs += genes[genes_i].length();
     }
 
     f = (int *)malloc(maxs * sizeof(int));
@@ -296,7 +369,8 @@ int main()
         memset(g[i], -1, MAXC * sizeof(int));
     }
 
-    out = new list<int>[maxs];
+    out = (struct output * *)malloc(maxs * sizeof(struct output *));
+    memset(out, 0 , maxs * sizeof(struct output *));
 
     vector<int> health(n);
     for(int health_i = 0; health_i < n; health_i++){
@@ -346,7 +420,6 @@ int main()
 #if DEBUG
         finish=clock();
         TheTimes=(double)(finish-start)/CLOCKS_PER_SEC;
-//        printf("%d : searchWords consume %fs\n", a0, TheTimes);
 #endif
         if (ret > max) {
             max = ret;
