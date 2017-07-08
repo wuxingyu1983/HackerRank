@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
-#include <malloc.h>
+//#include <malloc.h>
 
 #define DEBUG       1
 
@@ -35,7 +35,10 @@ int * f;
 //int g[MAXS][MAXC];
 int * * g;
 
+int cnt_add = 0, cnt_merge = 0;
+
 void addToVector(list<int> &vec, int value) {
+/*
     if (0 < vec.size()) {
         list<int>::iterator it = vec.begin();
 
@@ -52,8 +55,10 @@ void addToVector(list<int> &vec, int value) {
             it ++;
         }
     }
-
-    vec.push_back(value);
+*/    
+    if (0 == vec.size()) {
+        vec.push_back(value);
+    }
 }
 
 void mergeVector(list<int> &vec_a, list<int> &vec_b) {
