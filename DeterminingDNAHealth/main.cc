@@ -35,6 +35,7 @@ struct output {
 // appears when the machine enters this state.
 //vector<int> out[MAXS];
 struct output * * out;
+struct output * * last;
 struct output * mem[MAXM];
 
 // FAILURE FUNCTION IS IMPLEMENTED USING f[]
@@ -71,36 +72,15 @@ struct output * getOneOutput() {
 
 //void addToOutput(struct output * * l, int value) {
 void addToOutput(int index, int value) {
-    struct output * tmp = getOneOutput();
-    tmp->value = value;
-    if (NULL == out[index]) {
-        out[index] = tmp;
-    }
-    else {
-        if (value < out[index]->value) {
-            tmp->next = out[index];
-            out[index] = tmp;
-        }
-        else {
-            struct output * p = out[index];
-            while (p) {
-                if (NULL == p->next) {
-                    p->next = tmp;
-                    break;
-                }
-                else {
-                    if (value < p->next->value) {
-                        tmp->next = p->next;
-                        p->next = tmp;
-                        break;
-                    }
-                    else {
-                        p = p->next;
-                    }
-                }
-            }
-        }
-    }
+	struct output * tmp = getOneOutput();
+	tmp->value = value;
+	if (NULL == out[index]) {
+		out[index] = tmp;
+	}
+	else {
+		last[index]->next = tmp;
+	}
+	last[index] = tmp;
 }
 
 void mergeOutput(struct output * * l_a, struct output * * l_b) {
@@ -304,28 +284,26 @@ unsigned long long searchWords(string text, int start, int end, vector<int>& hea
     // Traverse the text through the nuilt machine to find
     // all occurrences of words in arr[]
     for (int i = 0; i < text.size(); ++i)
-    {
-        currentState = findNextState(currentState, text[i]);
+	{
+		currentState = findNextState(currentState, text[i]);
 
-        // Match found, print all matching words of arr[]
-        // using output function.
-        if (out[currentState]) {
-            struct output * p = out[currentState];
+		// Match found, print all matching words of arr[]
+		// using output function.
+		struct output * p = out[currentState];
 
-            while (p) {
-                if (start > p->value) {
-                }
-                else if (p->value <= end) {
-                    ret += health[p->value];
-                }
-                else {
-                    break;
-                }
+		while (p) {
+			if (start > p->value) {
+			}
+			else if (p->value <= end) {
+				ret += health[p->value];
+			}
+			else {
+				break;
+			}
 
-                p = p->next;
-            }
-        }
-    }
+			p = p->next;
+		}
+	}
 
     return ret;
 }
@@ -371,6 +349,9 @@ int main()
 
     out = (struct output * *)malloc(maxs * sizeof(struct output *));
     memset(out, 0 , maxs * sizeof(struct output *));
+
+    last = (struct output * *)malloc(maxs * sizeof(struct output *));
+    memset(last, 0 , maxs * sizeof(struct output *));
 
     vector<int> health(n);
     for(int health_i = 0; health_i < n; health_i++){
@@ -431,6 +412,6 @@ int main()
     }
 
     printf("%lld %lld\n", min, max);
-
+	 
     return 0;
 }
