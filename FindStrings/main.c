@@ -4,15 +4,16 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define DEBUG		1
+#define DEBUG		0
 
-#define MAX_LEN		100000
+#define MAX_LEN		100051
 
-char w[50][2001];
-char com_str[100001];
-int remain[100000];
+int n;
+char first_char;
+char com_str[MAX_LEN];
+int remain[MAX_LEN];
 int k[500];
-char output[50][2001];
+char * output[50];
 int old_pos[500];
 
 void insert_sort(int s[], int len) {
@@ -52,12 +53,12 @@ struct myTuple {
     struct myTuple * last;
 };
 
-struct myTuple round1[100000];
-struct myTuple round2[100000];
+struct myTuple round1[MAX_LEN];
+struct myTuple round2[MAX_LEN];
 
 void radix_sort(struct myTuple s[], int len) {
 	struct myTuple * negative = NULL;
-	int buckket_size = len < 26 ? 26 : len;
+	int buckket_size = len < (26 + n) ? (26 + n) : len;
 	struct myTuple * * buckets = (struct myTuple * *)malloc(sizeof(struct myTuple * ) * buckket_size);
 	memset(buckets, 0, sizeof(struct myTuple * ) * buckket_size);
 
@@ -159,8 +160,8 @@ void radix_sort(struct myTuple s[], int len) {
 	}
 }
 
-struct myTuple LS[18][100000];
-struct myTuple L[100000];       // ���ڹ�����������
+struct myTuple LS[18][MAX_LEN];
+struct myTuple L[MAX_LEN];
 
 int getLcp(int prev, int curr, int stp, int len) {
     int ret = 0;
@@ -196,7 +197,7 @@ void findStrings(char a[], int q) {
     int len = strlen(a);
 
     for(int i = 0; i < len; ++i) {
-        suffixRank[0][i] = a[i] - 'a';
+        suffixRank[0][i] = a[i] - first_char;
     }
 
     for(int i = 0; i < len; ++i) {
@@ -245,25 +246,26 @@ void findStrings(char a[], int q) {
         }
     }
 
-    // L ����������������
     stp --;
     lcp[0] = 0;
     for (int i = 1; i < len; i++){
         lcp[i] = getLcp(L[i - 1].originalIndex, L[i].originalIndex, stp, len);
     }
 
-	int sum = 0;
-	int index_in_l = 0;
+	long long sum = 0;
+	int index_in_l = n;
 	int index_in_k = 0;
-	int tmp = 0;
 
-	while (index_in_l < len) {
+	while (index_in_l < len && index_in_k < q) {
 		int remn = remain[L[index_in_l].originalIndex];
 		int rept = lcp[index_in_l];
 
 		if (remn > rept) {
 			while (sum + remn - rept >= k[index_in_k]) {
-				memcpy(output[old_pos[index_in_k]], &com_str[L[index_in_l].originalIndex], k[index_in_k] - sum + rept);
+				int size = k[index_in_k] - sum + rept;
+				output[old_pos[index_in_k]] = (char *)malloc(size + 1);
+				memset(output[old_pos[index_in_k]], 0 , size + 1);
+				memcpy(output[old_pos[index_in_k]], &com_str[L[index_in_l].originalIndex], size);
 				index_in_k ++;
 				if (q == index_in_k) {
 					break;
@@ -277,6 +279,8 @@ void findStrings(char a[], int q) {
 	}
 
 	while (index_in_k < q) {
+		output[old_pos[index_in_k]] = (char *)malloc(8);
+		memset(output[old_pos[index_in_k]], 0 , 8);
 		memcpy(output[old_pos[index_in_k]], "INVALID", 7);
 		index_in_k ++;
 	}
@@ -285,28 +289,34 @@ void findStrings(char a[], int q) {
 }
 
 int main() {
-    int n;
-
 #if DEBUG
     FILE * fp = fopen("input.txt", "r");
     fscanf(fp, "%d", &n);
+	FILE * fp_out = fopen("output.txt", "w");
 #else
     scanf("%d", &n);
 #endif
 
+	first_char = 'a';
 	int index_in_str = 0;
+	char w[2001];
 	for (int i = 0; i < n; i ++) {
+		memset(w, 0, 2001);
 #if DEBUG
-		fscanf(fp, "%s", w[i]);
+		fscanf(fp, "%s", w);
 #else
-		scanf("%s", w[i]);
+		scanf("%s", w);
 #endif
-		int len = strlen(w[i]);
+		int len = strlen(w);
 		for (int j = 0; j < len; j ++) {
-			com_str[index_in_str] = w[i][j];
+			com_str[index_in_str] = w[j];
 			remain[index_in_str] = len - j;
 			index_in_str ++;
 		}
+
+		com_str[index_in_str] = --first_char;
+		remain[index_in_str] = 0;
+		index_in_str ++;
 	}
 
 	int q;
@@ -330,11 +340,17 @@ int main() {
 	findStrings(com_str, q);
 
 	for (int i = 0; i < q; i ++) {
+#if DEBUG
+		fputs(output[i], fp_out);
+		fputs("\n", fp_out);
+#else
 		printf("%s\n", output[i]);
+#endif
 	}
 
 #if DEBUG
     fclose(fp);
+    fclose(fp_out);
 #endif
 
     return 0;
