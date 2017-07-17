@@ -13,7 +13,7 @@ char first_char;
 char com_str[MAX_LEN];
 int remain[MAX_LEN];
 int k[500];
-char * output[50];
+char * output[500];
 int old_pos[500];
 
 void insert_sort(int s[], int len) {
