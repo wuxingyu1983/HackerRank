@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define DEBUG		0
+#define DEBUG		1
 
 char p[10][100001];
 char v[10][100001];
@@ -20,7 +20,7 @@ void getFailure(char v[], int f[])
 	for (int i=1, j=f[0]=-1; i<len; ++i)
 	{
 		while (j >= 0 && v[j+1] != v[i])
-			j = f[j];
+		j = f[j];
 
 		if (v[j+1] == v[i]) j++;
 
@@ -56,8 +56,6 @@ int save_humanity(char pat[], char vir[], int out[], int f[]) {
 
 	if (len_p >= len_v) {
 		getFailure(vir, f);
-
-		int start = -1;
 
 		for (int i=0, j=-1; i<len_p; ++i)
 		{
@@ -97,51 +95,66 @@ int save_humanity(char pat[], char vir[], int out[], int f[]) {
 			if (2 == exact_match) {
 				dismatch = i;
 			}
-			}
 		}
-
-		return ret;
 	}
 
-	int main() {
-		int t;
+	return ret;
+}
+
+int main() {
+	int t;
 
 #if DEBUG
-		FILE * fp = fopen("input.txt", "r");
-		fscanf(fp, "%d", &t);
-		FILE * fp_out = fopen("output.txt", "w");
+	FILE * fp = fopen("input.txt", "r");
+	fscanf(fp, "%d", &t);
+	FILE * fp_out = fopen("output.txt", "w");
 #else
-		scanf("%d", &t);
+	scanf("%d", &t);
 #endif
 
-		for (size_t i = 0; i < t; i++) {
+	for (size_t i = 0; i < t; i++) {
 #if DEBUG
-			fscanf(fp, "%s %s", p[i], v[i]);
+		fscanf(fp, "%s %s", p[i], v[i]);
 #else
-			scanf("%s %s", p[i], v[i]);
+		scanf("%s %s", p[i], v[i]);
 #endif
-			cnt[i] = save_humanity(p[i], v[i], output[i], failure[i]);
-		}
-
-		for (size_t i = 0; i < t; i++) {
-			if (0 >= cnt[i]) {
-				printf("No Match!\n");
-			}
-			else {
-				int j = 0;
-				printf("%d", output[i][j++]);
-				while (j < cnt[i]) {
-					printf(" %d", output[i][j++]);
-				}
-				printf("\n");
-			}
-		}
-
-#if DEBUG
-		fclose(fp);
-		fclose(fp_out);
-#endif
-
-		return 0;
+		cnt[i] = save_humanity(p[i], v[i], output[i], failure[i]);
 	}
 
+	for (size_t i = 0; i < t; i++) {
+		if (0 >= cnt[i]) {
+#if DEBUG
+			fprintf(fp_out, "No Match!\n");
+#else
+			printf("No Match!\n");
+#endif
+		}
+		else {
+			int j = 0;
+#if DEBUG
+			fprintf(fp_out, "%d", output[i][j++]);
+#else
+			printf("%d", output[i][j++]);
+#endif
+			while (j < cnt[i]) {
+#if DEBUG
+				fprintf(fp_out, " %d", output[i][j++]);
+#else
+				printf(" %d", output[i][j++]);
+#endif
+			}
+#if DEBUG
+			fprintf(fp_out, "\n");
+#else
+			printf("\n");
+#endif
+		}
+	}
+
+#if DEBUG
+	fclose(fp);
+	fclose(fp_out);
+#endif
+
+	return 0;
+}
