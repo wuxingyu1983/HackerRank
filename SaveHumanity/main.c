@@ -4,101 +4,41 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define DEBUG		1
+#define DEBUG		0
 
-char p[10][100001];
-char v[10][100001];
+char p[100001];
+char v[100001];
+
+int z[200002];
+int rz[200002];
+
+char str[200002];
+char rstr[200002];
 
 int output[10][100000];
 int cnt[10];
 
-int failure[10][100000];
+#define max(x,y)  (x>y?x:y)
+#define min(x,y)  (x<y?x:y)
 
-void getFailure(char v[], int f[])
+void z_function(char s[], int z[])
 {
-	int len = strlen(v);
-	for (int i=1, j=f[0]=-1; i<len; ++i)
+	int n = strlen(s);
+
+	memset(z, 0, sizeof(0));
+	z[0] = n;
+
+	int x = 0, y = 0;
+	for (int i=1; i<n; i++)
 	{
-		while (j >= 0 && v[j+1] != v[i])
-		j = f[j];
-
-		if (v[j+1] == v[i]) j++;
-
-		f[i] = j;
-	}
-}
-
-int can_match(char v, char p, int pos_v, int pos_p, int pos_dismatch_in_pat) {
-	int ret = 1;
-
-	if (v != p) {
-		if (pos_dismatch_in_pat < 0) {
-		}
-		else {
-			if (pos_p - pos_dismatch_in_pat > pos_v) {
-				// can
-			}
-			else {
-				// can not
-				ret = 0;
-			}
-		}
-	}
-
-	return ret;
-}
-
-int save_humanity(char pat[], char vir[], int out[], int f[]) {
-	int ret = 0;
-	int len_p = strlen(pat);
-	int len_v = strlen(vir);
-	int dismatch = -1;
-
-	if (len_p >= len_v) {
-		getFailure(vir, f);
-
-		for (int i=0, j=-1; i<len_p; ++i)
+		z[i] = max(0, min(z[i-x], y-i+1));
+		while (i + z[i] < n && s[z[i]] == s[i + z[i]])
 		{
-			while (j >= 0 && !can_match(vir[j+1], pat[i], j+1, i, dismatch)) {
-				//			while (j >= 0 && vir[j+1] != pat[i]) {
-				if (-1 == f[j]) {
-					i -= j;
-					j = -1;
-					dismatch = -1;
-				}
-				else {
-					j = f[j];
-				}
-			}
-
-			int exact_match = 0;
-			if (can_match(vir[j+1], pat[i], j+1, i, dismatch)) {
-				if (vir[j+1] == pat[i]) {
-					exact_match = 1;
-				}
-				else {
-					exact_match = 2;
-				}
-				j++;
-			}
-			//			if (vir[j+1] == pat[i]) j++;
-
-			if (j == len_v-1)
-			{
-				out[ret ++] = i - len_v + 1;
-				i = i - len_v + 1;
-				j = -1;
-				dismatch = -1;
-				exact_match = 0;
-			}
-
-			if (2 == exact_match) {
-				dismatch = i;
-			}
+			x = i;
+			y = i + z[i];
+			z[i]++;
 		}
 	}
-
-	return ret;
 }
 
 int main() {
@@ -112,13 +52,44 @@ int main() {
 	scanf("%d", &t);
 #endif
 
-	for (size_t i = 0; i < t; i++) {
+	for (size_t i_t = 0; i_t < t; i_t++) {
+		memset(p, 0, sizeof(p));
+		memset(v, 0, sizeof(v));
 #if DEBUG
-		fscanf(fp, "%s %s", p[i], v[i]);
+		fscanf(fp, "%s %s", p, v);
 #else
-		scanf("%s %s", p[i], v[i]);
+		scanf("%s %s", p, v);
 #endif
-		cnt[i] = save_humanity(p[i], v[i], output[i], failure[i]);
+		memset(str, 0 , sizeof(str));
+		memset(rstr, 0 , sizeof(rstr));
+		memset(z, 0 , sizeof(z));
+		memset(rz, 0 , sizeof(rz));
+
+		int plen = strlen(p);
+		int vlen = strlen(v);
+		int index = 0;
+
+		for (int i = 0; i < vlen; i ++) {
+			str[i] = v[i];
+			rstr[vlen - 1 - i] = v[i];
+		}
+
+		str[vlen] = '$';
+		rstr[vlen] = '$';
+
+		for (int i = 0; i < plen; i ++) {
+			str[vlen + 1 + i] = p[i];
+			rstr[vlen + plen - i] = p[i];
+		}
+
+		z_function(str, z);
+		z_function(rstr, rz);
+
+		for (int i = 0; i < plen; i ++) {
+			if (plen + vlen - i - vlen + 1 > vlen && z[i + vlen + 1] + rz[plen + vlen - i - vlen + 1] >= vlen - 1) {
+				output[i_t][cnt[i_t]++] = i;
+			}
+		}
 	}
 
 	for (size_t i = 0; i < t; i++) {
