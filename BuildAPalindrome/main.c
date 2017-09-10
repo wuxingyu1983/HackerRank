@@ -8,11 +8,13 @@
 #define MAX_LEN     500005
 
 char output[10][2 * MAX_LEN];
+int rl[2 * MAX_LEN];
+int pallen[2 * MAX_LEN];
 
 void manacher(char *str, int * out) {
     // # - pre process
-    char tmp[2 * MAX_LEN];
-    memset(tmp, 0, sizeof(tmp));
+    char * tmp = (char *)malloc(2 * strlen(str) + 2);
+    memset(tmp, 0, 2 * strlen(str) + 2);
 
     size_t j = 0;
     for (size_t i = 0; i < strlen(str); i++) {
@@ -21,7 +23,6 @@ void manacher(char *str, int * out) {
     }
     tmp[j] = '#';
 
-    int rl[2*MAX_LEN];
     memset(rl, 0, sizeof(rl));
 
     int max_right = 0, pos = 0;
@@ -43,13 +44,39 @@ void manacher(char *str, int * out) {
             pos = i;
         }
     }
-
-    j = 0;
-    for (size_t i = 0; i < len_tmp; i++) {
-        i ++;
-        out[j ++] = rl[i];
+/*
+	for (size_t i = 0; i < strlen(str); i++) {
+		out[i] = 1;
+	}
+*/
+    for (size_t i = 0; i < len_tmp; i ++) {
+        pallen[i] = 1;
     }
+
+    for (size_t i = 0; i < len_tmp; i ++) {
+        int left = i - rl[i] + 1;   // must # position
+        int len = rl[i] * 2 - 1;
+
+        if (1 < len) {
+            if (len > pallen[left]) {
+                pallen[left] = len;
+            }
+
+            if (left + 1 < len_tmp && (len - 1) / 2 > pallen[left + 1]) {
+                pallen[left + 1] = (len - 1) / 2;
+            }
+        }
+    }
+
+    for (size_t i = 1, j = 0; i < len_tmp; i = i + 2, j ++) {
+        out[j] = pallen[i];
+    }
+
+	free(tmp);
 }
+
+// p_a[i] : a[i] ¿ªÊ¼µÄ×î´ó»ØÎÄµÄ³¤¶È
+int p_a[MAX_LEN], p_b[MAX_LEN];
 
 void build(char *a, char *b, char *out) {
     // reverse b[]
@@ -60,13 +87,26 @@ void build(char *a, char *b, char *out) {
         b[len_b - 1 - i] = tmp;
     }
 
-    // p_a[i] : a[i] 开始的最大回文的长度
-    int p_a[MAX_LEN], p_b[MAX_LEN];
     memset(p_a, 0, sizeof(p_a));
     memset(p_b, 0, sizeof(p_b));
 
     manacher(a, p_a);
     manacher(b, p_b);
+
+#if 1
+	printf("%s 's palindrome array is : ", a);
+	for (size_t i = 0; i < strlen(a); i ++) {
+		printf("%d ", p_a[i]);
+	}
+	printf("\n");
+
+	printf("%s 's palindrome array is : ", b);
+	for (size_t i = 0; i < strlen(b); i ++) {
+		printf("%d ", p_b[i]);
+	}
+	printf("\n");
+#endif
+
 }
 
 int main() {
@@ -118,6 +158,8 @@ int main() {
     fclose(fp);
     fclose(fp_out);
 #endif
+
+	system("pause");
 
     return 0;
 }
