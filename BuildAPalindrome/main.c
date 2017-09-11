@@ -280,7 +280,6 @@ void build_priv(char * com_str, int len_a, int len_b, char *out) {
 		}
 	}
 
-	// L 数组就是排序后的
 	stp --;
 	int * lcp = (int *)malloc(len * sizeof(int));
 	lcp[0] = 0;
@@ -295,7 +294,87 @@ void build_priv(char * com_str, int len_a, int len_b, char *out) {
 	}
 
 	for (int i = 0; i < len_a; i ++) {
-		int after_i = i + p_a[i];
+        // first process lcp
+		int after_i = i;
+        {
+			int pos_in_lcp = pos[after_i];
+			int tmp = lcp[pos_in_lcp];
+			int pos_in_b = -1;
+			int min = 0;
+			while (0 < lcp[pos_in_lcp]) {
+				// go left
+				if (L[pos_in_lcp - 1].originalIndex > len_a) {
+					min = tmp;
+					pos_in_b = L[pos_in_lcp - 1].originalIndex;
+					break;
+				}
+				else {
+					if (tmp > lcp[pos_in_lcp - 1]) {
+						tmp = lcp[pos_in_lcp - 1];
+					}
+				}
+
+				pos_in_lcp --;
+			}
+
+			if (0 <= pos_in_b && 2 * min >= strlen(out)) {
+				int j = 0;
+				for (int com_i = 0; com_i < min; com_i ++) {
+					tmp_out[j ++] = com_str[pos_in_b + min - 1 - com_i];
+				}
+
+				for (int com_i = 0; com_i < min; com_i ++) {
+					tmp_out[j ++] = com_str[pos_in_b + com_i];
+				}
+
+				tmp_out[j] = 0;
+
+				if (0 == strlen(out) || strlen(tmp_out) > strlen(out) || (strlen(tmp_out) == strlen(out) && 0 > strcmp(tmp_out, out))) {
+					out[0] = 0;
+					strcpy(out, tmp_out);
+				}
+			}
+
+			pos_in_lcp = pos[after_i];
+			pos_in_lcp ++;
+			tmp = MAX_LEN;
+			min = 0;
+			pos_in_b = -1;
+			while(0 < lcp[pos_in_lcp]) {
+				if (L[pos_in_lcp].originalIndex > len_a) {
+					min = tmp > lcp[pos_in_lcp] ? lcp[pos_in_lcp] : tmp;
+					pos_in_b = L[pos_in_lcp].originalIndex;
+					break;
+				}
+				else {
+					if (tmp > lcp[pos_in_lcp]) {
+						tmp = lcp[pos_in_lcp];
+					}
+				}
+
+				pos_in_lcp ++;
+			}
+
+			if (0 <= pos_in_b && 2 * min >= strlen(out)) {
+				int j = 0;
+				for (int com_i = 0; com_i < min; com_i ++) {
+					tmp_out[j ++] = com_str[pos_in_b + min - 1 - com_i];
+				}
+
+				for (int com_i = 0; com_i < min; com_i ++) {
+					tmp_out[j ++] = com_str[pos_in_b + com_i];
+				}
+
+				tmp_out[j] = 0;
+
+				if (0 == strlen(out) || strlen(tmp_out) > strlen(out) || (strlen(tmp_out) == strlen(out) && 0 > strcmp(tmp_out, out))) {
+					out[0] = 0;
+					strcpy(out, tmp_out);
+				}
+			}
+		}
+
+		after_i = i + p_a[i];
 		if (after_i < len_a) {
 			int pos_in_lcp = pos[after_i];
 			int tmp = lcp[pos_in_lcp];
@@ -317,7 +396,7 @@ void build_priv(char * com_str, int len_a, int len_b, char *out) {
 				pos_in_lcp --;
 			}
 
-			if (0 <= pos_in_b) {
+			if (0 <= pos_in_b && (2 * min + p_a[i]) >= strlen(out)) {
 				int j = 0;
 				for (int com_i = 0; com_i < min; com_i ++) {
 					tmp_out[j ++] = com_str[pos_in_b + min - 1 - com_i];
@@ -359,7 +438,7 @@ void build_priv(char * com_str, int len_a, int len_b, char *out) {
 				pos_in_lcp ++;
 			}
 
-			if (0 <= pos_in_b) {
+			if (0 <= pos_in_b && (2 * min + p_a[i]) >= strlen(out)) {
 				int j = 0;
 				for (int com_i = 0; com_i < min; com_i ++) {
 					tmp_out[j ++] = com_str[pos_in_b + min - 1 - com_i];
@@ -496,8 +575,6 @@ int main() {
     fclose(fp);
     fclose(fp_out);
 #endif
-
-	system("pause");
 
     return 0;
 }
