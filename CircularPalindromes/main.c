@@ -8,14 +8,12 @@
 #define MAX_LEN     500001
 
 char s[MAX_LEN * 2];
-int radius[MAX_LEN * 2];
+int radius[MAX_LEN * 4 + 4];
 
 void manacher(char *str, int * out) {
     // # - pre process
-    int * rl = (int *)malloc(sizeof(int) * (2 * strlen(str) + 2));
     char * tmp = (char *)malloc(2 * strlen(str) + 2);
 
-    memset(rl, 0, sizeof(int) * (2 * strlen(str) + 2));
     memset(tmp, 0, 2 * strlen(str) + 2);
 
     size_t j = 0;
@@ -30,28 +28,23 @@ void manacher(char *str, int * out) {
 
     for (int i = 0; i < len_tmp; i++) {
         if (i < max_right) {
-            rl[i] = rl[2 * pos - i] > (max_right - i) ? (max_right - i) : rl[2 * pos - i];
+            out[i] = out[2 * pos - i] > (max_right - i) ? (max_right - i) : out[2 * pos - i];
         }
         else {
-            rl[i] = 1;
+            out[i] = 1;
         }
 
-        while (i - rl[i] >= 0 && i + rl[i] < len_tmp && tmp[i - rl[i]] == tmp[i + rl[i]]) {
-            rl[i] ++;
+        while (i - out[i] >= 0 && i + out[i] < len_tmp && tmp[i - out[i]] == tmp[i + out[i]]) {
+            out[i] ++;
         }
 
-        if (i + rl[i] - 1 > max_right) {
-            max_right = i + rl[i] - 1;
+        if (i + out[i] - 1 > max_right) {
+            max_right = i + out[i] - 1;
             pos = i;
         }
     }
 
-    for (size_t i = 1; i < len_tmp; i += 2) {
-        out[(i - 1) / 2] = rl[i] / 2;
-    }
-
 	free(tmp);
-    free(rl);
 }
 
 int main() {
@@ -73,6 +66,36 @@ int main() {
     }
 
     manacher(s, radius);
+
+    for (size_t i = 1; i < 2 * n; i += 2) {
+        int max = 0;
+
+        for (size_t j = i; j < i + 2 * n; j ++) {
+            int r = radius[j];
+            int left = j + 1 - radius[j];
+            int right = j - 1 + radius[j];
+
+            if (left < (i - 1)) {
+                r = j - (i - 1) + 1;
+            }
+
+            if (right > i - 1 + 2 * n) {
+                if (r < (i + 2 * n - j)) {
+                    r = i + 2 * n - j;
+                }
+            }
+
+            if ((r - 1) > max) {
+                max = r - 1;
+            }
+        }
+
+#if DEBUG
+        fprintf(fp_out, "%d\n", max);
+#else
+        printf("%d\n", max);
+#endif
+    }
 
 #if DEBUG
     fclose(fp);
