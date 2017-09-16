@@ -67,21 +67,21 @@ int main() {
 
     manacher(s, radius);
 
-    for (size_t i = 1; i < 2 * n; i += 2) {
+    for (size_t start = 1; start < 2 * n; start += 2) {
         int max = 0;
 
-        for (size_t j = i; j < i + 2 * n; j ++) {
+        for (size_t j = start; j < start + 2 * n; j ++) {
             int r = radius[j];
             int left = j + 1 - radius[j];
             int right = j - 1 + radius[j];
 
-            if (left < (i - 1)) {
-                r = j - (i - 1) + 1;
+            if (left < (start - 1)) {
+                r = j - (start - 1) + 1;
             }
 
-            if (right > i - 1 + 2 * n) {
-                if (r < (i + 2 * n - j)) {
-                    r = i + 2 * n - j;
+            if (right >= start + 2 * n) {
+                if (r > (start + 2 * n - j)) {
+                    r = start + 2 * n - j;
                 }
             }
 
