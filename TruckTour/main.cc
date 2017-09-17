@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define DEBUG       1
+#define DEBUG       0
 
 class Pump {
 public:
@@ -54,7 +54,7 @@ int main() {
 
     long long remain = 0;
     while (0 < pumps.size()) {
-        Pump &item = pumps.front();
+        Pump item = pumps.front();
         pumps.pop();
         if (remain + item.m_amount < item.m_distance) {
             if (0 == res.size()) {
@@ -63,7 +63,7 @@ int main() {
             }
             else {
                 while (0 < res.size()) {
-                    Pump &pre = res.front();
+                    Pump pre = res.front();
                     res.pop();
                     pumps.push(pre);
 
@@ -89,7 +89,7 @@ int main() {
         }
     }
 
-    Pump &first = res.front();
+    Pump first = res.front();
     cout << first.m_index << endl;
 
     return 0;
