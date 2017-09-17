@@ -8,6 +8,8 @@
 
 using namespace std;
 
+#define DEBUG       1
+
 class Pump {
 public:
     Pump(int index, int amnt, int dist) {
@@ -20,8 +22,6 @@ public:
     int m_amount;
     int m_distance;
 };
-
-#define DEBUG       0
 
 int main() {
     int n;
@@ -67,15 +67,17 @@ int main() {
                     pumps.push(pre);
 
                     remain = remain - pre.m_amount + pre.m_distance;
-                    if ((remain + item.m_amount) < item.m_distance || (remain + item.m_amount == item.m_distance && 0 == pumps.size())) {
+                    if ((remain + item.m_amount) > item.m_distance || (remain + item.m_amount == item.m_distance && 0 == pumps.size())) {
                         break;
                     }
                 }
 
-                if ((remain + item.m_amount) < item.m_distance || (remain + item.m_amount == item.m_distance && 0 == pumps.size())) {
+                if ((remain + item.m_amount) > item.m_distance || (remain + item.m_amount == item.m_distance && 0 == pumps.size())) {
+                    remain = remain + item.m_amount - item.m_distance;
                     res.push(item);
                 }
                 else {
+                    remain = 0;
                     pumps.push(item);
                 }
             }
