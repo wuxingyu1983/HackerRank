@@ -12,15 +12,15 @@ using namespace std;
 
 class Pump {
 public:
-    Pump(int index, int amnt, int dist) {
+    Pump(int index, long long amnt, long long dist) {
         m_index = index;
         m_amount = amnt;
         m_distance = dist;
     }
 
     int m_index;
-    int m_amount;
-    int m_distance;
+    long long m_amount;
+    long long m_distance;
 };
 
 int main() {
@@ -40,7 +40,7 @@ int main() {
     queue<Pump> pumps;
     string s;
     for (size_t i = 0; i < n; i++) {
-        int amnt, dist;
+        long long amnt, dist;
 #if DEBUG
         fin >> amnt >> dist;
 #else
@@ -52,12 +52,13 @@ int main() {
 
     queue<Pump> res;
 
-    int remain = 0;
+    long long remain = 0;
     while (0 < pumps.size()) {
         Pump &item = pumps.front();
         pumps.pop();
-        if ((remain + item.m_amount < item.m_distance) || (remain + item.m_amount == item.m_distance && 0 < pumps.size())) {
+        if (remain + item.m_amount < item.m_distance) {
             if (0 == res.size()) {
+                remain = 0;
                 pumps.push(item);
             }
             else {
@@ -67,12 +68,12 @@ int main() {
                     pumps.push(pre);
 
                     remain = remain - pre.m_amount + pre.m_distance;
-                    if ((remain + item.m_amount) > item.m_distance || (remain + item.m_amount == item.m_distance && 0 == pumps.size())) {
+                    if ((remain + item.m_amount) >= item.m_distance) {
                         break;
                     }
                 }
 
-                if ((remain + item.m_amount) > item.m_distance || (remain + item.m_amount == item.m_distance && 0 == pumps.size())) {
+                if ((remain + item.m_amount) >= item.m_distance) {
                     remain = remain + item.m_amount - item.m_distance;
                     res.push(item);
                 }
@@ -83,7 +84,6 @@ int main() {
             }
         }
         else {
-            // remain + item.m_amount > item.m_distance || remain + item.m_amount == item.m_distance && 0 == pumps.size()
             remain = remain + item.m_amount - item.m_distance;
             res.push(item);
         }
