@@ -88,7 +88,7 @@ int main() {
                         else {
                             //last.m_val < a[j]
                             while (last.m_val < a[j]) {
-                                seq.pop_front();
+                                seq.pop_back();
                                 last = seq.back();
                             }
                             seq.push_back(A(j, a[j]));
