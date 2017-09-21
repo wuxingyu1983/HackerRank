@@ -44,6 +44,10 @@ void quick_sort(vector<Customer> &s, int l, int r)
     }
 }
 
+bool cmp(Customer &x,Customer &y) {
+    return x.m_required > y.m_required;
+}
+
 int main() {
     int n;
 
@@ -73,5 +77,32 @@ int main() {
     // sort
     quick_sort(customers, 0, customers.size() - 1);
 
-    
+    unsigned long long time = customers[0].m_arrived;
+    unsigned long long wait = 0;
+
+    vector<Customer>  min_heap;
+    int cus_i = 0;
+
+    while (min_heap.size() > 0 || cus_i < n) {
+        // pizza finished
+        if (0 < min_heap.size()) {
+            pop_heap(min_heap.begin(), min_heap.end(), cmp);
+            Customer srved = min_heap.back();
+            min_heap.pop_back();
+
+            time += srved.m_required;
+            wait += (time - srved.m_arrived);
+        }
+
+        // move customer to min_heap
+        while (cus_i < n && time >= customers[cus_i].m_arrived) {
+            min_heap.push_back(customers[cus_i]);
+            push_heap(min_heap.begin(), min_heap.end(), cmp);
+            cus_i ++;
+        }
+    }
+
+    printf("%llu\n", wait / n);
+
+    return 0;
 }
