@@ -77,7 +77,7 @@ int main() {
     // sort
     quick_sort(customers, 0, customers.size() - 1);
 
-    unsigned long long time = customers[0].m_arrived;
+    unsigned long long time = 0;
     unsigned long long wait = 0;
 
     vector<Customer>  min_heap;
@@ -92,6 +92,9 @@ int main() {
 
             time += srved.m_required;
             wait += (time - srved.m_arrived);
+        }
+        else {
+            time = customers[cus_i].m_arrived;
         }
 
         // move customer to min_heap
