@@ -13,9 +13,9 @@
 
 using namespace std;
 
-vector<int> primes;
+vector<unsigned long long> primes;
 unsigned char flag[1000000];
-vector<int> output;
+vector<unsigned long long> output;
 
 void init() {
     flag[0] = 1;
@@ -32,18 +32,13 @@ void init() {
     }
 }
 
-int largest_prime_factor(int index, unsigned long long remain) {
-    int ret = primes[index];
+unsigned long long largest_prime_factor(int index, unsigned long long remain) {
+    unsigned long long ret = primes[index];
 
     int break_flag = 0;
-    for (size_t i = index; i < primes.size() && primes[i] <= sqrt(remain); i++) {
+    for (size_t i = index; i < primes.size() && primes[i] <= sqrtl(remain); i++) {
         if (0 == remain % primes[i]) {
-            if (1 == remain / primes[i]) {
-                ret = primes[i];
-            }
-            else {
-                ret = largest_prime_factor(i, remain / primes[i]);
-            }
+            ret = largest_prime_factor(i, remain / primes[i]);
             break_flag = 1;
             break;
         }
@@ -66,21 +61,15 @@ int main(){
         unsigned long long n;
         cin >> n;
 
-        int max = -1;
-        unsigned long long half = sqrt(n);
-        for (size_t i = 0; i < primes.size() && primes[i] <= half; i++) {
+        unsigned long long max = 0;
+        for (size_t i = 0; i < primes.size() && primes[i] <= sqrtl(n); i++) {
             if (0 == n % primes[i]) {
-                if (1 == n / primes[i]) {
-                    max = primes[i];
-                }
-                else {
-                    max = largest_prime_factor(i, n / primes[i]);
-                }
+                max = largest_prime_factor(i, n / primes[i]);
                 break;
             }
         }
 
-        if (0 > max) {
+        if (0 == max) {
             output.push_back(n);
         }
         else {
