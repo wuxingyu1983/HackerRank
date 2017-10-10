@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+
 using namespace std;
 
 #define MAX     1000000
@@ -55,28 +56,39 @@ void makeFriend(int caller, int called) {
     else if (friend_index[caller] >= 0 && friend_index[called] >= 0) {
         // merge two friend groups
         if (friend_index[caller] != friend_index[called]) {
-            // called => caller
-            cout << "the size of called is " << friends[friend_index[called]].size() << endl;
             int called_size = friends[friend_index[called]].size();
-            for (size_t i = 0; i < called_size; i++) {
-                friends[friend_index[caller]].push_back(friends[friend_index[called]][i]);
-                friend_index[friends[friend_index[called]][i]] = friend_index[caller];
+            int caller_size = friends[friend_index[caller]].size();
+            int from_index;
+            int to_index;
+            if (caller_size > called_size) {
+                // called => caller
+                from_index = friend_index[called];
+                to_index = friend_index[caller];
             }
-            friends[friend_index[called]].clear();
-            free_index[friend_index[called]] = next_free;
-            next_free = friend_index[called];
+            else {
+                // caller => called
+                from_index = friend_index[caller];
+                to_index = friend_index[called];
+            }
+            for (size_t i = 0; i < friends[from_index].size(); i++) {
+                friends[to_index].push_back(friends[from_index][i]);
+                friend_index[friends[from_index][i]] = to_index;
+            }
+            friends[from_index].clear();
+            free_index[from_index] = next_free;
+            next_free = from_index;
         }
     }
     else {
         // add to one friend group
         if (friend_index[caller] < 0) {
             friend_index[caller] = friend_index[called];
-            friends[friend_index[caller]].push_back(caller);
+            friends[friend_index[called]].push_back(caller);
         }
         else {
             // friend_index[called] < 0
             friend_index[called] = friend_index[caller];
-            friends[friend_index[called]].push_back(called);
+            friends[friend_index[caller]].push_back(called);
         }
     }
 
@@ -119,11 +131,10 @@ int main() {
         }
         int called = getCallerAndCalled(k, over);
 
-        cout << caller << "  " << called << endl;
+        // cout << caller << "  " << called << endl;
 
         if (caller != called) {
             output ++;
-            cout << output << endl;
 
             makeFriend(caller, called);
 
