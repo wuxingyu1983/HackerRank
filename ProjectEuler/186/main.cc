@@ -56,7 +56,9 @@ void makeFriend(int caller, int called) {
         // merge two friend groups
         if (friend_index[caller] != friend_index[called]) {
             // called => caller
-            for (size_t i = 0; i < friends[friend_index[called]].size(); i++) {
+            cout << "the size of called is " << friends[friend_index[called]].size() << endl;
+            int called_size = friends[friend_index[called]].size();
+            for (size_t i = 0; i < called_size; i++) {
                 friends[friend_index[caller]].push_back(friends[friend_index[called]][i]);
                 friend_index[friends[friend_index[called]][i]] = friend_index[caller];
             }
@@ -121,6 +123,7 @@ int main() {
 
         if (caller != called) {
             output ++;
+            cout << output << endl;
 
             makeFriend(caller, called);
 
@@ -131,6 +134,10 @@ int main() {
             }
         }
         k ++;
+        if (k > 55) {
+            k = 1;
+            over = true;
+        }
     }
 
     cout << output << endl;
