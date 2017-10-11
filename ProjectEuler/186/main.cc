@@ -1,118 +1,69 @@
-#include <cmath>
-#include <cstdio>
+#include <iostream>
 #include <vector>
 #include <string>
-#include <iostream>
-#include <algorithm>
 
 using namespace std;
 
-#define MAX     1000000
+struct node
+{
+	int parent;
+	int treeSize;
+	int depth;
+};
 
-int s[56];
-
-int getCallerAndCalled(int k, bool over) {
-    if (over) {
-        if (k + 55 - 24 < 56) {
-            s[k] = (s[k + 55 - 24] + s[k]) % MAX;
-        }
-        else {
-            s[k] = (s[k - 24] + s[k]) % MAX;
-        }
-    }
-    else {
-        long long tmp = k;
-        tmp *= (long long)k;
-        tmp *= (long long)k;
-        tmp *= 300007;
-
-        tmp += 100003;
-
-        tmp -= (long long)(k * 200003);
-
-        s[k] = tmp % MAX;
-    }
-
-    return s[k];
+void init(node *U, int n)
+{
+	for (int i = 0; i < n; i++)
+	{
+		U[i].parent = i;
+		U[i].treeSize = 1;
+		U[i].depth = 0;
+	}
 }
 
-vector<int> friend_index(MAX);
-vector<int> free_index(MAX/2);
-vector< vector<int> > friends(MAX/2);
-
-int pm_friend_index = -1;
-int next_free = 0;
-int pm = 0;
-
-void makeFriend(int caller, int called) {
-    if (friend_index[caller] < 0 && friend_index[called] < 0) {
-        // make new friend group
-        int new_index = next_free;
-        next_free = free_index[next_free];
-
-        friends[new_index].push_back(caller);
-        friends[new_index].push_back(called);
-
-        free_index[new_index] = -1;
-
-        friend_index[caller] = new_index;
-        friend_index[called] = new_index;
-
-//        cout << "make new friend group " << new_index << endl;
-    }
-    else if (friend_index[caller] >= 0 && friend_index[called] >= 0) {
-        // merge two friend groups
-        if (friend_index[caller] != friend_index[called]) {
-            int called_size = friends[friend_index[called]].size();
-            int caller_size = friends[friend_index[caller]].size();
-            int from_index;
-            int to_index;
-            if (caller_size > called_size) {
-                // called => caller
-                from_index = friend_index[called];
-                to_index = friend_index[caller];
-            }
-            else {
-                // caller => called
-                from_index = friend_index[caller];
-                to_index = friend_index[called];
-            }
-            for (size_t i = 0; i < friends[from_index].size(); i++) {
-                friends[to_index].push_back(friends[from_index][i]);
-                friend_index[friends[from_index][i]] = to_index;
-            }
-            friends[from_index].clear();
-            free_index[from_index] = next_free;
-            next_free = from_index;
-//            cout << "merge two friend groups " << from_index << " => " << to_index << endl;
-        }
-    }
-    else {
-        // add to one friend group
-        if (friend_index[caller] < 0) {
-            friend_index[caller] = friend_index[called];
-            friends[friend_index[called]].push_back(caller);
-//            cout << "add to friend group " << friend_index[called] << endl;
-        }
-        else {
-            // friend_index[called] < 0
-            friend_index[called] = friend_index[caller];
-            friends[friend_index[caller]].push_back(called);
-//            cout << "add to friend group " << friend_index[caller] << endl;
-        }
-    }
-
-    if (pm == caller) {
-        pm_friend_index = friend_index[caller];
-    }
-    if (pm == called) {
-        pm_friend_index = friend_index[called];
-    }
+void merge(node &a, node &b)
+{
+	if (a.depth == b.depth)
+	{
+		a.depth++;
+		b.parent = a.parent;
+		a.treeSize += b.treeSize;
+	}
+	else if (a.depth < b.depth)
+	{
+		a.parent = b.parent;
+		b.treeSize += a.treeSize;
+	}
+	else
+	{
+		b.parent = a.parent;
+		a.treeSize += b.treeSize;
+	}
 }
 
-int main() {
+int find(node *U, int i)
+{
+	int j = i;
+	while(j != U[j].parent)
+		j = U[j].parent;
+	return j;
+}
+
+int nextLagFib(vector<int> &past, long long k)
+{
+	int out;
+	if (k <= 55)
+		out = (100003 - 200003 * k + 300007 * k * k * k) % 1000000;
+	else
+		out = (past[k - 55] + past[k - 24]) % 1000000;
+	past.push_back(out);
+	return out;
+}
+
+int main()
+{
     string prime_minister;
-    int p;
+    int p, pm = 0;
 
     cin >> prime_minister >> p;
 
@@ -120,48 +71,38 @@ int main() {
         pm = pm * 10 + (prime_minister[i] - '0');
     }
 
-    for (size_t i = 0; i < free_index.size(); i++) {
-        free_index[i] = i + 1;
-    }
+	int size = 1000 * 1000;
 
-    for (size_t i = 0; i < friend_index.size(); i++) {
-        friend_index[i] = -1;
-    }
+	node *U = new node[size];
 
-    long long output = 0;
-    int k = 1;
-    bool over = false;
+	init(U, size);
 
-    while(true) {
-        int caller = getCallerAndCalled(k, over);
-        k ++;
-        if (k > 55) {
-            k = 1;
-            over = true;
-        }
-        int called = getCallerAndCalled(k, over);
+	vector<int> gen;
+	gen.reserve(100000000);
+	gen.push_back(0);
+	int ctr = 1;
 
-//        cout << caller << "  " << called << endl;
+	int a;
+	int b;
 
-        if (caller != called) {
-            output ++;
+	int calls = 0;
 
-            makeFriend(caller, called);
+	while (U[find(U, pm)].treeSize < 10000 * p)
+	{
+		a = nextLagFib(gen, ctr++);
+		b = nextLagFib(gen, ctr++);
 
-            if (0 <= pm_friend_index) {
-                if (friends[pm_friend_index].size() >= (MAX / 100 * p)) {
-                    break;
-                }
-            }
-        }
-        k ++;
-        if (k > 55) {
-            k = 1;
-            over = true;
-        }
-    }
+		if (a != b)
+		{
+			calls++;
+			a = find(U, a);
+			b = find(U, b);
+			if (a != b)
+				merge(U[a], U[b]);
+		}
+	}
 
-    cout << output << endl;
+	cout << calls << endl;
 
-    return 0;
+	delete [] U;
 }
