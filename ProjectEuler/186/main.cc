@@ -149,7 +149,7 @@ int main() {
             makeFriend(caller, called);
 
             if (0 <= pm_friend_index) {
-                if ((friends[pm_friend_index].size() + 1) >= (MAX / 100 * p)) {
+                if (friends[pm_friend_index].size() >= (MAX / 100 * p)) {
                     break;
                 }
             }
