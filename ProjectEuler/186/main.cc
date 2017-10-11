@@ -36,7 +36,6 @@ vector<int> friend_index(MAX);
 vector<int> free_index(MAX/2);
 vector< vector<int> > friends(MAX/2);
 
-int pm_friend_index = -1;
 int next_free = 0;
 int pm = 0;
 
@@ -97,13 +96,6 @@ void makeFriend(int caller, int called) {
             //            cout << "add to friend group " << friend_index[caller] << endl;
         }
     }
-
-    if (pm == caller) {
-        pm_friend_index = friend_index[caller];
-    }
-    if (pm == called) {
-        pm_friend_index = friend_index[called];
-    }
 }
 
 int main() {
@@ -124,7 +116,7 @@ int main() {
         friend_index[i] = -1;
     }
 
-    long long output = 0;
+    long long calls = 0;
     long long k = 1;
 
     vector<int> past;
@@ -137,19 +129,19 @@ int main() {
         //        cout << caller << "  " << called << endl;
 
         if (caller != called) {
-            output ++;
+            calls ++;
 
             makeFriend(caller, called);
 
-            if (0 <= pm_friend_index) {
-                if (friends[pm_friend_index].size() >= (MAX / 100 * p)) {
+            if (0 <= friend_index[pm]) {
+                if (friends[friend_index[pm]].size() >= (MAX / 100 * p)) {
                     break;
                 }
             }
         }
     }
 
-    cout << output << endl;
+    cout << calls << endl;
 
     return 0;
 }
