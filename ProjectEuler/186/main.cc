@@ -13,7 +13,12 @@ int s[56];
 
 int getCallerAndCalled(int k, bool over) {
     if (over) {
-        s[k] = (s[k + 55 - 24] + s[k]) % MAX;
+        if (k + 55 - 24 < 56) {
+            s[k] = (s[k + 55 - 24] + s[k]) % MAX;
+        }
+        else {
+            s[k] = (s[k - 24] + s[k]) % MAX;
+        }
     }
     else {
         long long tmp = k;
@@ -52,6 +57,8 @@ void makeFriend(int caller, int called) {
 
         friend_index[caller] = new_index;
         friend_index[called] = new_index;
+
+//        cout << "make new friend group " << new_index << endl;
     }
     else if (friend_index[caller] >= 0 && friend_index[called] >= 0) {
         // merge two friend groups
@@ -77,6 +84,7 @@ void makeFriend(int caller, int called) {
             friends[from_index].clear();
             free_index[from_index] = next_free;
             next_free = from_index;
+//            cout << "merge two friend groups " << from_index << " => " << to_index << endl;
         }
     }
     else {
@@ -84,11 +92,13 @@ void makeFriend(int caller, int called) {
         if (friend_index[caller] < 0) {
             friend_index[caller] = friend_index[called];
             friends[friend_index[called]].push_back(caller);
+//            cout << "add to friend group " << friend_index[called] << endl;
         }
         else {
             // friend_index[called] < 0
             friend_index[called] = friend_index[caller];
             friends[friend_index[caller]].push_back(called);
+//            cout << "add to friend group " << friend_index[caller] << endl;
         }
     }
 
@@ -107,7 +117,7 @@ int main() {
     cin >> prime_minister >> p;
 
     for (size_t i = 0; i < prime_minister.length(); i++) {
-        pm = pm * 10 + (prime_minister[0] - '0');
+        pm = pm * 10 + (prime_minister[i] - '0');
     }
 
     for (size_t i = 0; i < free_index.size(); i++) {
@@ -131,7 +141,7 @@ int main() {
         }
         int called = getCallerAndCalled(k, over);
 
-        // cout << caller << "  " << called << endl;
+//        cout << caller << "  " << called << endl;
 
         if (caller != called) {
             output ++;
