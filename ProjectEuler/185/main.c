@@ -4,9 +4,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-char s[30][13];
-char output[13];
-int c[30][13];
+#define MAX_LEN     12
+
+char s[30][MAX_LEN + 1];
+char output[MAX_LEN + 1];
+int c[30][MAX_LEN + 1];
 
 bool func(int n, int index) {
     bool ret = true;
@@ -14,7 +16,7 @@ bool func(int n, int index) {
     for (size_t i = 0; i <= 9; i++) {
         ret = true;
         for (size_t j = 0; j < n; j++) {
-            if (11 == index) {
+            if ((MAX_LEN - 1) == index) {
                 if (i == (s[j][index] - '0')) {
                     c[j][index + 1] = c[j][index] - 1;
                 }
@@ -43,11 +45,14 @@ bool func(int n, int index) {
 
         if (ret) {
             output[index] = i + '0';
-            if (11 > index) {
+            if ((MAX_LEN - 1) > index) {
                 ret = func(n, index + 1);
+                if (ret) {
+                    break;
+                }
             }
             else {
-                // 11 == index
+                // MAX_LEN - 1 == index
                 break;
             }
         }
