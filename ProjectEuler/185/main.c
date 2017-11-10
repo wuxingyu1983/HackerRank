@@ -8,99 +8,101 @@
 #define MAX_N       30
 
 char s[MAX_N][MAX_LEN + 1];
-char output[MAX_LEN + 1];
-int c[MAX_N][MAX_LEN + 1];
-
-#define SEED	   131
-#define MOD		   10000007
-
-long long _pow[MAX_N];
-
-char flag[MAX_LEN][MOD];    // 0 - undefine, 1 - false, 2 - true (nerver happen)
-
-void init_pow(long long p[], long long seed, long long mod) {
-    p[0] = 1;
-    for (size_t i = 1; i < MAX_N; i++) {
-        p[i] = (p[i - 1] * seed) % mod;
-    }
-
-    return;
-}
-
-int get_hash(int n, int index) {
-    long long ret = 0;
-
-    for (size_t j = 0; j < n; j++) {
-        ret += _pow[j] * (long long)c[j][index] % MOD;
-        ret = ret % MOD;
-    }
-
-    return (int)ret;
-}
+char impossible[MAX_LEN][10];
+int c[MAX_N];
+int output[MAX_LEN];
 
 bool func(int n, int index) {
     bool ret = true;
 
-    for (size_t i = 0; i <= 9; i++) {
-        ret = true;
-        for (size_t j = 0; j < n; j++) {
-            if ((MAX_LEN - 1) == index) {
-                if (i == (s[j][index] - '0')) {
-                    c[j][index + 1] = c[j][index] - 1;
-                }
-                else {
-                    c[j][index + 1] = c[j][index];
-                }
-
-                if (0 != c[j][index + 1]) {
-                    ret = false;
-                    break;
-                }
-            }
-            else {
-                if (i == (s[j][index] - '0')) {
-                    c[j][index + 1] = c[j][index] - 1;
-                    if (0 > c[j][index + 1]) {
-                        ret = false;
-                        break;
-                    }
-                }
-                else {
-                    c[j][index + 1] = c[j][index];
-                }
-            }
+    if (0 == c[index]) {
+        // mark impossible
+        for (size_t i = 0; i < MAX_LEN; i++) {
+            impossible[i][s[index][i] - '0'] ++;
         }
 
-        if (ret) {
-            output[index] = i + '0';
-            if ((MAX_LEN - 1) > index) {
-                int hash = get_hash(n, index + 1);
-                if (0 == flag[index + 1][hash]) {
-                    ret = func(n, index + 1);
-                    if (ret) {
-                        break;
-                    }
-                    else {
-                        // mark flag
-                        flag[index + 1][hash] = 1;
-                    }
-                }
-                else {
-                    // 1 - false
-                    ret = false;
-                }
-            }
-            else {
-                // MAX_LEN - 1 == index
+        for (size_t i = 0; i < MAX_LEN; i++) {
+            if (output[i] == (s[index][i] - '0')) {
+                ret = false;
                 break;
             }
         }
+        if (ret && index < (n - 1)) {
+            ret = func(n, index + 1);
+        }
     }
+    else if (1 == c[index]) {
+        int already = 0;
+        for (size_t i = 0; i < MAX_LEN; i++) {
+            if (output[i] == (s[index][i] - '0')) {
+                already ++;
+            }
+        }
+        if (1 < already) {
+            ret = false;
+        }
+        else if (1 == already) {
+            // mark impossible
+            for (size_t i = 0; i < MAX_LEN; i++) {
+                if (output[i] != (s[index][i] - '0')) {
+                    impossible[i][s[index][i] - '0'] ++;
+                }
+            }
 
-    if (false == ret) {
-        // mark flag
-        int hash = get_hash(n, index);
-        flag[index][hash] = 1;
+            if (index < n - 1) {
+                ret = func(n, index + 1);
+                if (false == ret) {
+                    // unmark impossible
+                    for (size_t i = 0; i < MAX_LEN; i++) {
+                        if (output[i] != (s[index][i] - '0')) {
+                            impossible[i][s[index][i] - '0'] --;
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            // 0 == already
+            // mark impossible
+            for (size_t i = 0; i < MAX_LEN; i++) {
+                impossible[i][s[index][i] - '0'] ++;
+            }
+
+            ret = false;
+            for (size_t pos = 0; pos < MAX_LEN; pos++) {
+                if (1 == impossible[pos][s[index][pos] - '0'] && 0 > output[pos]) {
+                    // unmark impossible
+                    impossible[pos][s[index][pos] - '0'] --;
+                    output[pos] = s[index][pos] - '0';
+
+                    if (index < n - 1) {
+                        ret = func(n, index + 1);
+                        if (ret) {
+                            break;
+                        }
+                        else {
+                            // mark impossible
+                            impossible[pos][s[index][pos] - '0'] ++;
+                            output[pos] = -1;
+                        }
+                    }
+                }
+            }
+
+            if (false == ret) {
+                // unmark impossible
+                for (size_t i = 0; i < MAX_LEN; i++) {
+                    impossible[i][s[index][i] - '0'] --;
+                }
+            }
+        }
+    }
+    else if (2 == c[index]) {
+
+    }
+    else {
+        // 3 == c[index]
+
     }
 
     return ret;
@@ -111,14 +113,29 @@ int main() {
     scanf("%d", &n);
 
     for (size_t i = 0; i < n; i++) {
-        scanf("%s %d", s[i], &c[i][0]);
+        scanf("%s %d", s[i], &c[i]);
     }
 
-    init_pow(_pow, SEED, MOD);
+    for (size_t i = 0; i < MAX_LEN; i++) {
+        output[i] = -1;
+    }
 
     func(n, 0);
 
-    printf("%s\n", output);
+    for (size_t i = 0; i < MAX_LEN; i++) {
+        if (0 <= output[i]) {
+            printf("%d", output[i]);
+        }
+        else {
+            for (size_t j = 0; j < 10; j++) {
+                if (0 == impossible[i][j]) {
+                    printf("%d", j);
+                    break;
+                }
+            }
+        }
+    }
+    printf("\n");
 
     return 0;
 }
