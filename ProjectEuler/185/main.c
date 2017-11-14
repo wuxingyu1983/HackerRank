@@ -85,7 +85,7 @@ bool func(int n, int index) {
                     }
 
                     if (ret) {
-                        break;
+                        return ret;
                     }
                     else {
                         impossible[pos1][s[index][pos1] - '0'] ++;
@@ -147,7 +147,7 @@ bool func(int n, int index) {
                     }
 
                     if (ret) {
-                        break;
+                        return ret;
                     }
                     else {
                         impossible[pos1][s[index][pos1] - '0'] ++;
@@ -189,7 +189,7 @@ bool func(int n, int index) {
                         }
 
                         if (ret) {
-                            break;
+                            return ret;
                         }
                         else {
                             impossible[pos1][s[index][pos1] - '0'] ++;
@@ -255,7 +255,7 @@ bool func(int n, int index) {
                     }
 
                     if (ret) {
-                        break;
+                        return ret;
                     }
                     else {
                         impossible[pos1][s[index][pos1] - '0'] ++;
@@ -296,7 +296,7 @@ bool func(int n, int index) {
                         }
 
                         if (ret) {
-                            break;
+                            return ret;
                         }
                         else {
                             impossible[pos1][s[index][pos1] - '0'] ++;
@@ -344,7 +344,7 @@ bool func(int n, int index) {
                             }
 
                             if (ret) {
-                                break;
+                                return ret;
                             }
                             else {
                                 impossible[pos1][s[index][pos1] - '0'] ++;
@@ -353,7 +353,6 @@ bool func(int n, int index) {
                                 output[pos2] = -1;
                                 impossible[pos3][s[index][pos3] - '0'] ++;
                                 output[pos3] = -1;
-
                             }
                         }
                     }
