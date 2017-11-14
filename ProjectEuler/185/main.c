@@ -5,19 +5,51 @@
 #include <stdbool.h>
 
 #define MAX_LEN     12
-#define MAX_N       30
+#define MAX_N       31
 
 char s[MAX_N][MAX_LEN + 1];     // 排序后的
-char impossible[MAX_LEN][10];
+int impossible[MAX_LEN][10];
 int c[MAX_N];                   // 排序后的
 int output[MAX_LEN];
 
 char tmp_s[4][MAX_N][MAX_LEN + 1];
 
-bool left1(int index) {
+bool unique() {
     bool ret = true;
 
+    for (size_t i = 0; i < MAX_LEN; i++) {
+        if (0 > output[i]) {
+            int possible = 0;
+            for (size_t j = 0; j < 10; j++) {
+                if (0 == impossible[i][j]) {
+                    possible ++;
+                }
+            }
+            if (1 < possible) {
+                ret = false;
+                break;
+            }
+        }
+    }
+
     return ret;
+}
+
+void print_output() {
+    for (size_t i = 0; i < MAX_LEN; i++) {
+        if (0 <= output[i]) {
+            printf("%d", output[i]);
+        }
+        else {
+            for (size_t j = 0; j < 10; j++) {
+                if (0 == impossible[i][j]) {
+                    printf("%ld", j);
+                    break;
+                }
+            }
+        }
+    }
+    printf("\n");
 }
 
 bool func(int n, int index) {
@@ -39,6 +71,14 @@ bool func(int n, int index) {
         if (index < n - 1) {
             ret = func(n, index + 1);
         }
+        else {
+            if (unique()) {
+                ret = true;
+            }
+            else {
+                ret = false;
+            }
+        }
     }
     else if (1 == c[index]) {
         if (1 < already) {
@@ -53,6 +93,14 @@ bool func(int n, int index) {
 
             if (index < n - 1) {
                 ret = func(n, index + 1);
+            }
+            else {
+                if (unique()) {
+                    ret = true;
+                }
+                else {
+                    ret = false;
+                }
             }
 
             if (false == ret) {
@@ -81,7 +129,12 @@ bool func(int n, int index) {
                         ret = func(n, index + 1);
                     }
                     else {
-                        ret = true;
+                        if (unique()) {
+                            ret = true;
+                        }
+                        else {
+                            ret = false;
+                        }
                     }
 
                     if (ret) {
@@ -117,6 +170,14 @@ bool func(int n, int index) {
             if (index < n - 1) {
                 ret = func(n, index + 1);
             }
+            else {
+                if (unique()) {
+                    ret = true;
+                }
+                else {
+                    ret = false;
+                }
+            }
 
             if (false == ret) {
                 for (size_t i = 0; i < MAX_LEN; i++) {
@@ -143,7 +204,12 @@ bool func(int n, int index) {
                         ret = func(n, index + 1);
                     }
                     else {
-                        ret = true;
+                        if (unique()) {
+                            ret = true;
+                        }
+                        else {
+                            ret = false;
+                        }
                     }
 
                     if (ret) {
@@ -185,7 +251,12 @@ bool func(int n, int index) {
                             ret = func(n, index + 1);
                         }
                         else {
-                            ret = true;
+                            if (unique()) {
+                                ret = true;
+                            }
+                            else {
+                                ret = false;
+                            }
                         }
 
                         if (ret) {
@@ -225,6 +296,14 @@ bool func(int n, int index) {
             if (index < n - 1) {
                 ret = func(n, index + 1);
             }
+            else {
+                if (unique()) {
+                    ret = true;
+                }
+                else {
+                    ret = false;
+                }
+            }
 
             if (false == ret) {
                 for (size_t i = 0; i < MAX_LEN; i++) {
@@ -251,7 +330,12 @@ bool func(int n, int index) {
                         ret = func(n, index + 1);
                     }
                     else {
-                        ret = true;
+                        if (unique()) {
+                            ret = true;
+                        }
+                        else {
+                            ret = false;
+                        }
                     }
 
                     if (ret) {
@@ -292,7 +376,12 @@ bool func(int n, int index) {
                             ret = func(n, index + 1);
                         }
                         else {
-                            ret = true;
+                            if (unique()) {
+                                ret = true;
+                            }
+                            else {
+                                ret = false;
+                            }
                         }
 
                         if (ret) {
@@ -340,7 +429,12 @@ bool func(int n, int index) {
                                 ret = func(n, index + 1);
                             }
                             else {
-                                ret = true;
+                                if (unique()) {
+                                    ret = true;
+                                }
+                                else {
+                                    ret = false;
+                                }
                             }
 
                             if (ret) {
@@ -429,20 +523,7 @@ int main() {
 
     func(n, 0);
 
-    for (size_t i = 0; i < MAX_LEN; i++) {
-        if (0 <= output[i]) {
-            printf("%d", output[i]);
-        }
-        else {
-            for (size_t j = 0; j < 10; j++) {
-                if (0 == impossible[i][j]) {
-                    printf("%ld", j);
-                    break;
-                }
-            }
-        }
-    }
-    printf("\n");
+    print_output();
 
     return 0;
 }
