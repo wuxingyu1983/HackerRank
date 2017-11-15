@@ -52,6 +52,23 @@ void print_output() {
     printf("\n");
 }
 
+bool possible(int col, int num) {
+    bool ret = true;
+
+    int empty = 0;
+    for (size_t i = 0; i < 10; i++) {
+        if (i != num && 1 == impossible[col][i]) {
+            empty ++;
+        }
+    }
+
+    if (0 == empty) {
+        ret = false;
+    }
+
+    return ret;
+}
+
 bool func(int n, int index) {
     bool ret = true;
 
@@ -121,7 +138,7 @@ bool func(int n, int index) {
 
             ret = false;
             for (size_t pos1 = 0; pos1 < MAX_LEN; pos1++) {
-                if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0']) {
+                if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && possible(pos1, s[index][pos1] - '0')) {
                     impossible[pos1][s[index][pos1] - '0'] --;
                     output[pos1] = s[index][pos1] - '0';
 
@@ -196,7 +213,7 @@ bool func(int n, int index) {
 
             ret = false;
             for (size_t pos1 = 0; pos1 < MAX_LEN; pos1++) {
-                if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0']) {
+                if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && possible(pos1, s[index][pos1] - '0')) {
                     impossible[pos1][s[index][pos1] - '0'] --;
                     output[pos1] = s[index][pos1] - '0';
 
@@ -241,7 +258,7 @@ bool func(int n, int index) {
             ret = false;
             for (size_t pos1 = 0; pos1 < MAX_LEN - 1; pos1++) {
                 for (size_t pos2 = pos1 + 1; pos2 < MAX_LEN; pos2++) {
-                    if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && 0 > output[pos2] && 1 == impossible[pos2][s[index][pos2] - '0']) {
+                    if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && possible(pos1, s[index][pos1] - '0') && 0 > output[pos2] && 1 == impossible[pos2][s[index][pos2] - '0'] && possible(pos2, s[index][pos2] - '0')) {
                         impossible[pos1][s[index][pos1] - '0'] --;
                         output[pos1] = s[index][pos1] - '0';
                         impossible[pos2][s[index][pos2] - '0'] --;
@@ -322,7 +339,7 @@ bool func(int n, int index) {
 
             ret = false;
             for (size_t pos1 = 0; pos1 < MAX_LEN; pos1++) {
-                if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0']) {
+                if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && possible(pos1, s[index][pos1] - '0')) {
                     impossible[pos1][s[index][pos1] - '0'] --;
                     output[pos1] = s[index][pos1] - '0';
 
@@ -366,7 +383,7 @@ bool func(int n, int index) {
             ret = false;
             for (size_t pos1 = 0; pos1 < MAX_LEN - 1; pos1++) {
                 for (size_t pos2 = pos1 + 1; pos2 < MAX_LEN; pos2++) {
-                    if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && 0 > output[pos2] && 1 == impossible[pos2][s[index][pos2] - '0']) {
+                    if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && possible(pos1, s[index][pos1] - '0') && 0 > output[pos2] && 1 == impossible[pos2][s[index][pos2] - '0'] && possible(pos2, s[index][pos2] - '0')) {
                         impossible[pos1][s[index][pos1] - '0'] --;
                         output[pos1] = s[index][pos1] - '0';
                         impossible[pos2][s[index][pos2] - '0'] --;
@@ -417,7 +434,7 @@ bool func(int n, int index) {
             for (size_t pos1 = 0; pos1 < MAX_LEN - 2; pos1++) {
                 for (size_t pos2 = pos1 + 1; pos2 < MAX_LEN - 1; pos2++) {
                     for (size_t pos3 = pos2 + 1; pos3 < MAX_LEN; pos3++) {
-                        if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && 0 > output[pos2] && 1 == impossible[pos2][s[index][pos2] - '0'] && 0 > output[pos3] && 1 == impossible[pos3][s[index][pos3] - '0']) {
+                        if (0 > output[pos1] && 1 == impossible[pos1][s[index][pos1] - '0'] && possible(pos1, s[index][pos1] - '0') && 0 > output[pos2] && 1 == impossible[pos2][s[index][pos2] - '0'] && possible(pos2, s[index][pos2] - '0') && 0 > output[pos3] && 1 == impossible[pos3][s[index][pos3] - '0'] && possible(pos3, s[index][pos3] - '0')) {
                             impossible[pos1][s[index][pos1] - '0'] --;
                             output[pos1] = s[index][pos1] - '0';
                             impossible[pos2][s[index][pos2] - '0'] --;
