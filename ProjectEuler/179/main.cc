@@ -22,60 +22,41 @@ struct factor {
     int count;
 };
 
+int product[MAX_K + 1];
 int cnt[MAX_K + 1];
-vector< vector<struct factor> > vec(MAX_K + 1);
 
 void init() {
     int pre = -1;
     int now_cnt = 0;
 
     for (size_t i = 2; i <= MAX_K; i++) {
-        if (0 == vec[i].size()) {
+        if (0 == product[i]) {
             // prime
             size_t j = i;
             while (j <= MAX_K) {
-                size_t index = j;
-
-                while (index <= MAX_K) {
-                    if (0 == vec[index].size()) {
-                        struct factor a;
-                        a.prime = i;
-                        a.count = 1;
-
-                        vec[index].push_back(a);
-                    }
-                    else {
-                        if (i != vec[index][vec[index].size() - 1].prime) {
-                            struct factor a;
-                            a.prime = i;
-                            a.count = 1;
-
-                            vec[index].push_back(a);
-                        }
-                        else {
-                            vec[index][vec[index].size() - 1].count ++;
-                        }
-                    }
-
-                    index += j;
+                int tmp = j;
+                int c = 0;
+                while (0 == tmp % i) {
+                    c ++;
+                    tmp /= i;
                 }
 
-                j *= i;
+                if (0 == product[j]) {
+                    product[j] = c + 1;
+                }
+                else {
+                    product[j] *= (c + 1);
+                }
+
+                j += i;
             }
         }
 
-        // calc cnt
-        int now = 1;
-
-        for (size_t j = 0; j < vec[i].size(); j++) {
-            now *= (vec[i][j].count + 1);
-        }
-
-        if (now == pre) {
+        if (product[i] == pre) {
             now_cnt ++;
         }
 
-        pre = now;
+        pre = product[i];
 
         cnt[i] = now_cnt;
     }
@@ -83,20 +64,16 @@ void init() {
 
 int main() {
     int t;
-    cin >> t;
+
+    scanf("%d", &t);
 
     init();
-    vector<int> output;
 
     for (size_t i = 0; i < t; i++) {
         int k;
-        cin >> k;
+        scanf("%d", &k);
 
-        output.push_back(cnt[k]);
-    }
-
-    for (size_t i = 0; i < output.size(); i++) {
-        cout << output[i] << endl;
+        printf("%d\n", cnt[k]);
     }
 
     return 0;
