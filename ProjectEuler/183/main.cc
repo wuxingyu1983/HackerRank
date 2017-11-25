@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define e           2.71828
+#define E           2.71828
 #define MAX_N       1000000
 
 struct factor {
@@ -15,7 +15,7 @@ struct factor {
     int count;
 };
 
-int cnt[MAX_N + 1];
+long long cnt[MAX_N + 1];
 vector< vector<struct factor> > vec(MAX_N + 1);
 
 void init_prime() {
@@ -24,33 +24,21 @@ void init_prime() {
             // prime
             size_t j = i;
             while (j <= MAX_N) {
-                size_t index = j;
+                int c = 0;
+                int tmp = j;
 
-                while (index <= MAX_N) {
-                    if (0 == vec[index].size()) {
-                        struct factor a;
-                        a.prime = i;
-                        a.count = 1;
-
-                        vec[index].push_back(a);
-                    }
-                    else {
-                        if (i != vec[index][vec[index].size() - 1].prime) {
-                            struct factor a;
-                            a.prime = i;
-                            a.count = 1;
-
-                            vec[index].push_back(a);
-                        }
-                        else {
-                            vec[index][vec[index].size() - 1].count ++;
-                        }
-                    }
-
-                    index += j;
+                while ( 0 == tmp % i) {
+                    c ++;
+                    tmp /= i;
                 }
 
-                j *= i;
+                struct factor a;
+                a.prime = i;
+                a.count = c;
+
+                vec[j].push_back(a);
+
+                j += i;
             }
         }
     }
@@ -86,11 +74,41 @@ bool terminating(int n, int k) {
         }
     }
 
+    if (ret) {
+        while (i_k < vec[k].size()) {
+            if (2 != vec[k][i_k].prime && 5 != vec[k][i_k].prime) {
+                ret = false;
+                break;
+            }
+            i_k ++;
+        }
+    }
+
     return ret;
 }
 
 void init() {
     init_prime();
+
+    long long count = 0;
+    for (size_t i = 5; i <= MAX_N; i++) {
+        int k = i / E;
+
+        if (1 > pow((long double)(k + 1) / (long double)k, k) / ((long double)i / (long double)(k + 1))) {
+            k += 1;
+        }
+
+        if (terminating(i, k)) {
+            count -= i;
+//            printf("i = %d, k = %d, terminating, count = %d\n", i, k, count);
+        }
+        else {
+            count += i;
+//            printf("i = %d, k = %d, non-terminating, count = %d\n", i, k, count);
+        }
+
+        cnt[i] = count;
+    }
 }
 
 int main() {
@@ -103,7 +121,7 @@ int main() {
         int n;
         scanf("%d", &n);
 
-        printf("%d\n", cnt[n]);
+        printf("%lld\n", cnt[n]);
     }
 
     return 0;
