@@ -53,10 +53,11 @@ int main() {
             p[i] = (p[i] - 1 + m) % (m);
             long long pre = s[i][p[i]];
 
-            s[i][p[i]] = sum_day[i] * ((c - 2) % MOD);
+            s[i][p[i]] = (sum_day[i] * ((c - 2) % MOD)) % MOD;
             if (i > 0) {
                 s[i][p[i]] += sum_day[i - 1];
             }
+            s[i][p[i]] %= MOD;
             sum_day[i] += s[i][p[i]];
             sum_day[i] -= pre;
             sum_day[i] %= MOD;
