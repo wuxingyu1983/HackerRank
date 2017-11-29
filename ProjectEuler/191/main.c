@@ -49,7 +49,7 @@ int main() {
                         if (0 > pre[in][i]) {
                             break;
                         }
-                        tmp += (c - 2) * pre[in][i];
+                        tmp += pre[in][i] * (long long)((c - 2) % MOD);
                         tmp %= MOD;
                     }
 
@@ -68,6 +68,7 @@ int main() {
                 else {
                     now[in][im] = pre[in][im - 1];
                 }
+//                printf("day = %zu, now[%zu][%zu] = %lld\n", day, in, im, now[in][im]);
 
                 if (0 == in) {
                     sum += (long long)n * (long long)now[in][im];
