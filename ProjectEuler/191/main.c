@@ -14,97 +14,63 @@ int main() {
 
     scanf("%d %d %d %lld", &l, &n, &m, &c);
 
-    // malloc
-    cnt1 = (long long * *)malloc((n + 1) * sizeof(long long *));
+    long long * * s = (long long * *)malloc((n + 1) * sizeof(long long *));
     for (size_t i = 0; i <= n; i++) {
-        cnt1[i] = (long long *)malloc(m * sizeof(long long));
-        memset(cnt1[i], 0xff, m * sizeof(long long));
+        s[i] = (long long *)malloc(m * sizeof(long long));
+        memset(s[i], 0, m * sizeof(long long));
     }
 
-    cnt2 = (long long * *)malloc((n + 1) * sizeof(long long *));
-    for (size_t i = 0; i <= n; i++) {
-        cnt2[i] = (long long *)malloc(m * sizeof(long long));
-        memset(cnt2[i], 0xff, m * sizeof(long long));
-    }
+    long long * sum_day = (long long *)malloc((n + 1) * sizeof(long long));
+    memset(sum_day, 0, (n + 1) * sizeof(long long));
 
-    long long * sum_n_1 = (long long *)malloc((n + 1) * sizeof(long long));
-    memset(sum_n_1, 0, (n + 1) * sizeof(long long));
-
-    long long * sum_n_2 = (long long *)malloc((n + 1) * sizeof(long long));
-    memset(sum_n_2, 0, (n + 1) * sizeof(long long));
+    int * p = (int *)malloc(m * sizeof(int));
+    memset(p, 0, m * sizeof(int));
 
     long long sum = 0;
 
-    cnt1[0][0] = (c - 2) % MOD;
-    cnt1[0][1] = 1;
-    cnt1[1][0] = 1;
+    s[0][0] = (c - 2) % MOD;
+    s[0][1] = 1;
+    sum_day[0] = (c - 1) % MOD;
 
-    sum_n_1[0] = (c - 1) % MOD;
-    sum_n_1[1] = 1;
+    s[1][0] = 1;
+    sum_day[1] = 1;
 
-    sum += ((long long)(c % MOD)) * (long long)n % MOD;
-
-    long long * * now = cnt2;
-    long long * * pre = cnt1;
-
-    long long * now_sum = sum_n_2;
-    long long * pre_sum = sum_n_1;
+    sum = (c % MOD) * n % MOD;
 
     for (size_t day = 2; day <= l; day++) {
-        int max_n = (n < day) ? n : day;
-        for (size_t in = 0; in <= max_n; in++) {
-            long long tmp = 0;
-            long long sum_tmp = 0;
-            int max_m = ((m - 1) < (day - in)) ? (m - 1) : (day - in);
-            for (size_t im = 0; im <= max_m; im++) {
-                if (0 == im) {
-                    tmp += pre_sum[in] * (long long)((c - 2) % MOD);
-                    tmp %= MOD;
+        int max_n = n;
+        if (day <= n) {
+            s[day][0] = 1;
+            sum_day[day] = 1;
 
-                    if (in > 0) {
-                        tmp += pre_sum[in - 1];
-                        tmp %= MOD;
-                    }
+            sum += (n - day + 1);
+            sum %= MOD;
 
-                    now[in][im] = tmp;
-                }
-                else {
-                    now[in][im] = pre[in][im - 1];
-                }
-//                printf("day = %zu, now[%zu][%zu] = %lld\n", day, in, im, now[in][im]);
+            max_n = day - 1;
+        }
 
-                sum_tmp += now[in][im];
-                sum_tmp %= MOD;
+        for (int i = max_n; i >= 0; i--) {
+            p[i] = (p[i] - 1 + m) % (m);
+            long long pre = s[i][p[i]];
 
-                if (0 == in) {
-                    sum += (long long)n * (long long)now[in][im];
-                    sum %= MOD;
-                }
-                else {
-                    sum += (long long)(n - in + 1) * (long long)now[in][im];
-                    sum %= MOD;
-                }
+            s[i][p[i]] = sum_day[i] * ((c - 2) % MOD);
+            if (i > 0) {
+                s[i][p[i]] += sum_day[i - 1];
+            }
+            sum_day[i] += s[i][p[i]];
+            sum_day[i] -= pre;
+            sum_day[i] %= MOD;
+
+//            printf("sum_day[%d] = %lld\n", i, sum_day[i]);
+
+            if (0 == i) {
+                sum += sum_day[i] * n;
+            }
+            else {
+                sum += sum_day[i] * (n - i + 1);
             }
 
-            now_sum[in] = sum_tmp;
-        }
-
-        if (now == cnt2) {
-            now = cnt1;
-            pre = cnt2;
-        }
-        else {
-            now = cnt2;
-            pre = cnt1;
-        }
-
-        if (now_sum == sum_n_1) {
-            now_sum = sum_n_2;
-            pre_sum = sum_n_1;
-        }
-        else {
-            now_sum = sum_n_1;
-            pre_sum = sum_n_2;
+            sum %= MOD;
         }
     }
 
