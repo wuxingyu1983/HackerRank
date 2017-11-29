@@ -5,8 +5,8 @@
 
 #define MOD         1000000007
 
-int * * cnt1;
-int * * cnt2;
+long long * * cnt1;
+long long * * cnt2;
 
 int main() {
     int l, n, m;
@@ -15,16 +15,16 @@ int main() {
     scanf("%d %d %d %lld", &l, &n, &m, &c);
 
     // malloc
-    cnt1 = (int * *)malloc((n + 1) * sizeof(int*));
+    cnt1 = (long long * *)malloc((n + 1) * sizeof(long long *));
     for (size_t i = 0; i <= n; i++) {
-        cnt1[i] = (int *)malloc(m * sizeof(int));
-        memset(cnt1[i], 0, m * sizeof(int));
+        cnt1[i] = (long long *)malloc(m * sizeof(long long));
+        memset(cnt1[i], 0xff, m * sizeof(long long));
     }
 
-    cnt2 = (int * *)malloc((n + 1) * sizeof(int*));
+    cnt2 = (long long * *)malloc((n + 1) * sizeof(long long *));
     for (size_t i = 0; i <= n; i++) {
-        cnt2[i] = (int *)malloc(m * sizeof(int));
-        memset(cnt2[i], 0, m * sizeof(int));
+        cnt2[i] = (long long *)malloc(m * sizeof(long long));
+        memset(cnt2[i], 0xff, m * sizeof(long long));
     }
 
     long long sum = 0;
@@ -35,8 +35,8 @@ int main() {
 
     sum += ((long long)(c % MOD)) * (long long)n % MOD;
 
-    int * * now = cnt2;
-    int * * pre = cnt1;
+    long long * * now = cnt2;
+    long long * * pre = cnt1;
 
     for (size_t day = 2; day <= l; day++) {
         int max_n = (n < day) ? n : day;
@@ -46,12 +46,18 @@ int main() {
             for (size_t im = 0; im <= max_m; im++) {
                 if (0 == im) {
                     for (size_t i = 0; i < m; i++) {
-                        tmp += (c - 2) * pre[in][i] % MOD;
+                        if (0 > pre[in][i]) {
+                            break;
+                        }
+                        tmp += (c - 2) * pre[in][i];
                         tmp %= MOD;
                     }
 
                     if (in > 0) {
                         for (size_t i = 0; i < m; i++) {
+                            if (0 > pre[in - 1][i]) {
+                                break;
+                            }
                             tmp += pre[in - 1][i];
                             tmp %= MOD;
                         }
