@@ -28,6 +28,7 @@ int main() {
 
     long long sum = 0;
 
+    // day 1
     s[0][0] = (c - 2) % MOD;
     s[0][1] = 1;
     sum_day[0] = (c - 1) % MOD;
@@ -35,7 +36,7 @@ int main() {
     s[1][0] = 1;
     sum_day[1] = 1;
 
-    sum = (c % MOD) * n % MOD;
+    sum = ((c % MOD) * n) % MOD;
 
     for (size_t day = 2; day <= l; day++) {
         int max_n = n;
@@ -60,6 +61,9 @@ int main() {
             s[i][p[i]] %= MOD;
             sum_day[i] += s[i][p[i]];
             sum_day[i] -= pre;
+            if (0 > sum_day[i]) {
+                sum_day[i] += MOD;
+            }
             sum_day[i] %= MOD;
 
 //            printf("sum_day[%d] = %lld\n", i, sum_day[i]);
