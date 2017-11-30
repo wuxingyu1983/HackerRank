@@ -5,12 +5,8 @@
 
 #define MOD         1000000007
 
-long long * * cnt1;
-long long * * cnt2;
-
 int main() {
-    long long l, n, m;
-    long long c;
+    long long l, n, m, c;
 
     scanf("%lld %lld %lld %lld", &l, &n, &m, &c);
 
@@ -23,8 +19,8 @@ int main() {
     long long * sum_day = (long long *)malloc((n + 1) * sizeof(long long));
     memset(sum_day, 0, (n + 1) * sizeof(long long));
 
-    int * p = (int *)malloc(m * sizeof(int));
-    memset(p, 0, m * sizeof(int));
+    int * p = (int *)malloc((n + 1) * sizeof(int));
+    memset(p, 0, (n + 1) * sizeof(int));
 
     long long sum = 0;
 
@@ -69,10 +65,10 @@ int main() {
 //            printf("sum_day[%d] = %lld\n", i, sum_day[i]);
 
             if (0 == i) {
-                sum += sum_day[i] * n;
+                sum += (sum_day[i] * n) % MOD;
             }
             else {
-                sum += sum_day[i] * (n - i + 1);
+                sum += (sum_day[i] * (n - i + 1)) % MOD;
             }
 
             sum %= MOD;
