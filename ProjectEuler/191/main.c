@@ -9,10 +9,10 @@ long long * * cnt1;
 long long * * cnt2;
 
 int main() {
-    int l, n, m;
+    long long l, n, m;
     long long c;
 
-    scanf("%d %d %d %lld", &l, &n, &m, &c);
+    scanf("%lld %lld %lld %lld", &l, &n, &m, &c);
 
     long long * * s = (long long * *)malloc((n + 1) * sizeof(long long *));
     for (size_t i = 0; i <= n; i++) {
@@ -39,7 +39,7 @@ int main() {
     sum = ((c % MOD) * n) % MOD;
 
     for (size_t day = 2; day <= l; day++) {
-        int max_n = n;
+        long long max_n = n;
         if (day <= n) {
             s[day][0] = 1;
             sum_day[day] = 1;
@@ -50,7 +50,7 @@ int main() {
             max_n = day - 1;
         }
 
-        for (int i = max_n; i >= 0; i--) {
+        for (long long i = max_n; i >= 0; i--) {
             p[i] = (p[i] - 1 + m) % (m);
             long long pre = s[i][p[i]];
 
