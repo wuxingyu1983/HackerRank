@@ -12,12 +12,13 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define DEBUG       0
 #define MOD         1000000007
 
 unsigned char bits[] = {1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4};
 
-long long getIndex(int level[], int c) {
-    long long ret = 0;
+int getIndex(int level[], int c) {
+    int ret = 0;
 
     int i = 0;
     while (0 <= level[i]) {
@@ -62,6 +63,11 @@ int main() {
     int n, c;
     scanf("%d %d", &n, &c);
 
+    if (0 == c) {
+        printf("0\n");
+        return 0;
+    }
+
     int arry_size = pow(2, bits[c] * ((n - 1) ? (n - 1) : 1));
 
     long long * tmp1 = (long long *)malloc(arry_size * sizeof(long long));
@@ -78,35 +84,56 @@ int main() {
         long long * now = tmp2;
         long long * pre = tmp1;
 
-        int now_level[14];
-        int pre_level[14];
+        int now_level[15];
+        int pre_level[15];
         for (size_t j = 2; j <= n - 1; j++) {
             if (0 < j - 2) {
                 // clean array tmp
                 arry_size = pow(2, (j - 2) * bits[c]);
-                memset(now, 0, arry_size * sizeof(int));
+                memset(now, 0, arry_size * sizeof(long long));
             }
 
             for (size_t i = 0; i < j; i++) {
                 now_level[i] = 0;
             }
-            for (size_t i = j; i < 14; i++) {
-                now_level[i] = -1;
-            }
+            now_level[j] = -1;
 
             while (true) {
                 for (size_t i = 0; i < j - 1; i++) {
                     pre_level[i] = 0;
                 }
-                for (size_t i = j - 1; i < 14; i++) {
-                    pre_level[i] = -1;
-                }
+                pre_level[j - 1] = -1;
+
                 int now_index = getIndex(now_level, c);
 
                 while (true) {
                     // proc
                     int pre_index = getIndex(pre_level, c);
 
+                    // debug
+#if DEBUG
+                    printf("compare :\n");
+                    printf("pre level is : ");
+                    for (size_t i = 0; true; i++) {
+                        if (0 > pre_level[i]) {
+                            printf("\n");
+                            break;
+                        }
+                        else {
+                            printf("%d ", pre_level[i]);
+                        }
+                    }
+                    printf("now level is : ");
+                    for (size_t i = 0; true; i++) {
+                        if (0 > now_level[i]) {
+                            printf("\n");
+                            break;
+                        }
+                        else {
+                            printf("%d ", now_level[i]);
+                        }
+                    }
+#endif
                     if (pre[pre_index]) {
                         long long multiplier = getMultiplier(pre_level, now_level, c);
 
@@ -121,7 +148,7 @@ int main() {
                     }
 
                     // 遍历 pre_level
-                    if (c - 1 == pre_level[j - 2]) {
+                    {
                         int pos = j - 2;
                         while (c - 1 == pre_level[pos] && pos >= 0) {
                             pos --;
@@ -137,13 +164,10 @@ int main() {
                             }
                         }
                     }
-                    else {
-                        pre_level[j - 2] ++;
-                    }
                 }
 
                 // 遍历 now_level
-                if (c - 1 == now_level[j - 1]) {
+                {
                     int pos = j - 1;
                     while (c - 1 == now_level[pos] && pos >= 0) {
                         pos --;
@@ -158,9 +182,6 @@ int main() {
                             now_level[i] = 0;
                         }
                     }
-                }
-                else {
-                    now_level[j - 1] ++;
                 }
             }
 
@@ -177,30 +198,46 @@ int main() {
         // j == n
         {
             size_t j = n;
-            if (0 < j - 2) {
-                // clean array tmp
-                arry_size = pow(2, (j - 2) * bits[c]);
-                memset(now, 0, arry_size * sizeof(int));
-            }
 
             for (size_t i = 0; i < j; i++) {
                 now_level[i] = 0;
             }
-            for (size_t i = j; i < 14; i++) {
-                now_level[i] = -1;
-            }
+            now_level[j] = -1;
 
             while (true) {
                 for (size_t i = 0; i < j - 1; i++) {
                     pre_level[i] = 0;
                 }
-                for (size_t i = j - 1; i < 14; i++) {
-                    pre_level[i] = -1;
-                }
+                pre_level[j - 1] = -1;
 
                 while (true) {
                     // proc
                     int pre_index = getIndex(pre_level, c);
+
+                    // debug
+#if DEBUG
+                    printf("compare :\n");
+                    printf("pre level is : ");
+                    for (size_t i = 0; true; i++) {
+                        if (0 > pre_level[i]) {
+                            printf("\n");
+                            break;
+                        }
+                        else {
+                            printf("%d ", pre_level[i]);
+                        }
+                    }
+                    printf("now level is : ");
+                    for (size_t i = 0; true; i++) {
+                        if (0 > now_level[i]) {
+                            printf("\n");
+                            break;
+                        }
+                        else {
+                            printf("%d ", now_level[i]);
+                        }
+                    }
+#endif
 
                     if (pre[pre_index]) {
                         long long multiplier = getMultiplier(pre_level, now_level, c);
@@ -216,7 +253,7 @@ int main() {
                     }
 
                     // 遍历 pre_level
-                    if (c - 1 == pre_level[j - 2]) {
+                    {
                         int pos = j - 2;
                         while (c - 1 == pre_level[pos] && pos >= 0) {
                             pos --;
@@ -232,19 +269,16 @@ int main() {
                             }
                         }
                     }
-                    else {
-                        pre_level[j - 2] ++;
-                    }
                 }
 
                 // 遍历 now_level
-                if (c - 1 == now_level[j - 1]) {
+                {
                     int pos = j - 1;
                     while (c - 1 == now_level[pos] && pos >= 0) {
                         pos --;
                     }
 
-                    if (0 < pos) {
+                    if (0 > pos) {
                         break;
                     }
                     else {
@@ -253,9 +287,6 @@ int main() {
                             now_level[i] = 0;
                         }
                     }
-                }
-                else {
-                    now_level[j - 1] ++;
                 }
             }
         }
