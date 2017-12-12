@@ -78,7 +78,6 @@ int main() {
     for (size_t i = 0; i < c; i++) {
         tmp1[i] = 1;
     }
-    ret = c;
 
     if (n > 1) {
         long long * now = tmp2;
@@ -290,6 +289,10 @@ int main() {
                 }
             }
         }
+    }
+    else {
+        // n == 1
+        ret = c;
     }
 
     printf("%lld\n", ret);
