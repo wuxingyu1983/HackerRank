@@ -53,7 +53,7 @@ long long getMultiplier(int pre_level[], int now_level[], int c) {
         }
 
         if (0 == (c - 3 + same)) {
-            return 0;
+            return (-1) * (i + 1);
         }
         else {
             ret *= (long long)(c - 3 + same);
@@ -144,8 +144,9 @@ int main() {
                     }
                 }
                 #endif
+                long long multiplier = 0;
                 if (pre[pre_index]) {
-                    long long multiplier = getMultiplier(pre_level, now_level, c);
+                    multiplier = getMultiplier(pre_level, now_level, c);
 
                     if (0 < multiplier) {
                         long long product = pre[pre_index];
@@ -159,7 +160,14 @@ int main() {
 
                 // 遍历 pre_level
                 {
-                    int pos = j - 2;
+                    int pos;
+                    if (0 > multiplier) {
+                        pos = (-1) * multiplier - 1;
+                    }
+                    else {
+                        pos = j - 2;
+                    }
+
                     while (c - 1 == pre_level[pos] && pos >= 0) {
                         pos --;
                     }
@@ -249,8 +257,9 @@ int main() {
                 }
                 #endif
 
+                long long multiplier = 0;
                 if (pre[pre_index]) {
-                    long long multiplier = getMultiplier(pre_level, now_level, c);
+                    multiplier = getMultiplier(pre_level, now_level, c);
 
                     if (0 < multiplier) {
                         long long product = pre[pre_index];
@@ -264,7 +273,13 @@ int main() {
 
                 // 遍历 pre_level
                 {
-                    int pos = j - 2;
+                    int pos;
+                    if (0 > multiplier) {
+                        pos = (-1) * multiplier - 1;
+                    }
+                    else {
+                        pos = j - 2;
+                    }
                     while (c - 1 == pre_level[pos] && pos >= 0) {
                         pos --;
                     }
