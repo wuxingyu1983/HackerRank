@@ -39,9 +39,17 @@ long long getMultiplier(int pre_level[], int now_level[], int c) {
         int same = 0;
         if (pre_level[i] == now_level[i]) {
             same ++;
+            if (pre_level[i] == now_level[i + 1]) {
+                same ++;
+            }
         }
-        if (pre_level[i] == now_level[i + 1]) {
-            same ++;
+        else {
+            if (pre_level[i] == now_level[i + 1]) {
+                same ++;
+            }
+            if (now_level[i] == now_level[i + 1]) {
+                same ++;
+            }
         }
 
         if (0 == (c - 3 + same)) {
@@ -58,8 +66,6 @@ long long getMultiplier(int pre_level[], int now_level[], int c) {
 }
 
 int main() {
-    long long ret = 0;
-
     int n, c;
     scanf("%d %d", &n, &c);
 
@@ -73,6 +79,7 @@ int main() {
         return 0;
     }
 
+    long long ret = 0;
     int arry_size = pow(2, bits[c] * ((n - 1) ? (n - 1) : 1));
 
     long long * tmp1 = (long long *)malloc(arry_size * sizeof(long long));
