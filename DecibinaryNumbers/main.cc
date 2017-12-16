@@ -1,18 +1,3 @@
-//
-//  main.cpp
-//  DecibinaryNumbers
-//
-//  Created by 吴星煜 on 2017/12/16.
-//  Copyright © 2017年 吴星煜. All rights reserved.
-//
-//
-//  main.cpp
-//  DecibinaryNumbers
-//
-//  Created by 吴星煜 on 2017/12/16.
-//  Copyright © 2017年 吴星煜. All rights reserved.
-//
-
 #include <stdio.h>
 #include <string>
 #include <stdlib.h>
@@ -73,11 +58,6 @@ unsigned long long getCount(unsigned long long number, int digit) {
             int vec_size = vec[j].size();
             if (0 < vec_size) {
                 if (remain >= vec[j][0].value && remain <= vec[j][vec_size - 1].value) {
-/*
-                    if (remain != vec[j][remain - vec[j][0].value].value) {
-                        ret += vec[j][remain - vec[j][0].value].count;
-                    }
-*/
                     ret += vec[j][remain - vec[j][0].value].count;
                 }
             }
@@ -85,6 +65,46 @@ unsigned long long getCount(unsigned long long number, int digit) {
     }
 
     return ret;
+}
+
+void getOutput(string &output, int digit, unsigned long long number, unsigned long long th) {
+    unsigned long long power = maxs[digit];
+    unsigned long long sum = 0;
+
+    for (size_t i = 1; i <= 9; i ++) {
+        long long remain = number - power * i;
+        if (0 > remain) {
+            break;
+        }
+
+        for (size_t j = 1; j <= digit - 1; j++) {
+            int vec_size = vec[j].size();
+            if (0 < vec_size) {
+                if (remain >= vec[j][0].value && remain <= vec[j][vec_size - 1].value) {
+                    if (sum + vec[j][remain - vec[j][0].value].count >= th) {
+                        // hit
+
+                        output += '0' + i;
+                        for (size_t k = digit - 1; k > j; k --) {
+                            output += '0';
+                        }
+
+                        if (1 == j) {
+                            output += '0' + remain;
+                        }
+                        else {
+                            getOutput(output, j, remain, th - sum);
+                        }
+
+                        return;
+                    }
+                    else {
+                        sum += vec[j][remain - vec[j][0].value].count;
+                    }
+                }
+            }
+        }
+    }
 }
 
 int main() {
@@ -148,16 +168,13 @@ int main() {
 
             while (xth + new_cnt.count >= sorted_input[iIn]) {
                 // hit
-                /*
-                 if (1 == now_digit) {
-                 sorted_output[iIn] += '0' + number;
-                 }
-                 else {
-                 unsigned long long offset = sorted_input[iIn] - xth;
-
-                 }
-                 */
-                sorted_output[iIn] = to_string(number);
+                if (1 == now_digit) {
+                    sorted_output[iIn] += '0' + number;
+                }
+                else {
+                    getOutput(sorted_output[iIn], now_digit, number, sorted_input[iIn] - xth);
+                }
+                //                sorted_output[iIn] = to_string(number);
                 iIn ++;
                 if (iIn >= q) {
                     break;
