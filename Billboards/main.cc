@@ -11,10 +11,11 @@ int main() {
     int n, k;
     scanf("%d %d", &n, &k);
 
-    vector<int> revenues(n);
+    vector<int> revenues(n + 1);
     long long sum = 0;
 
-    for (size_t i = 0; i < n; i++) {
+    revenues[0] = 0;
+    for (size_t i = 1; i <= n; i++) {
         int v;
         scanf("%d", &v);
 
@@ -27,10 +28,9 @@ int main() {
     vector<long long> ks(k + 1);
 
     // init -- 0
-    billboard.push(0);
     billboard.push(revenues[0]);
 
-    ks[0] = 0;
+    ks[0] = revenues[0];
 
     for (size_t i = 1; i <= k; i++) {
         long long max = billboard.top();
@@ -40,13 +40,26 @@ int main() {
     }
 
     int pos = 0;
-    for (size_t i = k + 1; i < n; i++) {
-        
+    for (size_t i = k + 1; i <= n; i++) {
+        // add ks[pos] to abandon
+        abandon.push(ks[pos]);
+
+        // campare billboard.top() and abandon.top()
+        while (billboard.top() == abandon.top()) {
+            billboard.pop();
+            abandon.pop();
+        }
+
+        long long max = billboard.top();
+        billboard.push(max - revenues[i]);
+
+        ks[pos] = max - revenues[i];
+
+        pos = (pos + 1) % (k + 1);
     }
 
-    if (1 < n) {
-        sum += billboard.top();
-    }
+    sum += billboard.top();
+
     printf("%lld\n", sum);
 
     return 0;
