@@ -5,19 +5,37 @@
 #include <algorithm>
 #include <queue>
 
+#define DEBUG       0
+
 using namespace std;
 
 int main() {
-    int n, k;
-    scanf("%d %d", &n, &k);
 
-    vector<int> revenues(n + 1);
+#if DEBUG
+    FILE * fp;
+    fp = fopen("input.txt", "r");
+#endif
+
+    int n, k;
+
+#if DEBUG
+    fscanf(fp, "%d %d", &n, &k);
+#else
+    scanf("%d %d", &n, &k);
+#endif
+
+    vector<long long> revenues(n + 1);
     long long sum = 0;
 
     revenues[0] = 0;
     for (size_t i = 1; i <= n; i++) {
-        int v;
-        scanf("%d", &v);
+        long long v;
+
+#if DEBUG
+        fscanf(fp, "%lld", &v);
+#else
+        scanf("%lld", &v);
+#endif
 
         revenues[i] = v;
         sum += v;
@@ -41,6 +59,12 @@ int main() {
 
     int pos = 0;
     for (size_t i = k + 1; i <= n; i++) {
+        // campare billboard.top() and abandon.top()
+        while (0 < abandon.size() && billboard.top() == abandon.top()) {
+            billboard.pop();
+            abandon.pop();
+        }
+
         long long max = 0;
         if (billboard.top() == ks[pos]) {
             max = billboard.top();
@@ -50,12 +74,6 @@ int main() {
         else {
             // add ks[pos] to abandon
             abandon.push(ks[pos]);
-
-            // campare billboard.top() and abandon.top()
-            while (0 < abandon.size() && billboard.top() == abandon.top()) {
-                billboard.pop();
-                abandon.pop();
-            }
 
             max = billboard.top();
         }
@@ -75,6 +93,10 @@ int main() {
     sum += billboard.top();
 
     printf("%lld\n", sum);
+
+#if DEBUG
+    fclose(fp);
+#endif
 
     return 0;
 }
