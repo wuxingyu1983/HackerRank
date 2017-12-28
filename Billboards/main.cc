@@ -41,21 +41,35 @@ int main() {
 
     int pos = 0;
     for (size_t i = k + 1; i <= n; i++) {
-        // add ks[pos] to abandon
-        abandon.push(ks[pos]);
+        long long max = 0;
+        if (billboard.top() == ks[pos]) {
+            max = billboard.top();
 
-        // campare billboard.top() and abandon.top()
-        while (billboard.top() == abandon.top()) {
             billboard.pop();
-            abandon.pop();
+        }
+        else {
+            // add ks[pos] to abandon
+            abandon.push(ks[pos]);
+
+            // campare billboard.top() and abandon.top()
+            while (0 < abandon.size() && billboard.top() == abandon.top()) {
+                billboard.pop();
+                abandon.pop();
+            }
+
+            max = billboard.top();
         }
 
-        long long max = billboard.top();
         billboard.push(max - revenues[i]);
 
         ks[pos] = max - revenues[i];
 
         pos = (pos + 1) % (k + 1);
+    }
+
+    while (0 < abandon.size() && billboard.top() == abandon.top()) {
+        billboard.pop();
+        abandon.pop();
     }
 
     sum += billboard.top();
