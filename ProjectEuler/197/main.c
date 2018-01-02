@@ -28,14 +28,14 @@ int main() {
     int index = 0;
 
     while (!equal(u[index], u[(index + 1) % 3])) {
-        double u_new = floor(pow(2, b - u[index] * u[index]));
+        double u_new = floor(pow((double)2.0, b - u[index] * u[index]));
         u_new /= (double)1000000000;
         index = (index + 1) % 3;
         u[index] = u_new;
 //        printf("u_new is %.9lf\n", u_new);
     }
 
-    printf("%.9lf\n", u[index] + u[(index - 1) % 3]);
+    printf("%.9lf\n", u[index] + u[(index - 1 + 3) % 3]);
 
     return 0;
 }
