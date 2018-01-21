@@ -10,8 +10,11 @@
 #include <cstdio>
 #include <vector>
 #include <stack>
+#include <deque>
 #include <iostream>
 #include <algorithm>
+
+#define DEBUG       0
 
 using namespace std;
 
@@ -34,38 +37,83 @@ int main() {
     long long c;
     int ret = 0;
 
+#if DEBUG
+    FILE * fp = fopen("input.txt", "r");
+
+    fscanf(fp, "%u %lld", &n, &c);
+#else
     scanf("%u %lld", &n, &c);
+#endif
 
     long long * a = (long long *)malloc(n * sizeof(long long));
     long long * b = (long long *)malloc(n * sizeof(long long));
 
     for (size_t i = 0; i < n; i++) {
+#if DEBUG
+        fscanf(fp, "%lld", &a[i]);
+#else
         scanf("%lld", &a[i]);
+#endif
         if (a[i] > c) {
             a[i] = c;
         }
     }
 
     for (size_t i = 0; i < n; i++) {
+#if DEBUG
+        fscanf(fp, "%lld", &b[i]);
+#else
         scanf("%lld", &b[i]);
+#endif
     }
 
-    stack<Seq> cont_seq;
+    deque<Seq> cont_deq;
 
     // find first loop
     int tmp = 0;
     while (tmp <= n) {
-        if (0 == cont_seq.size()) {
+        if (0 == cont_deq.size()) {
             Seq s(0, 0);
-            cont_seq.push(s);
+            cont_deq.push_back(s);
         }
         else {
-            Seq last = cont_seq.top();
+            Seq last = cont_deq.front();
+
+            // ==>
+            if (1 == cont_deq.size()) {
+                long long tmp_remain = last.remain + a[last.end];
+                if (tmp_remain > c) {
+                    tmp_remain = c;
+                }
+                if (tmp_remain >= b[last.end]) {
+                    long long tmp_bonus = c - last.remain - a[last.end];
+                    if (tmp_bonus < 0) {
+                        tmp_bonus = 0;
+                    }
+
+                    if (0 > last.bonus || last.bonus > tmp_bonus) {
+                        last.bonus = tmp_bonus;
+                    }
+
+                    last.remain = tmp_remain - b[last.end];
+                    last.end = (last.end + 1) % n;
+
+                    cont_deq.pop_front();
+                    cont_deq.push_front(last);
+
+                    tmp ++;
+
+                    continue;
+                }
+            }
 
             int index = (last.start - 1 + n) % n;
             if (a[index] < b[index]) {
+                if (1 == index) {
+                    index = 1;
+                }
                 Seq s(index, index);
-                cont_seq.push(s);
+                cont_deq.push_front(s);
             }
             else {
                 last.start = index;
@@ -85,19 +133,19 @@ int main() {
                     last.bonus = (last.bonus > c - a[index]) ? (c - a[index]) : last.bonus;
                 }
 
-                cont_seq.pop();
+                cont_deq.pop_front();
 
-                if (0 == cont_seq.size()) {
-                    cont_seq.push(last);
+                if (0 == cont_deq.size()) {
+                    cont_deq.push_front(last);
                 }
                 else {
-                    while (0 < cont_seq.size()) {
+                    while (0 < cont_deq.size()) {
                         if (last.remain + a[last.end] < b[last.end]) {
-                            cont_seq.push(last);
+                            cont_deq.push_front(last);
                             break;
                         }
                         else {
-                            Seq next = cont_seq.top();
+                            Seq next = cont_deq.front();
                             if (0 <= next.bonus && next.bonus < (last.remain + a[last.end] - b[last.end])) {
                                 last.remain = next.remain + next.bonus;
                             }
@@ -123,12 +171,12 @@ int main() {
 
                             last.end = next.end;
 
-                            cont_seq.pop();
+                            cont_deq.pop_front();
                         }
                     }
 
-                    if (0 == cont_seq.size()) {
-                        cont_seq.push(last);
+                    if (0 == cont_deq.size()) {
+                        cont_deq.push_front(last);
                     }
                 }
             }
@@ -137,9 +185,9 @@ int main() {
         tmp ++;
     }
 
-    if (1 == cont_seq.size()) {
-        Seq last = cont_seq.top();
-        cont_seq.pop();
+    if (1 == cont_deq.size()) {
+        stack<Seq> cont_seq;
+        Seq last = cont_deq.front();
 
         tmp = 0;
         while (tmp < n) {
@@ -235,6 +283,10 @@ int main() {
 
     free(a);
     free(b);
+
+#if DEBUG
+    fclose(fp);
+#endif
 
     return 0;
 }
