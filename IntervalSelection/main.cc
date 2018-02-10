@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DEBUG       1
+#define DEBUG       0
 
 using namespace std;
 
@@ -73,27 +73,26 @@ int main() {
         for (size_t j = 0; j < n; j++) {
             Interval &inteval = vec[j];
 
-            if (0 == b[0]) {
-                b[0] = inteval.m_b;
-                ret ++;
-            }
-            else {
-                if (b[0] < inteval.m_a) {
-                    b[0] = inteval.m_b;
+            if (b[0] < inteval.m_a && b[1] < inteval.m_a) {
+                if (b[1] > b[0]) {
+                    b[1] = inteval.m_b;
                     ret ++;
                 }
                 else {
-                    if (0 == b[1]) {
-                        b[1] = inteval.m_b;
-                        ret ++;
-                    }
-                    else {
-                        if (b[1] < inteval.m_a) {
-                            b[1] = inteval.m_b;
-                            ret ++;
-                        }
-                    }
+                    b[0] = inteval.m_b;
+                    ret ++;
                 }
+            }
+            else if (b[0] < inteval.m_a) {
+                b[0] = inteval.m_b;
+                ret ++;
+            }
+            else if (b[1] < inteval.m_a) {
+                b[1] = inteval.m_b;
+                ret ++;
+            }
+            else {
+
             }
         }
 
