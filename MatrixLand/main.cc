@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define DEBUG       1
+#define DEBUG       0
 
 int main() {
     int n, m;
@@ -19,12 +19,14 @@ int main() {
     scanf("%d %d", &n, &m);
 #endif
 
-    int max;
-    vector<int> input, left_bounce, right_bounce, bounce;
+    int max = 0;
+    vector<int> input, left_bounce, right_bounce, left_score, right_score, score;
     input.resize(m);
     left_bounce.resize(m);
     right_bounce.resize(m);
-    bounce.resize(m, 0);
+    left_score.resize(m, 0);
+    right_score.resize(m, 0);
+    score.resize(m, 0);
 
     for (size_t i = 0; i < n; i++) {
         int a;
@@ -37,45 +39,64 @@ int main() {
             input[j] = a;
         }
 
-        int tmp = 0;
         for (size_t j = 0; j < m; j++) {
             if (0 == j) {
-                tmp = input[j];
+                left_bounce[j] = input[j];
+                left_score[j] = score[j] + input[j];
             }
             else {
-                if (tmp + input[j] > input[j]) {
-                    tmp += input[j];
+                if (left_bounce[j - 1] > 0) {
+                    left_bounce[j] = input[j] + left_bounce[j - 1];
                 }
                 else {
-                    tmp = input[j];
+                    left_bounce[j] = input[j];
+                }
+
+                if (left_score[j - 1] + input[j] > score[j] + left_bounce[j]) {
+                    left_score[j] = left_score[j - 1] + input[j];
+                }
+                else {
+                    left_score[j] = score[j] + left_bounce[j];
                 }
             }
-            left_bounce[j] = tmp;
         }
 
         for (int j = m - 1; j >= 0; j--) {
             if (m - 1 == j) {
-                tmp = input[j];
+                right_bounce[j] = input[j];
+                right_score[j] = score[j] + input[j];
             }
             else {
-                if (tmp + input[j] > input[j]) {
-                    tmp += input[j];
+                if (right_bounce[j + 1] > 0) {
+                    right_bounce[j] = input[j] + right_bounce[j + 1];
                 }
                 else {
-                    tmp = input[j];
+                    right_bounce[j] = input[j];
+                }
+
+                if (right_score[j + 1] + input[j] > score[j] + right_bounce[j]) {
+                    right_score[j] = right_score[j + 1] + input[j];
+                }
+                else {
+                    right_score[j] = score[j] + right_bounce[j];
                 }
             }
-            right_bounce[j] = tmp;
+        }
 
-            bounce[j] += left_bounce[j] + right_bounce[j] - input[j];
+        for (size_t j = 0; j < m; j++) {
+            score[j] = left_score[j] + right_bounce[j] - input[j];
+
+            if (score[j] < right_score[j] + left_bounce[j] - input[j]) {
+                score[j] = right_score[j] + left_bounce[j] - input[j];
+            }
 
             if (n - 1 == i) {
-                if (m - 1 == j) {
-                    max = bounce[j];
+                if (0 == j) {
+                    max = score[j];
                 }
                 else {
-                    if (bounce[j] > max) {
-                        max = bounce[j];
+                    if (max < score[j]) {
+                        max = score[j];
                     }
                 }
             }
