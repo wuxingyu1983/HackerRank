@@ -8,11 +8,16 @@
 
 using namespace std;
 
-#define DEBUG       0
+#define DEBUG       1
 
 int main() {
     int n, m;
+#if DEBUG
+    FILE * fp = fopen("input.txt", "r");
+    fscanf(fp, "%d %d", &n, &m);
+#else
     scanf("%d %d", &n, &m);
+#endif
 
     int max;
     vector<int> input, left_bounce, right_bounce, bounce;
@@ -24,7 +29,11 @@ int main() {
     for (size_t i = 0; i < n; i++) {
         int a;
         for (size_t j = 0; j < m; j++) {
+#if DEBUG
+            fscanf(fp, "%d", &a);
+#else
             scanf("%d", &a);
+#endif
             input[j] = a;
         }
 
@@ -74,6 +83,10 @@ int main() {
     }
 
     printf("%d\n", max);
+
+#if DEBUG
+    fclose(fp);
+#endif
 
     return 0;
 }
