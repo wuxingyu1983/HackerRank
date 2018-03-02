@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 using namespace std;
 
@@ -88,7 +89,7 @@ int query(int nodeNumber, int start, int end, int l, int r){
 
     int mid,left,right,q1,q2;
     if(end<l || start > r)
-        return curr_min;
+        return INT_MIN;
     if(lazy[nodeNumber]!=0){
 
         treeNode[nodeNumber] +=  lazy[nodeNumber];
@@ -219,13 +220,10 @@ int main() {
         else {
             new_value = query(1, 1, t, pre_index, pre_index) + sorted_tasks[pre_index - 1].d + tasks[i].m - tasks[i].d - curr;
         }
-//        int max = query(1, 1, t, 1, t);
-        update(1, 1, t, index_in_stree, t, new_value);
+        update(1, 1, t, index_in_stree, index_in_stree, new_value);
 
-//        max = query(1, 1, t, 1, t);
         // update after current sorted task lantenss + m
-        update(1, 1, t, index_in_stree + 1, t, tasks[i].m - new_value);
-        int now = query(1, 1, t, index_in_stree, index_in_stree);
+        update(1, 1, t, index_in_stree + 1, t, tasks[i].m);
 
         if (index_in_stree + 1 < t) {
             curr_min += tasks[i].m;
