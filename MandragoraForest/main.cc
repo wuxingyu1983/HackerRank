@@ -26,8 +26,7 @@ int main() {
     for (size_t i = 0; i < t; i++) {
         int n, max_s = 1;
         vector<long long> health;
-        vector<long long> sp;
-        long long max = 0;
+        vector<long long> sums;
 #if DEBUG
         fscanf(fp, "%d", &n);
 #else
@@ -35,7 +34,7 @@ int main() {
 #endif
 
         health.resize(n, 0);
-        sp.resize(n + 2, 0);
+        sums.resize(n, 0);
         for (size_t j = 0; j < n; j++) {
 #if DEBUG
             fscanf(fp, "%lld", &health[j]);
@@ -46,25 +45,29 @@ int main() {
 
         // sort
         sort(health.begin(), health.end());
-
         for (size_t j = 0; j < n; j++) {
-            for (size_t k = max_s; k >= 1; k--) {
-                sp[k] += (long long)k * health[j];
-                if (1 < k) {
-                    if (sp[k - 1] > sp[k]) {
-                        sp[k] = sp[k - 1];
-                    }
-                }
-                if (sp[k] > max) {
-                    max = sp[k];
-                }
+            if (0 == j) {
+                sums[j] = health[j];
             }
-            max_s ++;
+            else {
+                sums[j] = health[j] + sums[j - 1];
+            }
+        }
+
+        long long s = 1;
+        long long p = 0;
+        for (size_t j = 0; j < n; j++) {
+            if (s * health[j] > (sums[n - 1] - sums[j])) {
+                p += s * health[j];
+            }
+            else {
+                s ++;
+            }
         }
 #if DEBUG
-        fprintf(fp_out, "%lld\n", max);
+        fprintf(fp_out, "%lld\n", p);
 #else
-        printf("%lld\n", max);
+        printf("%lld\n", p);
 #endif
     }
 
