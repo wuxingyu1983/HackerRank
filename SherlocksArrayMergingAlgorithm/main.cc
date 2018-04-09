@@ -17,7 +17,7 @@
 using namespace std;
 
 #define MOD     1000000007
-#define MAX_N   15
+#define MAX_N   1200
 
 unsigned long long cnt[MAX_N + 1][MAX_N + 1];
 
