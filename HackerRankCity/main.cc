@@ -15,7 +15,7 @@ int main() {
     int n;
     scanf("%d", &n);
 
-    vector<int> a;
+    vector<unsigned long long> a;
     a.resize(n);
 
     unsigned long long sum = 0;
@@ -24,7 +24,7 @@ int main() {
     unsigned long long lpath = 0;
 
     for (size_t i = 0; i < n; i++) {
-        scanf("%d", &a[i]);
+        scanf("%llu", &a[i]);
 
         if (0 == i) {
             sum = 29 * a[i];
@@ -41,7 +41,7 @@ int main() {
             new_sum %= MOD;
 
             // 角落到角落
-            new_sum += ((cnt - 1) * 2 * bs * 3 + (cnt - 1) * (cnt - 1) * (2 * a[i] + 2 * 3 * a[i])) * 2 % MOD;
+            new_sum += ((cnt - 1) * 2 * bs * 3 % MOD + ((cnt - 1) * (cnt - 1) % MOD) * (2 * a[i] + 2 * 3 * a[i])) * 2 % MOD;
             new_sum %= MOD;
 
             // 角落到中间
