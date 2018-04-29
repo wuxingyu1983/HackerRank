@@ -10,8 +10,8 @@ using namespace std;
 
 #define DEBUG   0
 #define MOD     1000000007
-#define N       3
-#define M       4
+#define N       50
+#define M       5
 
 // row, major diagonal, minor diagonal
 unsigned int status[N][1 << M][1 << M][1 << M];
@@ -23,7 +23,7 @@ bool valid_current(char sta, char board, int m) {
     int pre_pos = -1;
     for (size_t pos = 0; pos < m; pos++) {
         if (sta & (1 << pos)) {
-            if (board && (1 << pos)) {
+            if (board & (1 << pos)) {
                 // blocked
                 ret = false;
                 break;
@@ -40,7 +40,7 @@ bool valid_current(char sta, char board, int m) {
             }
         }
         else {
-            if (board && (1 << pos)) {
+            if (board & (1 << pos)) {
                 // blocked, clean pre pos
                 pre_pos = -1;
             }
@@ -193,7 +193,6 @@ int main() {
 
         printf("%u\n", ret);
     }
-
 
 #if DEBUG
     fclose(fp);
