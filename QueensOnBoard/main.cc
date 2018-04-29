@@ -144,7 +144,9 @@ int main() {
                                                         // blocked
                                                     }
                                                     else {
-                                                        new_major |= ((sta & (1 << pos)) | (pre_major & (1 << (pos - 1))));
+                                                        if ((sta & (1 << pos)) || (pre_major & (1 << (pos - 1)))) {
+                                                            new_major |= 1 << pos;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -161,7 +163,9 @@ int main() {
                                                         // blocked
                                                     }
                                                     else {
-                                                        new_minor |= ((sta & (1 << pos)) | (pre_minor & (1 << (pos + 1))));
+                                                        if ((sta & (1 << pos)) || (pre_minor & (1 << (pos + 1)))) {
+                                                            new_minor |= 1 << pos;
+                                                        }
                                                     }
                                                 }
                                             }
