@@ -10,109 +10,190 @@ using namespace std;
 
 #define DEBUG   0
 #define MOD     1000000007
-#define N       50
-#define M       5
+#define N       3
+#define M       4
 
 // row, major diagonal, minor diagonal
-unsigned int status[2][1 << M][1 << M][1 << M];
+unsigned int status[N][1 << M][1 << M][1 << M];
+unsigned char board[N];
 
 bool valid_current(char sta, char board, int m) {
-  bool ret = true;
+    bool ret = true;
 
-  int pre_pos = -1;
-  for (size_t pos = 0; pos < m; pos++) {
-    if (sta & (1 << pos)) {
-      if (board && (1 << pos)) {
-        // blocked
-        ret = false;
-        break;
-      }
-      else {
-        if (0 > pre_pos) {
-          pre_pos = pos;
+    int pre_pos = -1;
+    for (size_t pos = 0; pos < m; pos++) {
+        if (sta & (1 << pos)) {
+            if (board && (1 << pos)) {
+                // blocked
+                ret = false;
+                break;
+            }
+            else {
+                if (0 > pre_pos) {
+                    pre_pos = pos;
+                }
+                else {
+                    // no blocked square between pre_pos and pos
+                    ret = false;
+                    break;
+                }
+            }
         }
         else {
-          // no blocked square between pre_pos and pos
-          ret = false;
-          break;
+            if (board && (1 << pos)) {
+                // blocked, clean pre pos
+                pre_pos = -1;
+            }
         }
-      }
     }
-    else {
-      if (board && (1 << pos)) {
-        // blocked, clean pre pos
-        pre_pos = -1;
-      }
-    }
-  }
 
-  return ret;
+    return ret;
+}
+
+bool valid_pre(char sta, char pre_sta, char pre_major, char pre_minor) {
+    if (sta & pre_sta) {
+        return false;
+    }
+
+    if (sta & (pre_major << 1)) {
+        return false;
+    }
+
+    if (sta & (pre_minor >> 1)) {
+        return false;
+    }
+
+    return true;
 }
 
 int main() {
-  int t;
+    int t;
 
 #if DEBUG
-  FILE * fp = fopen("input.txt", "r");
-  fscanf(fp, "%d", &t);
+    FILE * fp = fopen("input.txt", "r");
+    fscanf(fp, "%d", &t);
 #else
-  scanf("%d", &t);
+    scanf("%d", &t);
 #endif
 
-
-  for (size_t i = 0; i < t; i++) {
-    int n, m;
+    for (size_t i = 0; i < t; i++) {
+        int n, m;
 
 #if DEBUG
-    fscanf(fp, "%d %d", &n, &m);
+        fscanf(fp, "%d %d", &n, &m);
 #else
-    scanf("%d %d", &n, &m);
+        scanf("%d %d", &n, &m);
 #endif
 
-    unsigned char board[N];
-    for (size_t row = 0; row < n; row++) {
-      board[row] = 0;
+        for (size_t row = 0; row < n; row++) {
+            board[row] = 0;
 
-      for (size_t col = 0; col < m; col++) {
-        char c;
+            char c[30];
 #if DEBUG
-        fscanf(fp, "%c", &c);
+            fscanf(fp, "%s", c);
 #else
-        scanf("%c", &c);
+            scanf("%s", c);
 #endif
-
-        if ('#' == c) {
-          // a blocked square
-          board[row] |= 1 << col;
+            for (size_t col = 0; col < m; col++) {
+                if ('#' == c[col]) {
+                    // a blocked square
+                    board[row] |= 1 << col;
+                }
+            }
         }
-      }
 
-      // process
-      unsigned int ret = 0;
-      for (size_t row = 0; row < n; row++) {
-        for (size_t sta = 0; sta < (1 << m); sta++) {
-          if (0 == row) {
+        // process
+        memset(status, 0, sizeof(status));
+        unsigned int ret = 0;
+        for (size_t row = 0; row < n; row++) {
+            for (char sta = 0; sta < (1 << m); sta++) {
+                if (valid_current(sta, board[row], m)) {
+                    if (0 == row) {
+                        status[row][sta][sta][sta] = 1;
+                        if ((n - 1) == row) {
+                            // last row
+                            ret ++;
+                        }
+                    }
+                    else {
+                        for (char pre_sta = 0; pre_sta < (1 << m); pre_sta++) {
+                            for (char pre_major = 0; pre_major < (1 << m); pre_major++) {
+                                for (char pre_minor = 0; pre_minor < (1 << m); pre_minor++) {
+                                    if (status[row - 1][pre_sta][pre_major][pre_minor]) {
+                                        if (valid_pre(sta, pre_sta, pre_major, pre_minor)) {
+                                            // new_sta, new_major, new_minor
+                                            char new_sta = 0;
+                                            for (size_t pos = 0; pos < m; pos++) {
+                                                if (board[row] & (1 << pos)) {
+                                                    // blocked
+                                                }
+                                                else {
+                                                    new_sta |= ((sta & (1 << pos)) | (pre_sta & (1 << pos)));
+                                                }
+                                            }
 
-          }
-          else {
+                                            char new_major = 0;
+                                            for (size_t pos = 0; pos < m; pos++) {
+                                                if (0 == pos) {
+                                                    if (sta & 1) {
+                                                        new_major = 1;
+                                                    }
+                                                }
+                                                else {
+                                                    if (board[row] & (1 << pos)) {
+                                                        // blocked
+                                                    }
+                                                    else {
+                                                        new_major |= ((sta & (1 << pos)) | (pre_major & (1 << (pos - 1))));
+                                                    }
+                                                }
+                                            }
 
-          }
+                                            char new_minor = 0;
+                                            for (size_t pos = 0; pos < m; pos++) {
+                                                if (m - 1 == pos) {
+                                                    if (sta & (1 << pos)) {
+                                                        new_minor |= (1 << pos);
+                                                    }
+                                                }
+                                                else {
+                                                    if (board[row] & (1 << pos)) {
+                                                        // blocked
+                                                    }
+                                                    else {
+                                                        new_minor |= ((sta & (1 << pos)) | (pre_minor & (1 << (pos + 1))));
+                                                    }
+                                                }
+                                            }
 
-          if ((n - 1) == row) {
-            // last row
+                                            status[row][new_sta][new_major][new_minor] += status[row - 1][pre_sta][pre_major][pre_minor];
+                                            status[row][new_sta][new_major][new_minor] %= MOD;
 
-          }
+                                            if ((n - 1) == row) {
+                                                // last row
+                                                ret += status[row - 1][pre_sta][pre_major][pre_minor];
+                                                ret %= MOD;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
-      }
 
-      printf("%u\n", ret);
+        ret += MOD - 1;
+        ret %= MOD;
+
+        printf("%u\n", ret);
     }
-  }
 
 
 #if DEBUG
-  fclose(fp);
+    fclose(fp);
 #endif
 
-  return 0;
+    return 0;
 }
