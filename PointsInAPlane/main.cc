@@ -6,14 +6,6 @@
 //  Copyright © 2018年 吴星煜. All rights reserved.
 //
 
-//
-//  main.cpp
-//  test
-//
-//  Created by wuxingyu on 2018/8/22.
-//  Copyright © 2018年 wuxingyu. All rights reserved.
-//
-
 #include <cmath>
 #include <cstdio>
 #include <vector>
@@ -97,17 +89,37 @@ void getMinMoves(int index, vector<Point> &p)
                 if (cnt[index][m][i])
                 {
                     int origin = i;
+                    int cnt1 = 0;
 
                     for (int p1 = 0; p1 < p.size(); p1++)
                     {
-                        if (origin & (1 << p1)) {
-                            int mask = 1 << p1;
-                            int dst = origin ^ mask;
-                            cnt[index][m + 1][dst] += cnt[index][m][i];
-                            cnt[index][m + 1][dst] %= MOD;
+                        if (origin & (1 << p1))
+                        {
+                            cnt1++;
+                            int p2 = p1 + 1;
+                            for (; p2 < p.size(); p2++)
+                            {
+                                if (origin & (1 << p2))
+                                {
+                                    cnt1++;
+                                    int mask = 1 << p1 | 1 << p2;
+                                    int dst = origin ^ mask;
+                                    cnt[index][m + 1][dst] += cnt[index][m][i];
+                                    cnt[index][m + 1][dst] %= MOD;
 
-                            recu_func(index, p, p1, -1, origin, mask, m, cnt[index][m][i]);
+                                    recu_func(index, p, p1, p2, origin, mask, m, cnt[index][m][i]);
+                                }
+                            }
                         }
+                    }
+
+                    if (1 == cnt1)
+                    {
+                        // only left one point p1
+                        int dst = 0;
+                        long long tmp = (long long)cnt[index][m][i] * (long long)(m + 1);
+                        cnt[index][m + 1][dst] +=  tmp % MOD;
+                        cnt[index][m + 1][dst] %= MOD;
                     }
                 }
             }
