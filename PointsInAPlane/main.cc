@@ -24,57 +24,34 @@ using namespace std;
 
 int cnt[50][9][MAX]; // 8 - max turns
 
+int flag[MAX];
+int pos1[MAX];
+int pos2[MAX];
+
+int cnt1[MAX];
+
 class Point
 {
-public:
+  public:
     int x, y;
 };
 
-void recu_func(int index, vector<Point> &p, int p1, int p2, int origin, int mask, int m, int count)
-{
-    if (0 > p2) {
-        // new line
-        for (p2 = p1; p2 < p.size(); p2++) {
-            if (p2 != p1) {
-                if (origin & (1 << p2)) {
-                    int new_mask = mask | (1 << p2);
-                    int dst = origin ^ new_mask;
-                    cnt[index][m + 1][dst] += count;
-                    cnt[index][m + 1][dst] %= MOD;
-
-                    recu_func(index, p, p1, p2, origin, new_mask, m, count);
-                }
-            }
-        }
-    }
-    else {
-        // find point on p1 => p2
-        for (int p3 = p2; p3 < p.size(); p3++) {
-            if (p3 != p2) {
-                if (origin & (1 << p3)) {
-                    if ((p[p2].y - p[p1].y) * (p[p3].x - p[p1].x) == (p[p3].y - p[p1].y) * (p[p2].x - p[p1].x)) {
-                        // p1,p2,p3 on the same line
-                        int new_mask = mask | (1 << p3);
-                        int dst = origin ^ new_mask;
-                        cnt[index][m + 1][dst] += count;
-                        cnt[index][m + 1][dst] %= MOD;
-
-                        recu_func(index, p, p1, p3, origin, new_mask, m, count);
-                    }
-                }
-            }
-        }
-    }
-}
-
 void getMinMoves(int index, vector<Point> &p)
 {
-    int max = (1 << p.size()) - 1;
+    int p_size = p.size();
+    int max = (1 << p_size) - 1;
 
     cnt[index][0][max] = 1;
 
     for (int m = 0; m <= 8; m++)
     {
+        int i = 0;
+
+        if (0 == m)
+        {
+            i = max;
+        }
+
         if (cnt[index][m][0])
         {
             // end, process ret
@@ -84,42 +61,84 @@ void getMinMoves(int index, vector<Point> &p)
         }
         else
         {
-            for (int i = 1; i <= max; i++)
+            for (; i <= max; i++)
             {
                 if (cnt[index][m][i])
                 {
                     int origin = i;
-                    int cnt1 = 0;
 
-                    for (int p1 = 0; p1 < p.size(); p1++)
+                    if (1 == cnt1[origin])
                     {
-                        if (origin & (1 << p1))
+                        long long tmp = (long long)cnt[index][m][i] * (long long)(m + 1);
+                        cnt[index][m + 1][0] += tmp % MOD;
+                        cnt[index][m + 1][0] %= MOD;
+                    }
+                    else
+                    {
+                        // remove all
+                        int flag_size = 0;
+
+                        for (int p1 = 0; p1 < p_size; p1++)
                         {
-                            cnt1++;
-                            int p2 = p1 + 1;
-                            for (; p2 < p.size(); p2++)
+                            if (origin < (1 << p1))
                             {
-                                if (origin & (1 << p2))
+                                break;
+                            }
+
+                            if (origin & (1 << p1))
+                            {
+                                int mask = 1 << p1;
+
+                                if (0 < flag_size)
                                 {
-                                    cnt1++;
-                                    int mask = 1 << p1 | 1 << p2;
+                                    int tmp_size = flag_size;
+                                    for (int f_i = 0; f_i < tmp_size; f_i++)
+                                    {
+                                        int p2 = -1, p3 = -1;
+
+                                        p2 = pos1[f_i];
+                                        p3 = pos2[f_i];
+
+                                        if (0 > p3)
+                                        {
+                                            int dst = origin ^ (mask | flag[f_i]);
+                                            cnt[index][m + 1][dst] += cnt[index][m][i];
+                                            cnt[index][m + 1][dst] %= MOD;
+
+                                            pos1[flag_size] = p1;
+                                            pos2[flag_size] = p2;
+                                            flag[flag_size++] = mask | flag[f_i];
+                                        }
+                                        else
+                                        {
+                                            if ((p[p2].y - p[p1].y) * (p[p3].x - p[p1].x) == (p[p3].y - p[p1].y) * (p[p2].x - p[p1].x))
+                                            {
+                                                // on one line
+                                                int dst = origin ^ (mask | flag[f_i]);
+                                                cnt[index][m + 1][dst] += cnt[index][m][i];
+                                                cnt[index][m + 1][dst] %= MOD;
+
+                                                pos1[flag_size] = p1;
+                                                pos2[flag_size] = p3;
+                                                flag[flag_size++] = mask | flag[f_i];
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // set p1
+                                {
+/*
                                     int dst = origin ^ mask;
                                     cnt[index][m + 1][dst] += cnt[index][m][i];
                                     cnt[index][m + 1][dst] %= MOD;
-
-                                    recu_func(index, p, p1, p2, origin, mask, m, cnt[index][m][i]);
+*/
+                                    pos1[flag_size] = p1;
+                                    pos2[flag_size] = -1;
+                                    flag[flag_size++] = mask;
                                 }
                             }
                         }
-                    }
-
-                    if (1 == cnt1)
-                    {
-                        // only left one point p1
-                        int dst = 0;
-                        long long tmp = (long long)cnt[index][m][i] * (long long)(m + 1);
-                        cnt[index][m + 1][dst] +=  tmp % MOD;
-                        cnt[index][m + 1][dst] %= MOD;
                     }
                 }
             }
@@ -141,6 +160,10 @@ int main()
     cin >> t;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 #endif
+
+    for (int i = 0; i < 16; i ++) {
+        cnt1[1 << i] = 1;
+    }
 
     for (int i_t = 0; i_t < t; i_t++)
     {
