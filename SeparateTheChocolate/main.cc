@@ -218,7 +218,7 @@ int main()
                                 set<unsigned int> toNext;
                                 set<unsigned int> new_group;
                                 unsigned int already_end = old_val >> (BITS * n);
-                                
+
                                 for (size_t pos = 0; pos < n; pos++)
                                 {
                                     if (curr_pn & (1 << pos))
@@ -229,7 +229,7 @@ int main()
                                     {
                                         new_c[pos] = 0;
                                     }
-                                    
+
                                     if (last_pn & (1 << pos))
                                     {
                                         old_c[pos] = 1;
@@ -238,12 +238,20 @@ int main()
                                     {
                                         old_c[pos] = 0;
                                     }
-                                    
+
                                     old_v[pos] = (old_val & (7 << (BITS * pos))) >> (BITS * pos);
                                     new_v[pos] = -1;
-                                    
+
                                     old_group.insert(old_v[pos]);
-                                    
+
+                                    if (old_c[pos] == new_c[pos])
+                                    {
+                                        toNext.insert(old_v[pos]);
+                                    }
+                                }
+
+                                for (size_t pos = 0; pos < n; pos++)
+                                {
                                     if (0 == pos)
                                     {
                                         if (old_c[pos] == new_c[pos])
@@ -258,7 +266,53 @@ int main()
                                         {
                                             if (0 <= new_v[pos - 1])
                                             {
-                                                new_v[pos] = new_v[pos - 1];
+                                                // 连续相同
+                                                if (new_c[pos] == old_c[pos])
+                                                {
+                                                    if (old_v[pos] == new_v[pos - 1])
+                                                    {
+                                                        new_v[pos] = old_v[pos];
+                                                    }
+                                                    else
+                                                    {
+                                                        if (new_group.find(old_v[pos]) != new_group.end())
+                                                        {
+                                                            // old_v[pos] 已经存在
+                                                            for (int p = pos + 1; p < n; p++)
+                                                            {
+                                                                if (old_v[p] == new_v[pos - 1])
+                                                                {
+                                                                    old_v[p] = old_v[pos];
+                                                                }
+                                                            }
+
+                                                            new_group.erase(new_v[pos - 1]);
+                                                            new_v[pos] = old_v[pos];
+                                                            for (int p = 0; p <= pos - 1; p++)
+                                                            {
+                                                                if (new_v[p] == new_v[pos - 1])
+                                                                {
+                                                                    new_v[p] = new_v[pos];
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            new_v[pos] = new_v[pos - 1];
+                                                            for (int p = pos + 1; p < n; p++)
+                                                            {
+                                                                if (old_v[p] == old_v[pos])
+                                                                {
+                                                                    old_v[p] = new_v[pos];
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    new_v[pos] = new_v[pos - 1];
+                                                }
                                             }
                                             else
                                             {
@@ -289,13 +343,8 @@ int main()
                                             }
                                         }
                                     }
-                                    
-                                    if (old_c[pos] == new_c[pos])
-                                    {
-                                        toNext.insert(old_v[pos]);
-                                    }
                                 }
-                                
+
                                 for (unsigned int p = 0, v = 0; p < n; p++)
                                 {
                                     if (0 > new_v[p])
