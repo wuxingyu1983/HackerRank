@@ -57,6 +57,7 @@ int main()
         }
     }
     
+    unsigned int ret = 0;
     map<unsigned int, unsigned int> cnt[2][pn][2 * m * n + 1];  // cnt[index][pn][difference]
     int index = 0;
     
@@ -147,7 +148,14 @@ int main()
                 }
                 else
                 {
-                    cnt[index][curr_pn][difference].insert(pair<unsigned int, unsigned int>(val, 1));
+                    if (0 == m - 1)
+                    {
+                        ret++;
+                    }
+                    else
+                    {
+                        cnt[index][curr_pn][difference].insert(pair<unsigned int, unsigned int>(val, 1));
+                    }
                 }
             }
             else
@@ -369,6 +377,7 @@ int main()
                                             
                                             if (new_c[p] != new_c[p - 1])
                                             {
+                                                p --;
                                                 break;
                                             }
                                         }
@@ -393,13 +402,42 @@ int main()
                                 {
                                     if (2 < new_group.size() + already_end)
                                     {
-                                        continue;
+                                    }
+                                    else
+                                    {
+                                        if (m * n - k <= difference + offset && m * n + k >= difference + offset)
+                                        {
+                                            ret += it->second;
+                                        }
+                                    }
+                                    continue;
+                                }
+
+                                char v = 0;
+                                char fv[n];
+                                for (size_t pos = 0; pos < n; pos++)
+                                {
+                                    if (0 <= new_v[pos])
+                                    {
+                                        for (size_t p = pos + 1; p < n; p++)
+                                        {
+                                            if (new_v[p] == new_v[pos])
+                                            {
+                                                fv[p] = v;
+                                                new_v[p] = -1;
+                                            }
+                                        }
+
+                                        fv[pos] = v;
+                                        new_v[pos] = -1;
+
+                                        v ++;
                                     }
                                 }
 
                                 for (size_t p = 0; p < n; p++)
                                 {
-                                    new_val |= new_v[p] << (BITS * p);
+                                    new_val |= fv[p] << (BITS * p);
                                 }
                                 
                                 new_val |= already_end << (BITS * n);
@@ -421,23 +459,7 @@ int main()
         
         index = 1 - index;
     }
-    
-    index = 1 - index;
-    unsigned int ret = 0;
-    for (size_t i = 0; i < pn; i++)
-    {
-        for (size_t c = m * n - k; c <= m * n + k; c++)
-        {
-            if (0 < cnt[index][i][c].size())
-            {
-                for (map<unsigned int, unsigned int>::iterator it = cnt[index][i][c].begin(); it != cnt[index][i][c].end(); it++)
-                {
-                    ret += it->second;
-                }
-            }
-        }
-    }
-    
+
     cout << ret << endl;
     
 #if DEBUG
