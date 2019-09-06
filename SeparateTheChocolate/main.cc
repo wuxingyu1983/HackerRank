@@ -27,14 +27,14 @@ int main()
     ifstream inFile;
     inFile.open("input.txt");
 #endif
-    
+
     unsigned int m, n, k;
 #if DEBUG
     inFile >> m >> n >> k;
 #else
     cin >> m >> n >> k;
 #endif
-    
+
     for (size_t i = 0; i < m; i++)
     {
         for (size_t j = 0; j < n; j++)
@@ -46,7 +46,7 @@ int main()
 #endif
         }
     }
-    
+
     int pn = pow(2, n);
 
     for (size_t i = 0; i < pn; i++)
@@ -56,11 +56,14 @@ int main()
             flag[i][j] = -1;
         }
     }
-    
+
     unsigned int ret = 0;
-    map<unsigned int, unsigned int> cnt[2][pn][2 * m * n + 1];  // cnt[index][pn][difference]
+    map<unsigned int, unsigned int> cnt[2][pn][2 * m * n + 1]; // cnt[index][pn][difference]
     int index = 0;
-    
+
+    map<unsigned int, int> vtv[pn][pn];
+    map<unsigned int, bool> canAdd[pn][pn];
+
     for (size_t i_m = 0; i_m < m; i_m++)
     {
         if (1 < i_m)
@@ -74,7 +77,7 @@ int main()
                 }
             }
         }
-        
+
         for (size_t curr_pn = 0; curr_pn < pn; curr_pn++)
         {
             // i - new
@@ -87,19 +90,19 @@ int main()
                     nextI = true;
                     break;
                 }
-                
+
                 if (0 == (curr_pn & mask) && 'T' == c[i_m][pos])
                 {
                     nextI = true;
                     break;
                 }
             }
-            
+
             if (nextI)
             {
                 continue;
             }
-            
+
             if (0 == i_m)
             {
                 unsigned int group = 0;
@@ -111,13 +114,13 @@ int main()
                 {
                     if (curr_pn & (1 << pos))
                     {
-                        offset ++;
+                        offset++;
                     }
                     else
                     {
-                        offset --;
+                        offset--;
                     }
-                    
+
                     if (0 == pos)
                     {
                         val = group;
@@ -136,13 +139,13 @@ int main()
                             val |= group << (pos * BITS);
                             new_group.insert(group);
                         }
-                        
+
                         mask <<= 1;
                     }
                 }
-                
+
                 difference = m * n + offset;
-                
+
                 if (0 == m - 1 && 2 < new_group.size())
                 {
                 }
@@ -165,11 +168,11 @@ int main()
                 {
                     if (curr_pn & (1 << pos))
                     {
-                        offset ++;
+                        offset++;
                     }
                     else
                     {
-                        offset --;
+                        offset--;
                     }
                 }
 
@@ -218,108 +221,131 @@ int main()
                             {
                                 unsigned int old_val = it->first;
                                 unsigned int new_val = 0;
-                                unsigned char old_c[n];
-                                unsigned char new_c[n];
-                                char old_v[n];
-                                char new_v[n];
-                                set<unsigned int> old_group;
-                                set<unsigned int> toNext;
-                                set<unsigned int> new_group;
-                                unsigned int already_end = old_val >> (BITS * n);
 
-                                for (size_t pos = 0; pos < n; pos++)
+                                if (vtv[last_pn][curr_pn].find(old_val) == vtv[last_pn][curr_pn].end())
                                 {
-                                    if (curr_pn & (1 << pos))
-                                    {
-                                        new_c[pos] = 1;
-                                    }
-                                    else
-                                    {
-                                        new_c[pos] = 0;
-                                    }
+                                    unsigned char old_c[n];
+                                    unsigned char new_c[n];
+                                    char old_v[n];
+                                    char new_v[n];
+                                    set<unsigned int> old_group;
+                                    set<unsigned int> toNext;
+                                    set<unsigned int> new_group;
+                                    unsigned int already_end = old_val >> (BITS * n);
 
-                                    if (last_pn & (1 << pos))
+                                    for (size_t pos = 0; pos < n; pos++)
                                     {
-                                        old_c[pos] = 1;
-                                    }
-                                    else
-                                    {
-                                        old_c[pos] = 0;
-                                    }
+                                        if (curr_pn & (1 << pos))
+                                        {
+                                            new_c[pos] = 1;
+                                        }
+                                        else
+                                        {
+                                            new_c[pos] = 0;
+                                        }
 
-                                    old_v[pos] = (old_val & (7 << (BITS * pos))) >> (BITS * pos);
-                                    new_v[pos] = -1;
+                                        if (last_pn & (1 << pos))
+                                        {
+                                            old_c[pos] = 1;
+                                        }
+                                        else
+                                        {
+                                            old_c[pos] = 0;
+                                        }
 
-                                    old_group.insert(old_v[pos]);
+                                        old_v[pos] = (old_val & (7 << (BITS * pos))) >> (BITS * pos);
+                                        new_v[pos] = -1;
 
-                                    if (old_c[pos] == new_c[pos])
-                                    {
-                                        toNext.insert(old_v[pos]);
-                                    }
-                                }
+                                        old_group.insert(old_v[pos]);
 
-                                for (size_t pos = 0; pos < n; pos++)
-                                {
-                                    if (0 == pos)
-                                    {
                                         if (old_c[pos] == new_c[pos])
                                         {
-                                            new_v[pos] = old_v[pos];
-                                            new_group.insert(new_v[pos]);
+                                            toNext.insert(old_v[pos]);
                                         }
                                     }
-                                    else
-                                    {
-                                        if (new_c[pos] == new_c[pos - 1])
-                                        {
-                                            if (0 <= new_v[pos - 1])
-                                            {
-                                                // 连续相同
-                                                if (new_c[pos] == old_c[pos])
-                                                {
-                                                    if (old_v[pos] == new_v[pos - 1])
-                                                    {
-                                                        new_v[pos] = old_v[pos];
-                                                    }
-                                                    else
-                                                    {
-                                                        if (new_group.find(old_v[pos]) != new_group.end())
-                                                        {
-                                                            // old_v[pos] 已经存在
-                                                            for (int p = pos + 1; p < n; p++)
-                                                            {
-                                                                if (old_v[p] == new_v[pos - 1])
-                                                                {
-                                                                    old_v[p] = old_v[pos];
-                                                                }
-                                                            }
 
-                                                            new_group.erase(new_v[pos - 1]);
+                                    for (size_t pos = 0; pos < n; pos++)
+                                    {
+                                        if (0 == pos)
+                                        {
+                                            if (old_c[pos] == new_c[pos])
+                                            {
+                                                new_v[pos] = old_v[pos];
+                                                new_group.insert(new_v[pos]);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (new_c[pos] == new_c[pos - 1])
+                                            {
+                                                if (0 <= new_v[pos - 1])
+                                                {
+                                                    // 连续相同
+                                                    if (new_c[pos] == old_c[pos])
+                                                    {
+                                                        if (old_v[pos] == new_v[pos - 1])
+                                                        {
                                                             new_v[pos] = old_v[pos];
-                                                            for (int p = 0; p <= pos - 1; p++)
-                                                            {
-                                                                if (new_v[p] == new_v[pos - 1])
-                                                                {
-                                                                    new_v[p] = new_v[pos];
-                                                                }
-                                                            }
                                                         }
                                                         else
                                                         {
-                                                            new_v[pos] = new_v[pos - 1];
-                                                            for (int p = pos + 1; p < n; p++)
+                                                            if (new_group.find(old_v[pos]) != new_group.end())
                                                             {
-                                                                if (old_v[p] == old_v[pos])
+                                                                // old_v[pos] 已经存在
+                                                                for (int p = pos + 1; p < n; p++)
                                                                 {
-                                                                    old_v[p] = new_v[pos];
+                                                                    if (old_v[p] == new_v[pos - 1])
+                                                                    {
+                                                                        old_v[p] = old_v[pos];
+                                                                    }
+                                                                }
+
+                                                                new_group.erase(new_v[pos - 1]);
+                                                                new_v[pos] = old_v[pos];
+                                                                for (int p = 0; p <= pos - 1; p++)
+                                                                {
+                                                                    if (new_v[p] == new_v[pos - 1])
+                                                                    {
+                                                                        new_v[p] = new_v[pos];
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                new_v[pos] = new_v[pos - 1];
+                                                                for (int p = pos + 1; p < n; p++)
+                                                                {
+                                                                    if (old_v[p] == old_v[pos])
+                                                                    {
+                                                                        old_v[p] = new_v[pos];
+                                                                    }
                                                                 }
                                                             }
                                                         }
+                                                    }
+                                                    else
+                                                    {
+                                                        new_v[pos] = new_v[pos - 1];
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    new_v[pos] = new_v[pos - 1];
+                                                    if (old_c[pos] == new_c[pos])
+                                                    {
+                                                        new_v[pos] = old_v[pos];
+                                                        new_group.insert(new_v[pos]);
+                                                        for (int p = pos - 1; p >= 0; p--)
+                                                        {
+                                                            if (new_c[p] != new_c[pos])
+                                                            {
+                                                                break;
+                                                            }
+                                                            else
+                                                            {
+                                                                new_v[p] = new_v[pos];
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                             else
@@ -328,120 +354,135 @@ int main()
                                                 {
                                                     new_v[pos] = old_v[pos];
                                                     new_group.insert(new_v[pos]);
-                                                    for (int p = pos - 1; p >= 0; p--)
-                                                    {
-                                                        if (new_c[p] != new_c[pos])
-                                                        {
-                                                            break;
-                                                        }
-                                                        else
-                                                        {
-                                                            new_v[p] = new_v[pos];
-                                                        }
-                                                    }
                                                 }
                                             }
                                         }
+                                    }
+
+                                    for (unsigned int p = 0, v = 0; p < n; p++)
+                                    {
+                                        if (0 > new_v[p])
+                                        {
+                                            while (new_group.find(v) != new_group.end())
+                                            {
+                                                v++;
+                                            }
+
+                                            new_group.insert(v);
+
+                                            // no use
+                                            while (0 > new_v[p])
+                                            {
+                                                new_v[p] = v;
+                                                p++;
+
+                                                if (p >= n)
+                                                {
+                                                    break;
+                                                }
+
+                                                if (new_c[p] != new_c[p - 1])
+                                                {
+                                                    p--;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    already_end += old_group.size() - toNext.size();
+
+                                    if (1 < already_end)
+                                    {
+                                        vtv[last_pn][curr_pn].insert(pair<unsigned int, int>(old_val, -1));
+                                        continue;
+                                    }
+                                    else if (1 == already_end)
+                                    {
+                                        if (1 < new_group.size())
+                                        {
+                                            vtv[last_pn][curr_pn].insert(pair<unsigned int, int>(old_val, -1));
+                                            continue;
+                                        }
+                                    }
+
+                                    if (2 >= new_group.size() + already_end)
+                                    {
+                                        canAdd[last_pn][curr_pn].insert(pair<unsigned int, bool>(old_val, true));
+                                    }
+
+                                    if (i_m == m - 1)
+                                    {
+                                        if (2 < new_group.size() + already_end)
+                                        {
+                                        }
                                         else
                                         {
-                                            if (old_c[pos] == new_c[pos])
+                                            if (m * n - k <= difference + offset && m * n + k >= difference + offset)
                                             {
-                                                new_v[pos] = old_v[pos];
-                                                new_group.insert(new_v[pos]);
+                                                ret += it->second;
                                             }
                                         }
+                                        continue;
                                     }
-                                }
 
-                                for (unsigned int p = 0, v = 0; p < n; p++)
-                                {
-                                    if (0 > new_v[p])
+                                    char v = 0;
+                                    char fv[n];
+                                    for (size_t pos = 0; pos < n; pos++)
                                     {
-                                        while (new_group.find(v) != new_group.end())
+                                        if (0 <= new_v[pos])
                                         {
-                                            v ++;
-                                        }
-                                        
-                                        new_group.insert(v);
-                                        
-                                        // no use
-                                        while (0 > new_v[p])
-                                        {
-                                            new_v[p] = v;
-                                            p++;
-                                            
-                                            if (p >= n)
+                                            for (size_t p = pos + 1; p < n; p++)
                                             {
-                                                break;
+                                                if (new_v[p] == new_v[pos])
+                                                {
+                                                    fv[p] = v;
+                                                    new_v[p] = -1;
+                                                }
                                             }
-                                            
-                                            if (new_c[p] != new_c[p - 1])
-                                            {
-                                                p --;
-                                                break;
-                                            }
+
+                                            fv[pos] = v;
+                                            new_v[pos] = -1;
+
+                                            v++;
                                         }
                                     }
-                                }
 
-                                already_end += old_group.size() - toNext.size();
-                                
-                                if (1 < already_end)
-                                {
-                                    continue;
+                                    for (size_t p = 0; p < n; p++)
+                                    {
+                                        new_val |= fv[p] << (BITS * p);
+                                    }
+
+                                    new_val |= already_end << (BITS * n);
+
+                                    vtv[last_pn][curr_pn].insert(pair<unsigned int, int>(old_val, new_val));
                                 }
-                                else if (1 == already_end)
+                                else
                                 {
-                                    if (1 < new_group.size())
+                                    if (0 > vtv[last_pn][curr_pn].find(old_val)->second)
                                     {
                                         continue;
                                     }
-                                }
-
-                                if (i_m == m - 1)
-                                {
-                                    if (2 < new_group.size() + already_end)
-                                    {
-                                    }
                                     else
                                     {
-                                        if (m * n - k <= difference + offset && m * n + k >= difference + offset)
+                                        if (i_m == m - 1)
                                         {
-                                            ret += it->second;
-                                        }
-                                    }
-                                    continue;
-                                }
-
-                                char v = 0;
-                                char fv[n];
-                                for (size_t pos = 0; pos < n; pos++)
-                                {
-                                    if (0 <= new_v[pos])
-                                    {
-                                        for (size_t p = pos + 1; p < n; p++)
-                                        {
-                                            if (new_v[p] == new_v[pos])
+                                            if (canAdd[last_pn][curr_pn].find(old_val) != canAdd[last_pn][curr_pn].end())
                                             {
-                                                fv[p] = v;
-                                                new_v[p] = -1;
+                                                if (m * n - k <= difference + offset && m * n + k >= difference + offset)
+                                                {
+                                                    ret += it->second;
+                                                }
                                             }
+                                            continue;
                                         }
-
-                                        fv[pos] = v;
-                                        new_v[pos] = -1;
-
-                                        v ++;
+                                        else
+                                        {
+                                            new_val = vtv[last_pn][curr_pn].find(old_val)->second;
+                                        }
                                     }
                                 }
 
-                                for (size_t p = 0; p < n; p++)
-                                {
-                                    new_val |= fv[p] << (BITS * p);
-                                }
-                                
-                                new_val |= already_end << (BITS * n);
-                                
                                 if (!cnt[index][curr_pn][difference + offset][new_val])
                                 {
                                     cnt[index][curr_pn][difference + offset][new_val] = it->second;
@@ -456,16 +497,15 @@ int main()
                 }
             }
         }
-        
+
         index = 1 - index;
     }
 
     cout << ret << endl;
-    
+
 #if DEBUG
     inFile.close();
 #endif
-    
+
     return 0;
 }
-
