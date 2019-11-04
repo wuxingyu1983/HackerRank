@@ -92,7 +92,6 @@ inline long long costFromBtoS(int s, int b)
 
 int main()
 {
-//    cout << "begin" << endl;
 #if DEBUG
     ifstream inFile;
     inFile.open("input.txt");
@@ -192,6 +191,11 @@ int main()
                 {
                     continue;
                 }
+
+                if (0 < ret && ret <= costFromStoB(j, i))
+                {
+                    break;
+                }
                 
                 if (0 == cost[0][i][m] || cost[0][i][m] > (cost[1][j][m - (i - j)] + costFromStoB(j, i)))
                 {
@@ -206,27 +210,32 @@ int main()
                 }
             }
 
+            unsigned long long tmp = cost[0][i][m];
+            if (0 == tmp)
+            {
+                tmp = cost[1][i][m];
+            }
+            else
+            {
+                if (tmp > cost[1][i][m] && 0 < cost[1][i][m])
+                {
+                    tmp = cost[1][i][m];
+                }
+            }
+
             for (size_t j = i + 1; j < n; j++)
             {
                 if (m + j - i > tmove)
                 {
                     break;
                 }
-
-                unsigned long long tmp = cost[0][i][m];
-                if (0 == tmp)
-                {
-                    tmp = cost[1][i][m];
-                }
-                else
-                {
-                    if (tmp > cost[1][i][m] && 0 < cost[1][i][m])
-                    {
-                        tmp = cost[1][i][m];
-                    }
-                }
                 
                 if (0 < m && 0 == tmp)
+                {
+                    break;
+                }
+
+                if (0 < ret && (ret <= tmp + costFromBtoS(i, j)))
                 {
                     break;
                 }
