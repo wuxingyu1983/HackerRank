@@ -12,21 +12,24 @@
 
 using namespace std;
 
-#define DEBUG   0
+#define DEBUG 0
 #define MAX_N   200002
-#define MOD     1000000007
+#define MOD 1000000007
 
 class node
 {
 public:
     int parent;
+    int idx; // child index in parent
     vector<int> children;
-    long long sum1;     // ∑ua
-    long long sum2;     // ∑u
+    vector<int> flag; // 1 - children in set
+    long long sum1;   // ∑ua
+    long long sum2;   // ∑u
 
     node()
     {
         parent = -1;
+        idx = -1;
         sum1 = 0;
         sum2 = 0;
     }
@@ -43,14 +46,16 @@ void build_tree(multimap<int, int> &edges, int curr)
         else
         {
             tree[(*it).second].parent = curr;
+            tree[(*it).second].idx = tree[curr].children.size();
             tree[curr].children.push_back((*it).second);
+            tree[curr].flag.push_back(0);
 
             build_tree(edges, (*it).second);
         }
     }
 }
 
-void getSubSum(set<int>& sset, int curr, long long & sum)
+void getSubSum(set<int> &sset, int curr, long long &sum)
 {
     tree[curr].sum1 = 0;
     tree[curr].sum2 = 0;
@@ -65,17 +70,25 @@ void getSubSum(set<int>& sset, int curr, long long & sum)
     {
         for (vector<int>::iterator it = tree[curr].children.begin(); it != tree[curr].children.end(); it++)
         {
-            getSubSum(sset, *it, sum);
+            if (1 == tree[curr].flag[it - tree[curr].children.begin()])
+            {
+                getSubSum(sset, *it, sum);
 
-            sum += (tree[*it].sum1 + tree[*it].sum2) * tree[curr].sum2 + tree[curr].sum1 * tree[*it].sum2;
+                sum += (tree[*it].sum1 + tree[*it].sum2) * tree[curr].sum2 + tree[curr].sum1 * tree[*it].sum2;
 
-            sum %= MOD;
+                sum %= MOD;
 
-            tree[curr].sum1 += tree[*it].sum1 + tree[*it].sum2;
-            tree[curr].sum1 %= MOD;
-            tree[curr].sum2 += tree[*it].sum2;
-            tree[curr].sum2 %= MOD;
+                tree[curr].sum1 += tree[*it].sum1 + tree[*it].sum2;
+                tree[curr].sum1 %= MOD;
+                tree[curr].sum2 += tree[*it].sum2;
+                tree[curr].sum2 %= MOD;
+            }
         }
+    }
+
+    if (0 <= tree[curr].idx)
+    {
+        tree[tree[curr].parent].flag[tree[curr].idx] = 0;
     }
 }
 
@@ -87,7 +100,7 @@ int main()
 #endif
 
     int n, q;
- #if DEBUG
+#if DEBUG
     inFile >> n >> q;
 #else
     cin >> n >> q;
@@ -119,7 +132,7 @@ int main()
         inFile >> k;
 #else
         cin >> k;
-#endif       
+#endif
 
         set<int> sset;
         for (size_t j = 0; j < k; j++)
@@ -131,6 +144,13 @@ int main()
             cin >> elem;
 #endif
             sset.insert(elem);
+
+            int tmp = elem;
+            while (0 <= tree[tmp].idx && 0 == tree[tree[tmp].parent].flag[tree[tmp].idx])
+            {
+                tree[tree[tmp].parent].flag[tree[tmp].idx] = 1;
+                tmp = tree[tmp].parent;
+            }
         }
 
         if (0 == k)
