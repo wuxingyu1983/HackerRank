@@ -8,18 +8,24 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include <set>
 
 using namespace std;
 
-#define DEBUG 0
-#define MAX_N   200002
+#define DEBUG 1
+#define MAX_N 200002
 #define MOD 1000000007
+
+vector<int> sset;
+vector<int> flag; // 是否已经访问过
+vector<int> lvl[2];
+
+long long sum;
 
 class node
 {
 public:
     int parent;
+    int depth;
     int idx; // child index in parent
     vector<int> children;
     vector<int> flag; // 1 - children in set
@@ -29,13 +35,36 @@ public:
     node()
     {
         parent = -1;
+        depth = 0;
         idx = -1;
         sum1 = 0;
         sum2 = 0;
     }
-} tree[MAX_N];
+};
 
-void build_tree(multimap<int, int> &edges, int curr)
+vector<node> tree;
+
+class nodeDep
+{
+public:
+    int val;
+    int depth;
+
+    nodeDep()
+    {
+        val = 0;
+        depth = 0;
+    }
+};
+
+vector<nodeDep> nodes;
+
+bool cmp(nodeDep &a, nodeDep &b)
+{
+    return a.depth > b.depth;
+}
+
+void build_tree(multimap<int, int> &edges, int curr, int dep)
 {
     for (multimap<int, int>::iterator it = edges.equal_range(curr).first; it != edges.equal_range(curr).second; ++it)
     {
@@ -46,49 +75,13 @@ void build_tree(multimap<int, int> &edges, int curr)
         else
         {
             tree[(*it).second].parent = curr;
+            tree[(*it).second].depth = dep;
             tree[(*it).second].idx = tree[curr].children.size();
             tree[curr].children.push_back((*it).second);
             tree[curr].flag.push_back(0);
 
-            build_tree(edges, (*it).second);
+            build_tree(edges, (*it).second, dep + 1);
         }
-    }
-}
-
-void getSubSum(set<int> &sset, int curr, long long &sum)
-{
-    tree[curr].sum1 = 0;
-    tree[curr].sum2 = 0;
-
-    if (sset.end() != sset.find(curr))
-    {
-        // find
-        tree[curr].sum2 = curr;
-    }
-
-    if (0 < tree[curr].children.size())
-    {
-        for (vector<int>::iterator it = tree[curr].children.begin(); it != tree[curr].children.end(); it++)
-        {
-            if (1 == tree[curr].flag[it - tree[curr].children.begin()])
-            {
-                getSubSum(sset, *it, sum);
-
-                sum += (tree[*it].sum1 + tree[*it].sum2) * tree[curr].sum2 + tree[curr].sum1 * tree[*it].sum2;
-
-                sum %= MOD;
-
-                tree[curr].sum1 += tree[*it].sum1 + tree[*it].sum2;
-                tree[curr].sum1 %= MOD;
-                tree[curr].sum2 += tree[*it].sum2;
-                tree[curr].sum2 %= MOD;
-            }
-        }
-    }
-
-    if (0 <= tree[curr].idx)
-    {
-        tree[tree[curr].parent].flag[tree[curr].idx] = 0;
     }
 }
 
@@ -106,6 +99,13 @@ int main()
     cin >> n >> q;
 #endif
 
+    tree.resize(n + 1);
+    sset.resize(n + 1, 0);
+    flag.resize(n + 1, 0);
+    lvl[0].resize(n + 1, 0);
+    lvl[1].resize(n + 1, 0);
+    nodes.resize(n + 1);
+
     multimap<int, int> edges;
     for (size_t i = 0; i < n - 1; i++)
     {
@@ -122,10 +122,12 @@ int main()
 
     // build tree
     int root = 1;
+    int dep = 1;
     tree[root].parent = 0;
-    build_tree(edges, root);
+    tree[root].depth = dep;
+    build_tree(edges, root, dep + 1);
 
-    for (size_t i = 0; i < q; i++)
+    for (size_t i = 1; i <= q; i++)
     {
         int k;
 #if DEBUG
@@ -134,7 +136,6 @@ int main()
         cin >> k;
 #endif
 
-        set<int> sset;
         for (size_t j = 0; j < k; j++)
         {
             int elem;
@@ -143,25 +144,112 @@ int main()
 #else
             cin >> elem;
 #endif
-            sset.insert(elem);
+            sset[elem] = i; // 标记此轮set有它
 
-            int tmp = elem;
-            while (0 <= tree[tmp].idx && 0 == tree[tree[tmp].parent].flag[tree[tmp].idx])
-            {
-                tree[tree[tmp].parent].flag[tree[tmp].idx] = 1;
-                tmp = tree[tmp].parent;
-            }
+            tree[elem].sum1 = 0;
+            tree[elem].sum2 = elem;
+
+            nodes[j].val = elem;
+            nodes[j].depth = tree[elem].depth;
         }
 
-        if (0 == k)
+        if (1 == k)
         {
             cout << 0 << endl;
         }
         else
         {
-            long long sum = 0;
+            sum = 0;
 
-            getSubSum(sset, root, sum);
+            // sort
+            sort(nodes.begin(), nodes.begin() + k, cmp);
+
+            int dp = nodes[0].depth;
+            int min_dp = nodes[k - 1].depth;
+
+            int src = 0;
+            int idx = 0;
+            int idxInSrc = 0;
+            int idxInDst = 0;
+
+            while (idx < k)
+            {
+                if (nodes[idx].depth == dp)
+                {
+                    lvl[src][idxInSrc++] = nodes[idx].val;
+                    idx++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            idxInDst = idxInSrc;
+
+            while (1 < dp)
+            {
+                int dst = 1 - src;
+                idxInSrc = idxInDst;
+                idxInDst = 0;
+
+                for (vector<int>::iterator it = lvl[src].begin(); it != lvl[src].begin() + idxInSrc; it++)
+                {
+                    int parent = tree[*it].parent;
+
+                    if (flag[parent] != i)
+                    {
+                        // 还没有访问过
+                        if (sset[parent] != i)
+                        {
+                            tree[parent].sum1 = 0;
+                            tree[parent].sum2 = 0;
+                        }
+
+                        lvl[dst][idxInDst++] = parent;
+
+                        flag[parent] = i;
+                    }
+
+                    sum += (tree[*it].sum1 + tree[*it].sum2) * tree[parent].sum2 + tree[parent].sum1 * tree[*it].sum2;
+
+                    sum %= MOD;
+
+                    tree[parent].sum1 += tree[*it].sum1 + tree[*it].sum2;
+                    tree[parent].sum1 %= MOD;
+                    tree[parent].sum2 += tree[*it].sum2;
+                    tree[parent].sum2 %= MOD;
+                }
+
+                dp--;
+
+                while (idx < k)
+                {
+                    if (nodes[idx].depth == dp)
+                    {
+                        if (flag[nodes[idx].val] != i)
+                        {
+                            // 还没有访问过
+                            lvl[dst][idxInDst++] = nodes[idx].val;
+
+                            flag[nodes[idx].val] = i;
+                        }
+
+                        idx++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (dp < min_dp && 1 >= idxInDst)
+                {
+                    break;
+                }
+
+                src = 1 - src;
+            }
 
             cout << sum << endl;
         }
