@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#define DEBUG   0
+#define DEBUG 1
 
 class TPlayer
 {
@@ -55,35 +55,23 @@ public:
     }
 };
 
-void addPlayer(vector< vector<TPlayer> >&team, int strength)
+void addPlayer(vector<vector<TPlayer> > &team, int strength, map<int, int> &pos)
 {
     int level = team.size();
-    int parent = 0;
-
-    for (int l = level - 1; l > 0; l --)
-    {
-        if (strength <= team[l][parent].strength)
-        {
-            parent = team[l][parent].leftChild;
-        }
-        else
-        {
-            parent = team[l][parent].rightChild;
-        }
-    }
+    int parent = pos.find(strength)->second;
 
     team[0][parent].cnt += 1;
 
     parent = team[0][parent].parent;
 
-    for (int l = 1; l < level; l ++)
+    for (int l = 1; l < level; l++)
     {
         team[l][parent].cnt += 1;
         parent = team[l][parent].parent;
     }
 }
 
-int find(vector< vector<TPlayer> > &team, int index, int& remain)
+int find(vector<vector<TPlayer> > &team, int index, int &remain)
 {
     int strength = 0;
     int level = team.size();
@@ -97,8 +85,8 @@ int find(vector< vector<TPlayer> > &team, int index, int& remain)
         }
         else
         {
-            parent = team[l][parent].rightChild;
             index -= team[l - 1][team[l][parent].leftChild].cnt;
+            parent = team[l][parent].rightChild;
         }
     }
 
@@ -108,7 +96,7 @@ int find(vector< vector<TPlayer> > &team, int index, int& remain)
     return strength;
 }
 
-int fight(int x, vector< vector<TPlayer> > &teamX, int y, vector< vector<TPlayer> > &teamY)
+int fight(int x, vector<vector<TPlayer> > &teamX, int y, vector<vector<TPlayer> > &teamY)
 {
     int winner = x;
 
@@ -141,14 +129,16 @@ int fight(int x, vector< vector<TPlayer> > &teamX, int y, vector< vector<TPlayer
                 break;
             }
 
-            iY += (round + 1) * strengthX;
+            iY += round * strengthX;
+            strengthX = find(teamX, iX, remainX);
+            iY += strengthX;
+
             if (iY >= sizeY)
             {
                 winner = x;
                 break;
             }
 
-            strengthX = find(teamX, iX, remainX);
             strengthY = find(teamY, iY, remainY);
         }
     }
@@ -160,7 +150,7 @@ int main()
 {
 #if DEBUG
     ifstream inFile;
-    inFile.open("input.txt");
+    inFile.open("/Users/wuxingyu/Desktop/input35.txt");
 #endif
 
     int n, k, q;
@@ -210,7 +200,7 @@ int main()
 
             queries[i].p = p;
             queries[i].x = x;
-            
+
             team[x].insert(p);
         }
         else
@@ -229,63 +219,69 @@ int main()
     }
 
     // tteam[k + 1][level][cnt of players]
-    vector< vector < vector<TPlayer> > > tteam(k + 1);
+    vector<vector<vector<TPlayer> > > tteam(k + 1);
+    vector<map<int, int> > pos(k + 1);
     for (size_t t = 1; t <= k; t++)
     {
         int level = 1;
         int sz = team[t].size();
-        while (1 != sz)
+        if (0 < sz)
         {
-            if (1 & sz)
+            while (1 != sz)
             {
-                sz = sz / 2 + 1;
-            }
-            else
-            {
-                sz /= 2;
-            }
-
-            level++;
-        }
-
-        tteam[t].resize(level);
-
-        for (size_t l = 0; l < level; l++)
-        {
-            tteam[t][l].resize(team[t].size());
-        }
-        
-        for (size_t l = 0; l < level; l++)
-        {
-            if (0 == l)
-            {
-                int i = 0;
-                for (set<int>::reverse_iterator rit = team[t].rbegin(); rit != team[t].rend(); rit ++ , i ++)
+                if (1 & sz)
                 {
-                    tteam[t][l][i].cnt = 0;
-                    tteam[t][l][i].strength = *rit;
+                    sz = sz / 2 + 1;
                 }
-            }
-            else
-            {
-                int i = 0, j = 0;   // i -> l - 1, j -> l
-                while (i < team[t].size() && 0 < tteam[t][l - 1][i].strength)
+                else
                 {
-                    tteam[t][l][j].cnt = 0;
-                    tteam[t][l - 1][i].parent = j;
-                    if (0 > tteam[t][l][j].leftChild)
+                    sz /= 2;
+                }
+
+                level++;
+            }
+
+            tteam[t].resize(level);
+
+            for (size_t l = 0; l < level; l++)
+            {
+                tteam[t][l].resize(team[t].size());
+            }
+
+            for (size_t l = 0; l < level; l++)
+            {
+                if (0 == l)
+                {
+                    int i = 0;
+                    for (set<int>::reverse_iterator rit = team[t].rbegin(); rit != team[t].rend(); rit++, i++)
                     {
-                        tteam[t][l][j].leftChild = i;
-                        tteam[t][l][j].strength = tteam[t][l - 1][i].strength;
+                        tteam[t][l][i].cnt = 0;
+                        tteam[t][l][i].strength = *rit;
+
+                        pos[t].insert(pair<int, int>(*rit, i));
                     }
-                    else
+                }
+                else
+                {
+                    int i = 0, j = 0; // i -> l - 1, j -> l
+                    while (i < team[t].size() && 0 < tteam[t][l - 1][i].strength)
                     {
-                        tteam[t][l][j].rightChild = i;
-                        tteam[t][l][j].strength = (tteam[t][l][j].strength + tteam[t][l - 1][i].strength) / 2;
-                        j ++;
+                        tteam[t][l][j].cnt = 0;
+                        tteam[t][l - 1][i].parent = j;
+                        if (0 > tteam[t][l][j].leftChild)
+                        {
+                            tteam[t][l][j].leftChild = i;
+                            tteam[t][l][j].strength = tteam[t][l - 1][i].strength;
+                        }
+                        else
+                        {
+                            tteam[t][l][j].rightChild = i;
+                            tteam[t][l][j].strength = tteam[t][l - 1][i].strength;
+                            j++;
+                        }
+
+                        i++;
                     }
-                    
-                    i ++;
                 }
             }
         }
@@ -293,14 +289,14 @@ int main()
 
     for (size_t i = 0; i < n; i++)
     {
-        addPlayer(tteam[players[i].t], players[i].s);
+        addPlayer(tteam[players[i].t], players[i].s, pos[players[i].t]);
     }
 
     for (size_t i = 0; i < q; i++)
     {
         if (1 == queries[i].op)
         {
-            addPlayer(tteam[queries[i].x], queries[i].p);
+            addPlayer(tteam[queries[i].x], queries[i].p, pos[queries[i].x]);
         }
         else
         {
