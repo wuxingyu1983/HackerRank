@@ -12,7 +12,27 @@
 
 using namespace std;
 
-#define DEBUG 1
+#define MAX     1000000
+#define DEBUG   1
+
+class Ans
+{
+public:
+    long long updatetime;
+    int winner;
+
+    Ans()
+    {
+        updatetime = 0;
+        winner = 0;
+    }
+
+    Ans(long long _updatetime, int _winner)
+    {
+        updatetime = _updatetime;
+        winner = _winner;
+    }
+};
 
 class TPlayer
 {
@@ -150,7 +170,7 @@ int main()
 {
 #if DEBUG
     ifstream inFile;
-    inFile.open("/Users/wuxingyu/Desktop/input35.txt");
+    inFile.open("input.txt");
 #endif
 
     int n, k, q;
@@ -292,19 +312,48 @@ int main()
         addPlayer(tteam[players[i].t], players[i].s, pos[players[i].t]);
     }
 
+    // team 的 update 时间
+    vector<long long> update(k + 1);
+    map<long long, Ans> ans;
+
     for (size_t i = 0; i < q; i++)
     {
         if (1 == queries[i].op)
         {
             addPlayer(tteam[queries[i].x], queries[i].p, pos[queries[i].x]);
+            update[queries[i].x] = i + 1;
         }
         else
         {
             int winner = 0;
 
-            winner = fight(queries[i].x, tteam[queries[i].x], queries[i].y, tteam[queries[i].y]);
+            long long key = (long long)queries[i].x * MAX + queries[i].y;
+            map<long long, Ans>::iterator it = ans.find(key);
 
-            cout << winner << endl;
+            if (ans.end() != it)
+            {
+                long long updatetime = update[queries[i].x] * MAX + update[queries[i].y];
+                if (it->second.updatetime == updatetime)
+                {
+                    winner = it->second.winner;
+                }
+                else
+                {
+                    winner = fight(queries[i].x, tteam[queries[i].x], queries[i].y, tteam[queries[i].y]);
+                    it->second.updatetime = updatetime;
+                    it->second.winner = winner;
+                }
+            }
+            else
+            {
+                winner = fight(queries[i].x, tteam[queries[i].x], queries[i].y, tteam[queries[i].y]);
+
+                long long updatetime = update[queries[i].x] * MAX + update[queries[i].y];
+
+                ans.insert(pair<long long, Ans>(key, Ans(updatetime, winner)));
+            }
+
+            printf("%d\n", winner);
         }
     }
 
