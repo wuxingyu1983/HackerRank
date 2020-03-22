@@ -83,6 +83,79 @@ void addPlayer(vector< vector<TPlayer> >&team, int strength)
     }
 }
 
+int find(vector< vector<TPlayer> > &team, int index, int& remain)
+{
+    int strength = 0;
+    int level = team.size();
+    int parent = 0;
+
+    for (int l = level - 1; l > 0; l--)
+    {
+        if (index < team[l - 1][team[l][parent].leftChild].cnt)
+        {
+            parent = team[l][parent].leftChild;
+        }
+        else
+        {
+            parent = team[l][parent].rightChild;
+            index -= team[l - 1][team[l][parent].leftChild].cnt;
+        }
+    }
+
+    strength = team[0][parent].strength;
+    remain = team[0][parent].cnt - index;
+
+    return strength;
+}
+
+int fight(int x, vector< vector<TPlayer> > &teamX, int y, vector< vector<TPlayer> > &teamY)
+{
+    int winner = x;
+
+    int iX = 0, iY = 0;
+    int remainX = 0, remainY = 0;
+    int strengthX = 0, strengthY = 0;
+
+    int levelX = teamX.size();
+    int levelY = teamY.size();
+
+    int sizeX = teamX[levelX - 1][0].cnt;
+    int sizeY = teamY[levelY - 1][0].cnt;
+
+    strengthX = find(teamX, iX, remainX);
+    if (strengthX < sizeY)
+    {
+        iY += strengthX;
+        strengthY = find(teamY, iY, remainY);
+
+        while (true)
+        {
+            int roundX = (remainX - 1) / strengthY;
+            int roundY = (remainY - 1) / strengthX;
+            int round = (roundX <= roundY) ? roundX : roundY;
+
+            iX += (round + 1) * strengthY;
+            if (iX >= sizeX)
+            {
+                winner = y;
+                break;
+            }
+
+            iY += (round + 1) * strengthX;
+            if (iY >= sizeY)
+            {
+                winner = x;
+                break;
+            }
+
+            strengthX = find(teamX, iX, remainX);
+            strengthY = find(teamY, iY, remainY);
+        }
+    }
+
+    return winner;
+}
+
 int main()
 {
 #if DEBUG
@@ -233,7 +306,7 @@ int main()
         {
             int winner = 0;
 
-            
+            winner = fight(queries[i].x, tteam[queries[i].x], queries[i].y, tteam[queries[i].y]);
 
             cout << winner << endl;
         }
