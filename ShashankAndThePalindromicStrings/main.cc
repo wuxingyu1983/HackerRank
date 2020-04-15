@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define DEBUG 1
+#define DEBUG 0
 #define MOD 1000000007
 #define MAX_N 50
 
@@ -91,11 +91,13 @@ int main()
                             {
                                 if (a[i][k - 1] == a[i][m - 1])
                                 {
-                                    dp[i][i][k][m] = dp[i][i][k + 1][m] + dp[i][i][k][m - 1] + 1;
+                                    long long tmp = (long long)dp[i][i][k + 1][m] + (long long)dp[i][i][k][m - 1] + 1;
+                                    dp[i][i][k][m] = tmp % MOD;
                                 }
                                 else
                                 {
-                                    dp[i][i][k][m] = dp[i][i][k + 1][m] + dp[i][i][k][m - 1] - dp[i][i][k + 1][m - 1];
+                                    long long tmp = (long long)dp[i][i][k + 1][m] + (long long)dp[i][i][k][m - 1] - (long long)dp[i][i][k + 1][m - 1] + MOD;
+                                    dp[i][i][k][m] = tmp % MOD;
                                 }
                             }
                         }
@@ -128,7 +130,10 @@ int main()
                             long long tmp = 0;
                             if (a[i][idx_i - 1] == a[j][idx_j - 1])
                             {
-                                tmp = 1;
+                                if (1 == l)
+                                {
+                                    tmp += 1;
+                                }
 
                                 if (idx_i < len_i && 1 < idx_j)
                                 {
