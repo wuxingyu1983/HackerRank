@@ -11,9 +11,9 @@
 
 using namespace std;
 
-#define DEBUG   1
-#define MOD     1000000007
-#define MAX_N   50
+#define DEBUG 1
+#define MOD 1000000007
+#define MAX_N 50
 
 int main()
 {
@@ -37,11 +37,8 @@ int main()
 #else
         cin >> n;
 #endif
-        
-        long long ans = 0;
-        
+
         vector<string> a(n);
-        vector< vector< vector<int> > > pc(n);
         for (size_t i_n = 0; i_n < n; i_n++)
         {
 #if DEBUG
@@ -49,88 +46,62 @@ int main()
 #else
             cin >> a[i_n];
 #endif
-            
-            // 计算该串中所有回文串的个数 Palindromic Count, pc[][]，index 从 1 开始
-            // pc[0][index] 以 index 为右起点回文的个数，pc[index][0] 以 index 为左起点回文的个数
-            int len = a[i_n].size();
-            
-            pc[i_n].resize(len + 1);
-            
-            for (size_t i = 0; i <= len; i++)
+        }
+
+        // dp[i][j][idx_i][idx_j]
+        vector<vector<vector<vector<int> > > > dp(n, vector<vector<vector<int> > >(n));
+        for (size_t l = 0; l <= n - 1; l++)
+        {
+            for (size_t i = 0; i < n; i++)
             {
-                pc[i_n][i].resize(len + 1);
-            }
-            
-            for (size_t l = 0; l < len; l++)
-            {
-                for (size_t i = 1; i <= len; i++)
+                if (0 == l)
                 {
-                    int j = i + l;
-                    if (len < j)
-                    {
-                        break;
-                    }
-                    
-                    if (0 == l)
-                    {
-                        pc[i_n][i][i] = 1;
-                        pc[i_n][0][i]++;
-                        pc[i_n][i][0]++;
-                        pc[i_n][0][0]++;
-                    }
-                    else if (1 == l)
-                    {
-                        if (a[i_n][i - 1] == a[i_n][j - 1])
-                        {
-                            pc[i_n][i][j] = 1;
-                            pc[i_n][i][0] += 1;
-                            pc[i_n][0][j] += 1;
-                            pc[i_n][0][0] += 1;
-                        }
+                    int len = a[i].size();
 
-                        pc[i_n][i][j] += 2;
-                    }
-                    else
+                    dp[i][i].resize(len + 1);
+                    for (size_t p = 0; p <= len; p++)
                     {
-                        if (a[i_n][i - 1] == a[i_n][j - 1])
-                        {
-                            pc[i_n][i][j] = pc[i_n][i + 1][j - 1] + 1;
-                            pc[i_n][i][0] += pc[i_n][i][j];
-                            pc[i_n][0][j] += pc[i_n][i][j];
-                            pc[i_n][0][0] += pc[i_n][i][j];
+                        dp[i][i][p].resize(len + 1);
+                    }
 
-                            pc[i_n][i][j] = pc[i_n][i + 1][j] + pc[i_n][i][j - 1] + 1;
-                        }
-                        else
+                    for (size_t j = 0; j < len; j++)
+                    {
+                        for (size_t k = 1; k <= len; k++)
                         {
-                            pc[i_n][i][j] = pc[i_n][i + 1][j] + pc[i_n][i][j - 1] - pc[i_n][i + 1][j - 1];
+                            int m = k + j;
+                            if (len < m)
+                            {
+                                break;
+                            }
+
+                            if (0 == j)
+                            {
+                                dp[i][i][k][k] = 1;
+                            }
+                            else if (1 == l)
+                            {
+                                if (a[i][k - 1] == a[i][m - 1])
+                                {
+                                    dp[i][i][k][m] = 1;
+                                }
+
+                                dp[i][i][k][m] += 2;
+                            }
+                            else
+                            {
+                                if (a[i][k - 1] == a[i][m - 1])
+                                {
+                                    dp[i][i][k][m] = dp[i][i][k + 1][m] + dp[i][i][k][m - 1] + 1;
+                                }
+                                else
+                                {
+                                    dp[i][i][k][m] = dp[i][i][k + 1][m] + dp[i][i][k][m - 1] - dp[i][i][k + 1][m - 1];
+                                }
+                            }
                         }
                     }
                 }
-            }
-
-            for (size_t i = 2; i <= len; i++)
-            {
-                pc[i_n][0][i] += pc[i_n][0][i - 1];
-            }
-            
-            for (size_t i = len; i > 1; i--)
-            {
-                pc[i_n][i - 1][0] += pc[i_n][i][0];
-            }
-        }
-
-        if (1 == n)
-        {
-            ans = pc[0][0][0];
-        }
-        else
-        {
-            // cnt[i][j][idx_i][idx_j]
-            vector< vector< vector< vector<int> > > > cnt(n, vector< vector< vector<int> > >(n));
-            for (size_t l = n - 1; l >= 1; l--)
-            {
-                for (size_t i = 0; i < n; i++)
+                else
                 {
                     int j = i + l;
                     if (n <= j)
@@ -141,129 +112,75 @@ int main()
                     int len_i = a[i].size();
                     int len_j = a[j].size();
 
-                    cnt[i][j].resize(len_i + 1);
+                    dp[i][j].resize(len_i + 1);
                     for (size_t p = 0; p <= len_i; p++)
                     {
-                        cnt[i][j][p].resize(len_j + 1);
+                        dp[i][j][p].resize(len_j + 1);
                     }
 
                     // idx_i, idx_j start from 1
                     // idx_i : 1 -- len_i
                     // idx_j : 1 -- len_j
-                    for (size_t idx_i = 1; idx_i <= len_i; idx_i++)
+                    for (size_t idx_i = len_i; idx_i >= 1; idx_i--)
                     {
-                        for (size_t idx_j = len_j; idx_j >= 1; idx_j--)
+                        for (size_t idx_j = 1; idx_j <= len_j; idx_j++)
                         {
+                            long long tmp = 0;
                             if (a[i][idx_i - 1] == a[j][idx_j - 1])
                             {
-                                // 计算以 idx_i 和 idx_j 为端点的回文个数
-                                long long tmp0 = 1;
-                                long long tmp1 = 1;
-                                
-                                if (1 < idx_i && len_j > idx_j)
+                                tmp = 1;
+
+                                if (idx_i < len_i && 1 < idx_j)
                                 {
-                                    tmp0 += (long long)cnt[i][j][idx_i - 1][idx_j + 1];
+                                    tmp += dp[i][j][idx_i + 1][idx_j - 1];
                                 }
 
-                                if (0 < i && j < n - 1)
+                                if (1 < l)
                                 {
-                                    tmp0 += (long long)cnt[i - 1][j + 1][0][0];
-                                    tmp1 += (long long)cnt[i - 1][j + 1][0][0];
+                                    tmp += dp[i + 1][j - 1][1][a[j - 1].size()];
                                 }
 
-                                if (0 < i && len_j > idx_j)
+                                if (idx_i < len_i)
                                 {
-                                    tmp0 += (long long)cnt[i - 1][j][0][idx_j + 1];
-                                    tmp1 += (long long)cnt[i - 1][j][0][idx_j + 1];
+                                    tmp += dp[i][j - 1][idx_i + 1][a[j - 1].size()];
                                 }
 
-                                if (j < n - 1 && 1 < idx_i)
+                                if (1 < idx_j)
                                 {
-                                    tmp0 += (long long)cnt[i][j + 1][idx_i - 1][0];
-                                    tmp1 += (long long)cnt[i][j + 1][idx_i - 1][0];
+                                    tmp += dp[i + 1][j][1][idx_j - 1];
                                 }
 
-                                tmp0 %= MOD;
-                                tmp1 %= MOD;
-
-                                cnt[i][j][idx_i][idx_j] += tmp1;
-
-                                if (1 < idx_i)
-                                {
-                                    cnt[i][j][idx_i][idx_j] += cnt[i][j][idx_i - 1][idx_j];
-                                    cnt[i][j][idx_i][idx_j] %= MOD;
-                                }
-
-                                if (len_j > idx_j)
-                                {
-                                    cnt[i][j][idx_i][idx_j] += cnt[i][j][idx_i][idx_j + 1];
-                                    cnt[i][j][idx_i][idx_j] %= MOD;
-                                }
-
-                                if (1 == l)
-                                {
-                                    ans += tmp0;
-
-                                    if (len_i > idx_i)
-                                    {
-                                        long long tmp = tmp0 * (long long)pc[i][idx_i + 1][0];
-                                        ans += tmp;
-                                    }
-
-                                    if (1 < idx_j)
-                                    {
-                                        long long tmp = tmp0 * (long long)pc[j][0][idx_j - 1];
-                                        ans += tmp;
-                                    }
-
-                                    ans %= MOD;
-                                }
-                                else
-                                {
-                                    cnt[i][j][0][0] += tmp0;
-                                    cnt[i][j][0][0] %= MOD;
-                                    cnt[i][j][idx_i][0] += tmp0;
-                                    cnt[i][j][idx_i][0] %= MOD;
-                                    cnt[i][j][0][idx_j] += tmp0;
-                                    cnt[i][j][0][idx_j] %= MOD;
-                                }
+                                tmp %= MOD;
                             }
-                            else
+
+                            // 更新 dp
+                            if (len_i > idx_i)
                             {
-                                cnt[i][j][idx_i][idx_j] = 0;
-                                if (1 < idx_i)
-                                {
-                                    cnt[i][j][idx_i][idx_j] += cnt[i][j][idx_i - 1][idx_j];
-                                    cnt[i][j][idx_i][idx_j] %= MOD;
-                                }
-
-                                if (len_j > idx_j)
-                                {
-                                    cnt[i][j][idx_i][idx_j] += cnt[i][j][idx_i][idx_j + 1];
-                                    cnt[i][j][idx_i][idx_j] %= MOD;
-                                }
-
-                                if (1 < idx_i && len_j > idx_j)
-                                {
-                                    cnt[i][j][idx_i][idx_j] += MOD;
-                                    cnt[i][j][idx_i][idx_j] -= cnt[i][j][idx_i - 1][idx_j + 1];
-                                    cnt[i][j][idx_i][idx_j] %= MOD;
-                                }
+                                tmp += (long long)dp[i][j][idx_i + 1][idx_j];
                             }
-                        }
-                    }
 
-                    if (2 == l)
-                    {
-                        long long tmp = (long long)pc[i + 1][0][0] * (long long)cnt[i][j][0][0];
-                        tmp %= MOD;
-                        ans += tmp;
-                        ans %= MOD;
+                            if (1 < idx_j)
+                            {
+                                tmp += (long long)dp[i][j][idx_i][idx_j - 1];
+                            }
+
+                            if (len_i > idx_i && 1 < idx_j)
+                            {
+                                tmp += MOD;
+                                tmp -= (long long)dp[i][j][idx_i + 1][idx_j - 1];
+                            }
+
+                            tmp %= MOD;
+
+                            dp[i][j][idx_i][idx_j] = tmp;
+                        }
                     }
                 }
             }
         }
-        cout << ans << endl;
+
+        int len = a[n - 1].size();
+        cout << dp[0][n - 1][1][len] << endl;
     }
 
 #if DEBUG
