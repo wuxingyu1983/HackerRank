@@ -48,7 +48,7 @@ int main()
 #endif
         }
 
-        // dp[i][j][idx_i][idx_j]
+        // dp[i][j][idx_i][idx_j]，表示的是 a[i][idx_i] 和 a[j][idx_j] 之间所有的有效的回文个数
         vector<vector<vector<vector<int> > > > dp(n, vector<vector<vector<int> > >(n));
         for (size_t l = 0; l <= n - 1; l++)
         {
@@ -127,6 +127,7 @@ int main()
                     {
                         for (size_t idx_j = 1; idx_j <= len_j; idx_j++)
                         {
+                            // tmp 是以 a[i][idx_i] 和 a[j][idx_j] 为顶点的 有效的 回文的个数
                             long long tmp = 0;
                             if (a[i][idx_i - 1] == a[j][idx_j - 1])
                             {
