@@ -25,6 +25,30 @@ vector<int> circle_pos;
 vector<long long> sumFromCircle;
 vector<int> ancestorInCircle;
 
+int xForAtoB(int a, int b)
+{
+    int ret = 0;
+
+    long long key = (long long)a * (long long)MAX_N + b;
+
+    multimap<long long, int>::iterator it = corridors.find(key);
+    if (it != corridors.end())
+    {
+        ret = it->second;
+    }
+    else
+    {
+        key = (long long)b * (long long)MAX_N + a;
+        it = corridors.find(key);
+        if (it != corridors.end())
+        {
+            ret = 0 - it->second;
+        }
+    }
+
+    return ret;
+}
+
 bool findCircle(int curr, int d)
 {
     // curr 已经在 stack dfs 中了 
@@ -85,28 +109,10 @@ void procOtherRooms(int curr, int parent, int ancestor, long long sum)
         }
         else
         {
-            if (0 > ancestor)
-            {
-                ancestor = curr;
-            }
-
             ancestorInCircle[*it] = ancestor;
 
-            long long key = (long long)curr * (long long)MAX_N + (long long)(*it);
-            multimap<long long, int>::iterator it_map = corridors.find(key);
-            if (it_map != corridors.end())
-            {
-                sumFromCircle[*it] = sum + it_map->second;
-            }
-            else
-            {
-                key = (long long)(*it) * (long long)MAX_N + (long long)curr;
-                it_map = corridors.find(key);
-                if (it_map != corridors.end())
-                {
-                    sumFromCircle[*it] = sum - it_map->second;
-                }
-            }
+            int x = xForAtoB(curr, *it);
+            sumFromCircle[*it] = sum + (long long)x;
 
             procOtherRooms(*it, curr, ancestor, sumFromCircle[*it]);
         }
@@ -156,14 +162,16 @@ int main()
 
     // circle 中已经是 回路 了
     // 计算 circle 顺时针的区间 score 和 ，顺时针 index 从小到大
+    // circle[i] 记录的是 index 0 --> i 的区间和，circle[0] 回路顺时针一周的和
     circle_sum.resize(circle.size());
+
+    // 房间 i 在回路 circle 中的位置，-1 ： 不在回路中
     circle_pos.resize(n + 1);
     circle_pos.assign(n + 1, -1);
     for (size_t i_c = 0; i_c < circle.size(); i_c++)
     {
         circle_pos[circle[i_c]] = i_c;
 
-        long long key;
         long long a, b;
         if (i_c + 1 < circle.size())
         {
@@ -176,35 +184,15 @@ int main()
             b = circle[0];
         }
 
-        key = a * (long long)MAX_N + b;
+        int x = xForAtoB(a, b);
 
-        multimap<long long, int>::iterator it = corridors.find(key);
-        if (it != corridors.end())
+        if (i_c + 1 < circle.size())
         {
-            if (i_c + 1 < circle.size())
-            {
-                circle_sum[i_c + 1] = circle_sum[i_c] + it->second;
-            }
-            else
-            {
-                circle_sum[0] = circle_sum[i_c] + it->second;
-            }
+            circle_sum[i_c + 1] = circle_sum[i_c] + (long long)x;
         }
         else
         {
-            key = b * (long long)MAX_N + a;
-            it = corridors.find(key);
-            if (it != corridors.end())
-            {
-                if (i_c + 1 < circle.size())
-                {
-                    circle_sum[i_c + 1] = circle_sum[i_c] - it->second;
-                }
-                else
-                {
-                    circle_sum[0] = circle_sum[i_c] - it->second;
-                }
-            }
+            circle_sum[0] = circle_sum[i_c] + (long long)x;
         }
     }
 
@@ -214,7 +202,7 @@ int main()
 
     for (size_t i_c = 0; i_c < circle.size(); i_c++)
     {
-        procOtherRooms(circle[i_c], -1, -1, 0);
+        procOtherRooms(circle[i_c], -1, circle[i_c], 0);
     }
 
     int q;
