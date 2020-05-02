@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#define DEBUG           0
+#define DEBUG           1
 #define MAX_N           100000
 
 vector< vector<int> > rooms;        // 记录与房间 i 联通的房间数组
@@ -89,7 +89,10 @@ bool findCircle(int curr, int d)
         }
     }
 
-    dfs_tree.pop();
+    if (0 < dfs_tree.size())
+    {
+        dfs_tree.pop();
+    }
     depth[curr] = 0;
 
     return ret;
@@ -117,6 +120,11 @@ void procOtherRooms(int curr, int parent, int ancestor, long long sum)
             procOtherRooms(*it, curr, ancestor, sumFromCircle[*it]);
         }
     }
+}
+
+long long gcd(long long a, long long b)
+{
+    return b == 0 ? a : gcd(b, a % b);
 }
 
 int main()
@@ -168,9 +176,14 @@ int main()
     // 房间 i 在回路 circle 中的位置，-1 ： 不在回路中
     circle_pos.resize(n + 1);
     circle_pos.assign(n + 1, -1);
+
+    // 房间 i 到回路距离最短的房间
+    ancestorInCircle.resize(n + 1);
+
     for (size_t i_c = 0; i_c < circle.size(); i_c++)
     {
         circle_pos[circle[i_c]] = i_c;
+        ancestorInCircle[circle[i_c]] = circle[i_c];
 
         long long a, b;
         if (i_c + 1 < circle.size())
@@ -198,7 +211,6 @@ int main()
 
     // 计算 circle 到其他点的 score 和
     sumFromCircle.resize(n + 1);
-    ancestorInCircle.resize(n + 1);
 
     for (size_t i_c = 0; i_c < circle.size(); i_c++)
     {
@@ -220,6 +232,106 @@ int main()
 #else
         cin >> s >> e >> m;
 #endif
+        int ans = 0;
+
+        // s、e 在回路上对应的祖先
+        int ancestorForS, ancestorForE;
+
+        ancestorForS = circle_pos[ancestorInCircle[s]];
+        ancestorForE = circle_pos[ancestorInCircle[e]];
+
+        // ancestorForS --> ancestorForE， 顺时针
+        {
+            long long a, b;
+
+            // s 到回路的和
+            a = 0 - sumFromCircle[s];
+
+            // 回路到 e 的和
+            a += sumFromCircle[e];
+
+            if (ancestorForS <= ancestorForE)
+            {
+                a += circle_sum[ancestorForE] - circle_sum[ancestorForS];
+            }
+            else
+            {
+                a += circle_sum[0] - circle_sum[ancestorForS] + circle_sum[ancestorForE];
+            }
+
+            b = circle_sum[0];
+
+            a %= m;
+            if (0 > a)
+            {
+                a += m;
+            }
+
+            b %= m;
+            if (0 > b)
+            {
+                b += m;
+            }
+
+            long long g = gcd(m, b);
+
+            ans = m - g + (a % g);
+            ans %= m;
+            if (0 > ans)
+            {
+                ans += m;
+            }
+        }
+
+        // ancestorForS --> ancestorForE， 逆时针
+        {
+            long long a, b;
+
+            // s 到回路的和
+            a = 0 - sumFromCircle[s];
+
+            // 回路到 e 的和
+            a += sumFromCircle[e];
+
+            if (ancestorForS <= ancestorForE)
+            {
+                a -= circle_sum[ancestorForS] + circle_sum[0] - circle_sum[ancestorForE];
+            }
+            else
+            {
+                a -= circle_sum[ancestorForS] - circle_sum[ancestorForE];
+            }
+
+            b = 0 - circle_sum[0];
+
+            a %= m;
+            if (0 > a)
+            {
+                a += m;
+            }
+
+            b %= m;
+            if (0 > b)
+            {
+                b += m;
+            }
+
+            long long g = gcd(m, b);
+
+            long long tmp = m - g + (a % g);
+            tmp %= m;
+            if (0 > tmp)
+            {
+                tmp += m;
+            }
+
+            if (tmp > ans)
+            {
+                ans = tmp;
+            }
+        }
+
+        cout << ans << endl;
     }
 
 #if DEBUG
