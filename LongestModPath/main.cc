@@ -51,7 +51,7 @@ int xForAtoB(int a, int b)
 
 bool findCircle(int curr, int d)
 {
-    // curr 已经在 stack dfs 中了 
+    // curr 已经在 stack dfs 中了
     bool ret = false;
 
     for (vector<int>::iterator it = rooms[curr].begin(); it != rooms[curr].end(); it++)
@@ -85,6 +85,7 @@ bool findCircle(int curr, int d)
                 }
 
                 ret = true;
+                break;
             }
         }
     }
@@ -142,6 +143,9 @@ int main()
 #endif
 
     rooms.resize(n + 1);
+    
+    // 2 个元素的 circle 顺时针和
+    long long clock_wise_2 = 0;
 
     for (size_t i_n = 0; i_n < n; i_n++)
     {
@@ -156,6 +160,28 @@ int main()
         rooms[b].push_back(a);
 
         long long key = (long long)a * (long long)MAX_N + (long long)b;
+        
+        // 判断 是否 已经存在
+        {
+            multimap<long long, int>::iterator it = corridors.find(key);
+            if (it != corridors.end())
+            {
+                circle.push_back(a);
+                circle.push_back(b);
+                
+                clock_wise_2 = x - it->second;
+            }
+            
+            it = corridors.find((long long)b * (long long)MAX_N + (long long)a);
+            if (it != corridors.end())
+            {
+                circle.push_back(a);
+                circle.push_back(b);
+                
+                clock_wise_2 = x + it->second;
+            }
+        }
+        
         corridors.insert(pair<long long, int>(key, x));
     }
 
@@ -188,7 +214,7 @@ int main()
         long long a, b;
         if (i_c + 1 < circle.size())
         {
-            a = circle[i_c]; 
+            a = circle[i_c];
             b = circle[i_c + 1];
         }
         else
@@ -237,97 +263,304 @@ int main()
         // s、e 在回路上对应的祖先
         int ancestorForS, ancestorForE;
 
-        ancestorForS = circle_pos[ancestorInCircle[s]];
-        ancestorForE = circle_pos[ancestorInCircle[e]];
-
-        // ancestorForS --> ancestorForE， 顺时针
+        if (2 < circle.size())
         {
-            long long a, b;
-
-            // s 到回路的和
-            a = 0 - sumFromCircle[s];
-
-            // 回路到 e 的和
-            a += sumFromCircle[e];
-
-            if (ancestorForS <= ancestorForE)
+            ancestorForS = circle_pos[ancestorInCircle[s]];
+            ancestorForE = circle_pos[ancestorInCircle[e]];
+            
+            // ancestorForS --> ancestorForE， 顺时针
             {
-                a += circle_sum[ancestorForE] - circle_sum[ancestorForS];
+                long long a, b;
+                
+                // s 到回路的和
+                a = 0 - sumFromCircle[s];
+                
+                // 回路到 e 的和
+                a += sumFromCircle[e];
+                
+                if (ancestorForS <= ancestorForE)
+                {
+                    a += circle_sum[ancestorForE] - circle_sum[ancestorForS];
+                }
+                else
+                {
+                    a += circle_sum[0] - circle_sum[ancestorForS] + circle_sum[ancestorForE];
+                }
+                
+                b = circle_sum[0];
+                
+                a %= m;
+                if (0 > a)
+                {
+                    a += m;
+                }
+                
+                b %= m;
+                if (0 > b)
+                {
+                    b += m;
+                }
+                
+                long long g = gcd(m, b);
+                
+                ans = m - g + (a % g);
+                ans %= m;
+                if (0 > ans)
+                {
+                    ans += m;
+                }
             }
-            else
+            
+            // ancestorForS --> ancestorForE， 逆时针
             {
-                a += circle_sum[0] - circle_sum[ancestorForS] + circle_sum[ancestorForE];
-            }
-
-            b = circle_sum[0];
-
-            a %= m;
-            if (0 > a)
-            {
-                a += m;
-            }
-
-            b %= m;
-            if (0 > b)
-            {
-                b += m;
-            }
-
-            long long g = gcd(m, b);
-
-            ans = m - g + (a % g);
-            ans %= m;
-            if (0 > ans)
-            {
-                ans += m;
+                long long a, b;
+                
+                // s 到回路的和
+                a = 0 - sumFromCircle[s];
+                
+                // 回路到 e 的和
+                a += sumFromCircle[e];
+                
+                if (ancestorForS <= ancestorForE)
+                {
+                    a -= circle_sum[ancestorForS] + circle_sum[0] - circle_sum[ancestorForE];
+                }
+                else
+                {
+                    a -= circle_sum[ancestorForS] - circle_sum[ancestorForE];
+                }
+                
+                b = 0 - circle_sum[0];
+                
+                a %= m;
+                if (0 > a)
+                {
+                    a += m;
+                }
+                
+                b %= m;
+                if (0 > b)
+                {
+                    b += m;
+                }
+                
+                long long g = gcd(m, b);
+                
+                long long tmp = m - g + (a % g);
+                tmp %= m;
+                if (0 > tmp)
+                {
+                    tmp += m;
+                }
+                
+                if (tmp > ans)
+                {
+                    ans = tmp;
+                }
             }
         }
-
-        // ancestorForS --> ancestorForE， 逆时针
+        else
         {
-            long long a, b;
+            // 2
+            ancestorForS = ancestorInCircle[s];
+            ancestorForE = ancestorInCircle[e];
 
-            // s 到回路的和
-            a = 0 - sumFromCircle[s];
-
-            // 回路到 e 的和
-            a += sumFromCircle[e];
-
-            if (ancestorForS <= ancestorForE)
             {
-                a -= circle_sum[ancestorForS] + circle_sum[0] - circle_sum[ancestorForE];
-            }
-            else
-            {
-                a -= circle_sum[ancestorForS] - circle_sum[ancestorForE];
-            }
+                long long a, b;
+                
+                if (ancestorForS == ancestorForE)
+                {
+                    // s 到回路的和
+                    a = 0 - sumFromCircle[s];
+                    
+                    // 回路到 e 的和
+                    a += sumFromCircle[e];
 
-            b = 0 - circle_sum[0];
-
-            a %= m;
-            if (0 > a)
-            {
-                a += m;
-            }
-
-            b %= m;
-            if (0 > b)
-            {
-                b += m;
-            }
-
-            long long g = gcd(m, b);
-
-            long long tmp = m - g + (a % g);
-            tmp %= m;
-            if (0 > tmp)
-            {
-                tmp += m;
-            }
-
-            if (tmp > ans)
-            {
-                ans = tmp;
+                    a %= m;
+                    if (0 > a)
+                    {
+                        a += m;
+                    }
+                    
+                    // 顺时针
+                    {
+                        b = clock_wise_2;
+                        
+                        b %= m;
+                        if (0 > b)
+                        {
+                            b += m;
+                        }
+                        
+                        long long g = gcd(m, b);
+                        
+                        long long tmp = m - g + (a % g);
+                        tmp %= m;
+                        if (0 > tmp)
+                        {
+                            tmp += m;
+                        }
+                        
+                        if (tmp > ans)
+                        {
+                            ans = tmp;
+                        }
+                    }
+                    
+                    // 逆时针
+                    {
+                        b = 0 - clock_wise_2;
+                        
+                        b %= m;
+                        if (0 > b)
+                        {
+                            b += m;
+                        }
+                        
+                        long long g = gcd(m, b);
+                        
+                        long long tmp = m - g + (a % g);
+                        tmp %= m;
+                        if (0 > tmp)
+                        {
+                            tmp += m;
+                        }
+                        
+                        if (tmp > ans)
+                        {
+                            ans = tmp;
+                        }
+                    }
+                }
+                else
+                {
+                    long long key = (long long)ancestorForS * (long long)MAX_N + (long long)ancestorForE;
+                    
+                    pair <multimap<long long, int>::iterator, multimap<long long, int>::iterator> pr = corridors.equal_range(key);
+                    for (multimap<long long, int>::iterator it = pr.first; it != pr.second; it ++)
+                    {
+                        // s 到回路的和
+                        a = 0 - sumFromCircle[s];
+                        
+                        // 回路到 e 的和
+                        a += sumFromCircle[e];
+                        
+                        a += it->second;
+                        
+                        a %= m;
+                        if (0 > a)
+                        {
+                            a += m;
+                        }
+                        
+                        // 顺时针
+                        {
+                            b = clock_wise_2;
+                            
+                            long long g = gcd(m, b);
+                            
+                            long long tmp = m - g + (a % g);
+                            tmp %= m;
+                            if (0 > tmp)
+                            {
+                                tmp += m;
+                            }
+                            
+                            if (tmp > ans)
+                            {
+                                ans = tmp;
+                            }
+                        }
+                        
+                        // 逆时针
+                        {
+                            b = 0 - clock_wise_2;
+                            
+                            b %= m;
+                            if (0 > b)
+                            {
+                                b += m;
+                            }
+                            
+                            long long g = gcd(m, b);
+                            
+                            long long tmp = m - g + (a % g);
+                            tmp %= m;
+                            if (0 > tmp)
+                            {
+                                tmp += m;
+                            }
+                            
+                            if (tmp > ans)
+                            {
+                                ans = tmp;
+                            }
+                        }
+                    }
+                    
+                    key = (long long)ancestorForE * (long long)MAX_N + (long long)ancestorForS;
+                    pr = corridors.equal_range(key);
+                    for (multimap<long long, int>::iterator it = pr.first; it != pr.second; it ++)
+                    {
+                        // s 到回路的和
+                        a = 0 - sumFromCircle[s];
+                        
+                        // 回路到 e 的和
+                        a += sumFromCircle[e];
+                        
+                        a -= it->second;
+                        
+                        a %= m;
+                        if (0 > a)
+                        {
+                            a += m;
+                        }
+                        
+                        // 顺时针
+                        {
+                            b = clock_wise_2;
+                            
+                            long long g = gcd(m, b);
+                            
+                            long long tmp = m - g + (a % g);
+                            tmp %= m;
+                            if (0 > tmp)
+                            {
+                                tmp += m;
+                            }
+                            
+                            if (tmp > ans)
+                            {
+                                ans = tmp;
+                            }
+                        }
+                        
+                        // 逆时针
+                        {
+                            b = 0 - clock_wise_2;
+                            
+                            b %= m;
+                            if (0 > b)
+                            {
+                                b += m;
+                            }
+                            
+                            long long g = gcd(m, b);
+                            
+                            long long tmp = m - g + (a % g);
+                            tmp %= m;
+                            if (0 > tmp)
+                            {
+                                tmp += m;
+                            }
+                            
+                            if (tmp > ans)
+                            {
+                                ans = tmp;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -340,3 +573,5 @@ int main()
 
     return 0;
 }
+
+
