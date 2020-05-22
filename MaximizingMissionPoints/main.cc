@@ -141,28 +141,11 @@ bool cmpForCity(const City &c1, const City &c2)
     return c1.h < c2.h;
 }
 
-bool isIntersect(const Point& a1, const Point& a2, const Point& b1, const Point& b2)
-{
-    bool ret = true;
-
-    int cx1 = a1.x > b1.x ? a1.x : b1.x;
-    int cy1 = a1.y > b1.y ? a1.y : b1.y;
-    int cx2 = a2.x < b2.x ? a2.x : b2.x;
-    int cy2 = a2.y < b2.y ? a2.y : b2.y;
-
-    if (cx1 > cx2 || cy1 > cy2)
-    {
-        ret = false;
-    }
-
-    return ret;
-}
-
-long long findMaxInRange(const kdTree *curr, const Point& r1, const Point& r2)
+long long findMaxInRange(const kdTree *curr, int r1x, int r1y, int r2x, int r2y)
 {
     long long ret = MIN_POINT;
 
-    if (r1.x <= curr->r1.x && r1.y <= curr->r1.y && r2.x >= curr->r2.x && r2.y >= curr->r2.y)
+    if (r1x <= curr->r1.x && r1y <= curr->r1.y && r2x >= curr->r2.x && r2y >= curr->r2.y)
     {
         // curr 的区域在 r1、r2 的区域内
         ret = curr->maxPoints;
@@ -170,35 +153,108 @@ long long findMaxInRange(const kdTree *curr, const Point& r1, const Point& r2)
     else
     {
         // curr->p 是否在范围内，它的值
-        if (MIN_POINT < curr->pPoints && curr->p.x >= r1.x && curr->p.y >= r1.y && curr->p.x <= r2.x && curr->p.y <= r2.y)
+        if (MIN_POINT < curr->pPoints && curr->p.x >= r1x && curr->p.y >= r1y && curr->p.x <= r2x && curr->p.y <= r2y)
         {
             ret = curr->pPoints;
         }
 
-        // curr->ls 左孩子该范围内的最大值
-        if (curr->ls && MIN_POINT < curr->ls->maxPoints)
+        if (curr->ls && MIN_POINT < curr->ls->maxPoints && curr->rs && MIN_POINT < curr->rs->maxPoints && curr->ls->maxPoints > curr->rs->maxPoints)
         {
-            if (isIntersect(curr->ls->r1, curr->ls->r2, r1, r2))
+            // curr->ls 左孩子该范围内的最大值
+            if (curr->ls && MIN_POINT < curr->ls->maxPoints && ret < curr->ls->maxPoints)
             {
-                // 相交
-                long long tmp = findMaxInRange(curr->ls, r1, r2);
-                if (tmp > ret)
+                int a1x = curr->ls->r1.x, a1y = curr->ls->r1.y, a2x = curr->ls->r2.x, a2y = curr->ls->r2.y, b1x = r1x, b1y = r1y, b2x = r2x, b2y = r2y;
+
+                int cx1 = a1x > b1x ? a1x : b1x;
+                int cy1 = a1y > b1y ? a1y : b1y;
+                int cx2 = a2x < b2x ? a2x : b2x;
+                int cy2 = a2y < b2y ? a2y : b2y;
+
+                if (cx1 > cx2 || cy1 > cy2)
                 {
-                    ret = tmp;
+                }
+                else
+                {
+                    // 相交
+                    long long tmp = findMaxInRange(curr->ls, r1x, r1y, r2x, r2y);
+                    if (tmp > ret)
+                    {
+                        ret = tmp;
+                    }
+                }
+            }
+
+            // curr->rs 右孩子该范围内的最大值
+            if (curr->rs && MIN_POINT < curr->rs->maxPoints && ret < curr->rs->maxPoints)
+            {
+                int a1x = curr->rs->r1.x, a1y = curr->rs->r1.y, a2x = curr->rs->r2.x, a2y = curr->rs->r2.y, b1x = r1x, b1y = r1y, b2x = r2x, b2y = r2y;
+
+                int cx1 = a1x > b1x ? a1x : b1x;
+                int cy1 = a1y > b1y ? a1y : b1y;
+                int cx2 = a2x < b2x ? a2x : b2x;
+                int cy2 = a2y < b2y ? a2y : b2y;
+
+                if (cx1 > cx2 || cy1 > cy2)
+                {
+                }
+                else
+                {
+                    // 相交
+                    long long tmp = findMaxInRange(curr->rs, r1x, r1y, r2x, r2y);
+                    if (tmp > ret)
+                    {
+                        ret = tmp;
+                    }
                 }
             }
         }
-
-        // curr->rs 右孩子该范围内的最大值
-        if (curr->rs && MIN_POINT < curr->rs->maxPoints)
+        else
         {
-            if (isIntersect(curr->rs->r1, curr->rs->r2, r1, r2))
+            // curr->rs 右孩子该范围内的最大值
+            if (curr->rs && MIN_POINT < curr->rs->maxPoints && ret < curr->rs->maxPoints)
             {
-                // 相交
-                long long tmp = findMaxInRange(curr->rs, r1, r2);
-                if (tmp > ret)
+                int a1x = curr->rs->r1.x, a1y = curr->rs->r1.y, a2x = curr->rs->r2.x, a2y = curr->rs->r2.y, b1x = r1x, b1y = r1y, b2x = r2x, b2y = r2y;
+
+                int cx1 = a1x > b1x ? a1x : b1x;
+                int cy1 = a1y > b1y ? a1y : b1y;
+                int cx2 = a2x < b2x ? a2x : b2x;
+                int cy2 = a2y < b2y ? a2y : b2y;
+
+                if (cx1 > cx2 || cy1 > cy2)
                 {
-                    ret = tmp;
+                }
+                else
+                {
+                    // 相交
+                    long long tmp = findMaxInRange(curr->rs, r1x, r1y, r2x, r2y);
+                    if (tmp > ret)
+                    {
+                        ret = tmp;
+                    }
+                }
+            }
+
+            // curr->ls 左孩子该范围内的最大值
+            if (curr->ls && MIN_POINT < curr->ls->maxPoints && ret < curr->ls->maxPoints)
+            {
+                int a1x = curr->ls->r1.x, a1y = curr->ls->r1.y, a2x = curr->ls->r2.x, a2y = curr->ls->r2.y, b1x = r1x, b1y = r1y, b2x = r2x, b2y = r2y;
+
+                int cx1 = a1x > b1x ? a1x : b1x;
+                int cy1 = a1y > b1y ? a1y : b1y;
+                int cx2 = a2x < b2x ? a2x : b2x;
+                int cy2 = a2y < b2y ? a2y : b2y;
+
+                if (cx1 > cx2 || cy1 > cy2)
+                {
+                }
+                else
+                {
+                    // 相交
+                    long long tmp = findMaxInRange(curr->ls, r1x, r1y, r2x, r2y);
+                    if (tmp > ret)
+                    {
+                        ret = tmp;
+                    }
                 }
             }
         }
@@ -252,7 +308,7 @@ int main()
         long long max = 0;
         if (MIN_POINT < root->maxPoints)
         {
-            max = findMaxInRange(root, Point(it->x - dlat, it->y - dlong), Point(it->x + dlat, it->y + dlong));
+            max = findMaxInRange(root, it->x - dlat, it->y - dlong, it->x + dlat, it->y + dlong);
         }
 
         if (0 <= max)
