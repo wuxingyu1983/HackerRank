@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define DEBUG 0
+#define DEBUG 1
 #define ls ch[0]
 #define rs ch[1]
 #define MAX_N       200000
@@ -40,15 +40,47 @@ struct kdTree
     Point p, r1, r2;        // r1, r2 是矩形的左下、右上角的坐标
     long long pPoints;       // 当前位置p 可能的最大 points
     long long maxPoints;     // r1, r2 范围内 最大的 points
-    kdTree(Point p) : p(p), r1(p), r2(p), pPoints(MIN_POINT), maxPoints(MIN_POINT) { parent = ch[0] = ch[1] = NULL; }
+    kdTree(const Point& p) : p(p), r1(p), r2(p), pPoints(MIN_POINT), maxPoints(MIN_POINT) { parent = ch[0] = ch[1] = NULL; }
     kdTree() : pPoints(MIN_POINT), maxPoints(MIN_POINT) { parent = ch[0] = ch[1] = NULL; }
     //    void *operator new(size_t) { return pit++; }
     void maintain()
     { //维护当前点覆盖的矩形
-        r1.x = min(min(ls->r1.x, rs->r1.x), r1.x);
-        r1.y = min(min(ls->r1.y, rs->r1.y), r1.y);
-        r2.x = max(max(ls->r2.x, rs->r2.x), r2.x);
-        r2.y = max(max(ls->r2.y, rs->r2.y), r2.y);
+        if (ls && ls->r1.x < r1.x)
+        {
+            r1.x = ls->r1.x;
+        }
+        if (rs && rs->r1.x < r1.x)
+        {
+            r1.x = rs->r1.x;
+        }
+        
+        if (ls && ls->r1.y < r1.y)
+        {
+            r1.y = ls->r1.y;
+        }
+        if (rs && rs->r1.y < r1.y)
+        {
+            r1.y = rs->r1.y;
+        }
+        
+        if (ls && ls->r2.x > r2.x)
+        {
+            r2.x = ls->r2.x;
+        }
+        if (rs && rs->r2.x > r2.x)
+        {
+            r2.x = rs->r2.x;
+        }
+        
+        if (ls && ls->r2.y > r2.y)
+        {
+            r2.y = ls->r2.y;
+        }
+        if (rs && rs->r2.y > r2.y)
+        {
+            r2.y = rs->r2.y;
+        }
+        
     }
 } * root;
 
@@ -95,14 +127,6 @@ public:
     }
 
     City(const City &c)
-    {
-        this->x = c.x;
-        this->y = c.y;
-        this->h = c.h;
-        this->p = c.p;
-    }
-
-    City &operator=(const City &c)
     {
         this->x = c.x;
         this->y = c.y;
@@ -231,9 +255,13 @@ int main()
             max = findMaxInRange(root, Point(it->x - dlat, it->y - dlong), Point(it->x + dlat, it->y + dlong));
         }
 
-        if (0 < it->p)
+        if (0 <= max)
         {
             max += it->p;
+        }
+        else
+        {
+            max = it->p;
         }
 
         // 更新 kd-tree 中对应的 points
