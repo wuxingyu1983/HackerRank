@@ -11,16 +11,16 @@
 
 using namespace std;
 
-#define DEBUG 0
+#define DEBUG 1
 
-int n;
+long long n;
 
 class Square
 {
 public:
     int a, b, d;
     int type;
-    int minW;
+    long long minW;
 
     Square()
     {
@@ -41,27 +41,27 @@ void updateSquare(Square &prev, Square &curr)
 
         if (0 == prev.type)
         {
-            curr.minW = prev.minW + off_a + n * (prev.d - off_b - curr.d);
+            curr.minW = prev.minW + off_a + n * (long long)(prev.d - off_b - curr.d);
         }
         else if (1 == prev.type)
         {
-            curr.minW = prev.minW + (prev.d - off_b - curr.d) + n * (prev.d - off_a - curr.d);
+            curr.minW = prev.minW + (prev.d - off_b - curr.d) + n * (long long)(prev.d - off_a - curr.d);
         }
         else if (2 == prev.type)
         {
-            curr.minW = prev.minW + prev.d - off_a - curr.d + n * off_b;
+            curr.minW = prev.minW + prev.d - off_a - curr.d + n * (long long)off_b;
         }
         else
         {
             // type : 3
-            curr.minW = prev.minW + off_b + n * off_a;
+            curr.minW = prev.minW + off_b + n * (long long)off_a;
         }
     }
 
     curr.type = (prev.type + 1) % 4;
 }
 
-bool inSquare(int j, Square &s)
+bool inSquare(long long j, Square &s)
 {
     bool ret = false;
 
@@ -74,9 +74,9 @@ bool inSquare(int j, Square &s)
     }
     else
     {
-        int l = 0;
-        int r = s.d;
-        int mid;
+        long long l = 0;
+        long long r = s.d;
+        long long mid;
 
         while (l <= r)
         {
@@ -100,7 +100,7 @@ bool inSquare(int j, Square &s)
     return ret;
 }
 
-bool cmp(int j, Square &e)
+bool cmp(long long j, Square &e)
 {
     bool ret = true;
 
@@ -112,13 +112,13 @@ bool cmp(int j, Square &e)
     return ret;
 }
 
-void printAB(int j, Square &s)
+void printAB(long long j, Square &s)
 {
     int a = s.a, b = s.b;
 
-    int l = 0;
-    int r = s.d;
-    int mid = 0;
+    long long l = 0;
+    long long r = s.d;
+    long long mid = 0;
 
     while (l <= r)
     {
@@ -214,7 +214,7 @@ int main()
         cin >> l;
     #endif
     
-    vector<int> js(l);
+    vector<long long> js(l);
     for (size_t i_l = 0; i_l < l; i_l++)
     {
 #if DEBUG
@@ -226,7 +226,7 @@ int main()
     
     for (size_t i_l = 0; i_l < l; i_l++)
     {
-        int j = js[i_l];
+        long long j = js[i_l];
 
         if (false == inSquare(j, squares[0]))
         {
