@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdio>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <algorithm>
 #include <stdio.h>
@@ -58,6 +59,42 @@ bool cmpD(Pair &x, Pair &y)
     return x.v[d] < y.v[d];
 }
 
+Pair *buildKDTree(vector<Pair>::iterator ps, int ps_size, int curr_level)
+{
+    Pair * ret = NULL;
+
+    int mid_idx = ps_size / 2;
+    if (0 > curr_level || 0 == curr_level % k)
+    {
+        nth_element(ps, ps + mid_idx, ps + ps_size, cmpA);
+    }
+    else if (1 == curr_level % k)
+    {
+        nth_element(ps, ps + mid_idx, ps + ps_size, cmpB);
+    }
+    else
+    {
+        // 2 == curr_level % k
+        nth_element(ps, ps + mid_idx, ps + ps_size, cmpD);
+    }
+
+    ret = &(*(ps + mid_idx));
+
+    if (0 < mid_idx)
+    {
+        // left
+        ret->left = buildKDTree(ps, mid_idx, curr_level + 1);
+    }
+
+    if (mid_idx + 1 < ps_size)
+    {
+        // right
+        ret->right = buildKDTree(ps + mid_idx + 1, ps_size - mid_idx - 1, curr_level + 1);
+    }
+
+    return ret;
+}
+
 int main()
 {
     int n, c;
@@ -90,8 +127,26 @@ int main()
     // sort by d(distance)
     sort(pairs.begin(), pairs.end(), cmpD);
 
-    vector<int> distances;
-    
+    vector<int> dist;
+    multimap<int, Pair> pairInDis;
+
+    int idx = -1;
+    for (vector<Pair>::iterator it = pairs.begin(); it != pairs.end(); it ++)
+    {
+        if (0 > idx || dist[idx] != (*it).v[d])
+        {
+            dist.push_back((*it).v[d]);
+            idx ++;
+        }
+
+        pairInDis.insert(pair<int, Pair>((*it).v[d], *it));
+    }
+
+    // build kd-tree
+    Pair * root = NULL;
+    root = buildKDTree(pairs.begin(), pairs.size(), -1);
+
+
     
     return 0;
 }
