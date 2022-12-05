@@ -22,7 +22,7 @@ const int d = 2;
 class Pair
 {
     public:
-        int v[k];
+        int v[k];   // v[a][b][distance]
         Pair * left, * right;
 
         Pair(int _a, int _b, int _c)
@@ -95,6 +95,13 @@ Pair *buildKDTree(vector<Pair>::iterator ps, int ps_size, int curr_level)
     return ret;
 }
 
+bool havePair(Pair * root, Pair &p)
+{
+    bool ret = false;
+
+    return ret;
+}
+
 int main()
 {
     int n, c;
@@ -127,15 +134,15 @@ int main()
     // sort by d(distance)
     sort(pairs.begin(), pairs.end(), cmpD);
 
-    vector<int> dist;
+    vector<int> dists;
     multimap<int, Pair> pairInDis;
 
     int idx = -1;
     for (vector<Pair>::iterator it = pairs.begin(); it != pairs.end(); it ++)
     {
-        if (0 > idx || dist[idx] != (*it).v[d])
+        if (0 > idx || dists[idx] != (*it).v[d])
         {
-            dist.push_back((*it).v[d]);
+            dists.push_back((*it).v[d]);
             idx ++;
         }
 
@@ -146,7 +153,41 @@ int main()
     Pair * root = NULL;
     root = buildKDTree(pairs.begin(), pairs.size(), -1);
 
+    // find max distance
+    int max_dist = 0;
 
+    int low = 0, high = dists.size() - 1;
+    while (low <= high)
+    {
+        int mid = low + (high - low) / 2;
+        int mid_dist = dists[mid];
+
+        auto it = pairInDis.equal_range(mid_dist);
+        auto itr = it.first;
+        while (itr != it.second)
+        {
+            if (havePair(root, itr->second))
+            {
+                max_dist = itr->first;
+                break;
+            }
+
+            itr ++;
+        }
+
+        if (itr == it.second)
+        {
+            // no found, try lower distance
+            high = mid - 1;
+        }
+        else
+        {
+            // found, try higher distance
+            low = mid + 1;
+        }
+    }
+
+    cout << max_dist << endl;
     
     return 0;
 }
