@@ -19,11 +19,22 @@ const int a = 0;
 const int b = 1;
 const int d = 2;
 
+class Box
+{
+public:
+    int lower[k];
+    int upper[k];
+    Box(){}
+};
+
 class Pair
 {
     public:
         int v[k];   // v[a][b][distance]
         Pair * left, * right;
+
+        // box
+        Box range;
 
         Pair(int _a, int _b, int _c)
         {
@@ -41,6 +52,10 @@ class Pair
             v[d] = min(abs(_a - _b), _c - abs(_a - _b));
 
             left = right = NULL;
+
+            range.lower[a] = range.upper[a] = v[a];
+            range.lower[b] = range.upper[b] = v[b];
+            range.lower[d] = range.upper[d] = v[d];
         }
 };
 
@@ -84,12 +99,99 @@ Pair *buildKDTree(vector<Pair>::iterator ps, int ps_size, int curr_level)
     {
         // left
         ret->left = buildKDTree(ps, mid_idx, curr_level + 1);
+
+        if (ret->range.lower[a] > ret->left->range.lower[a])
+        {
+                ret->range.lower[a] = ret->left->range.lower[a];
+        }
+
+        if (ret->range.upper[a] < ret->left->range.upper[a])
+        {
+                ret->range.upper[a] = ret->left->range.upper[a];
+        }
+
+        if (ret->range.lower[b] > ret->left->range.lower[b])
+        {
+                ret->range.lower[b] = ret->left->range.lower[b];
+        }
+
+        if (ret->range.upper[b] < ret->left->range.upper[b])
+        {
+                ret->range.upper[b] = ret->left->range.upper[b];
+        }
+
+        if (ret->range.lower[d] > ret->left->range.lower[d])
+        {
+                ret->range.lower[d] = ret->left->range.lower[d];
+        }
+
+        if (ret->range.upper[d] < ret->left->range.upper[d])
+        {
+                ret->range.upper[d] = ret->left->range.upper[d];
+        }
     }
 
     if (mid_idx + 1 < ps_size)
     {
         // right
         ret->right = buildKDTree(ps + mid_idx + 1, ps_size - mid_idx - 1, curr_level + 1);
+
+        if (ret->range.lower[a] > ret->right->range.lower[a])
+        {
+                ret->range.lower[a] = ret->right->range.lower[a];
+        }
+
+        if (ret->range.upper[a] < ret->right->range.upper[a])
+        {
+                ret->range.upper[a] = ret->right->range.upper[a];
+        }
+
+        if (ret->range.lower[b] > ret->right->range.lower[b])
+        {
+                ret->range.lower[b] = ret->right->range.lower[b];
+        }
+
+        if (ret->range.upper[b] < ret->right->range.upper[b])
+        {
+                ret->range.upper[b] = ret->right->range.upper[b];
+        }
+
+        if (ret->range.lower[d] > ret->right->range.lower[d])
+        {
+                ret->range.lower[d] = ret->right->range.lower[d];
+        }
+
+        if (ret->range.upper[d] < ret->right->range.upper[d])
+        {
+                ret->range.upper[d] = ret->right->range.upper[d];
+        }
+    }
+
+    return ret;
+}
+
+// intersection -- 1, 2
+// target contain subtree -- 3
+// not -- 0
+int isIntersection(Box &target, Box &subtree)
+{
+    int ret = 0;
+
+    for (size_t i = 0; i < k; i++)
+    {
+        if (target.lower[i] < subtree.upper[i] || target.upper[i] < subtree.lower[i])
+        {
+                // not
+                ret = 0;
+                break;
+        }
+        else
+        {
+                if (target.lower[i] <= subtree.lower[i] && target.upper[i] >= subtree.upper[i])
+                {
+                    ret++;
+                }
+        }
     }
 
     return ret;
