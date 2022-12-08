@@ -36,6 +36,7 @@ class Pair
         // box
         Box range;
 
+        Pair(){}
         Pair(int _a, int _b, int _c)
         {
             if (_a < _b)
@@ -59,17 +60,17 @@ class Pair
         }
 };
 
-bool cmpA(Pair &x, Pair &y)
+bool cmpA(const Pair &x, const Pair &y)
 {
     return x.v[a] < y.v[a];
 }
 
-bool cmpB(Pair &x, Pair &y)
+bool cmpB(const Pair &x, const Pair &y)
 {
     return x.v[b] < y.v[b];
 }
 
-bool cmpD(Pair &x, Pair &y)
+bool cmpD(const Pair &x, const Pair &y)
 {
     return x.v[d] < y.v[d];
 }
@@ -197,7 +198,7 @@ int isIntersection(Box &target, Box &subtree)
     return ret;
 }
 
-bool havePair(Pair * root, Pair &p)
+bool havePair(Pair * root, Pair &p, int dist)
 {
     bool ret = false;
 
@@ -236,48 +237,36 @@ int main()
     // sort by d(distance)
     sort(pairs.begin(), pairs.end(), cmpD);
 
-    vector<int> dists;
-    multimap<int, Pair> pairInDis;
-
-    int idx = -1;
-    for (vector<Pair>::iterator it = pairs.begin(); it != pairs.end(); it ++)
-    {
-        if (0 > idx || dists[idx] != (*it).v[d])
-        {
-            dists.push_back((*it).v[d]);
-            idx ++;
-        }
-
-        pairInDis.insert(pair<int, Pair>((*it).v[d], *it));
-    }
+    vector<Pair> tree(pairs);
 
     // build kd-tree
     Pair * root = NULL;
-    root = buildKDTree(pairs.begin(), pairs.size(), -1);
+    root = buildKDTree(tree.begin(), tree.size(), -1);
 
     // find max distance
     int max_dist = 0;
 
-    int low = 0, high = dists.size() - 1;
+    int low = 0, high = pairs[pairs.size() - 1].v[d];
     while (low <= high)
     {
         int mid = low + (high - low) / 2;
-        int mid_dist = dists[mid];
+        Pair midInPairs;
+        midInPairs.v[d] = mid; 
 
-        auto it = pairInDis.equal_range(mid_dist);
-        auto itr = it.first;
-        while (itr != it.second)
+        vector<Pair>::iterator it = lower_bound(pairs.begin(), pairs.end(), midInPairs, cmpD);
+
+        while (it != pairs.end())
         {
-            if (havePair(root, itr->second))
+            if (havePair(root, *it, mid))
             {
-                max_dist = itr->first;
+                max_dist = mid;
                 break;
             }
 
-            itr ++;
+            it ++;
         }
 
-        if (itr == it.second)
+        if (it == pairs.end())
         {
             // no found, try lower distance
             high = mid - 1;
