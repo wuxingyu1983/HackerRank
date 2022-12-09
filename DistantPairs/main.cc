@@ -25,40 +25,40 @@ class Box
 public:
     int lower[k];
     int upper[k];
-    Box(){}
+    Box() {}
 };
 
 class Pair
 {
-    public:
-        int v[k];   // v[a][b][distance]
-        Pair * left, * right;
+public:
+    int v[k]; // v[a][b][distance]
+    Pair *left, *right;
 
-        // box
-        Box range;
+    // box
+    Box range;
 
-        Pair(){}
-        Pair(int _a, int _b, int _c)
+    Pair() {}
+    Pair(int _a, int _b, int _c)
+    {
+        if (_a < _b)
         {
-            if (_a < _b)
-            {
-                v[a] = _a;
-                v[b] = _b;
-            }
-            else
-            {
-                v[a] = _b;
-                v[b] = _a;
-            }
-
-            v[d] = min(abs(_a - _b), _c - abs(_a - _b));
-
-            left = right = NULL;
-
-            range.lower[a] = range.upper[a] = v[a];
-            range.lower[b] = range.upper[b] = v[b];
-            range.lower[d] = range.upper[d] = v[d];
+            v[a] = _a;
+            v[b] = _b;
         }
+        else
+        {
+            v[a] = _b;
+            v[b] = _a;
+        }
+
+        v[d] = min(abs(_a - _b), _c - abs(_a - _b));
+
+        left = right = NULL;
+
+        range.lower[a] = range.upper[a] = v[a];
+        range.lower[b] = range.upper[b] = v[b];
+        range.lower[d] = range.upper[d] = v[d];
+    }
 };
 
 bool cmpA(const Pair &x, const Pair &y)
@@ -78,7 +78,7 @@ bool cmpD(const Pair &x, const Pair &y)
 
 Pair *buildKDTree(vector<Pair>::iterator ps, int ps_size, int curr_level)
 {
-    Pair * ret = NULL;
+    Pair *ret = NULL;
 
     int mid_idx = ps_size / 2;
     if (0 > curr_level || 0 == curr_level % k)
@@ -104,32 +104,32 @@ Pair *buildKDTree(vector<Pair>::iterator ps, int ps_size, int curr_level)
 
         if (ret->range.lower[a] > ret->left->range.lower[a])
         {
-                ret->range.lower[a] = ret->left->range.lower[a];
+            ret->range.lower[a] = ret->left->range.lower[a];
         }
 
         if (ret->range.upper[a] < ret->left->range.upper[a])
         {
-                ret->range.upper[a] = ret->left->range.upper[a];
+            ret->range.upper[a] = ret->left->range.upper[a];
         }
 
         if (ret->range.lower[b] > ret->left->range.lower[b])
         {
-                ret->range.lower[b] = ret->left->range.lower[b];
+            ret->range.lower[b] = ret->left->range.lower[b];
         }
 
         if (ret->range.upper[b] < ret->left->range.upper[b])
         {
-                ret->range.upper[b] = ret->left->range.upper[b];
+            ret->range.upper[b] = ret->left->range.upper[b];
         }
 
         if (ret->range.lower[d] > ret->left->range.lower[d])
         {
-                ret->range.lower[d] = ret->left->range.lower[d];
+            ret->range.lower[d] = ret->left->range.lower[d];
         }
 
         if (ret->range.upper[d] < ret->left->range.upper[d])
         {
-                ret->range.upper[d] = ret->left->range.upper[d];
+            ret->range.upper[d] = ret->left->range.upper[d];
         }
     }
 
@@ -140,32 +140,32 @@ Pair *buildKDTree(vector<Pair>::iterator ps, int ps_size, int curr_level)
 
         if (ret->range.lower[a] > ret->right->range.lower[a])
         {
-                ret->range.lower[a] = ret->right->range.lower[a];
+            ret->range.lower[a] = ret->right->range.lower[a];
         }
 
         if (ret->range.upper[a] < ret->right->range.upper[a])
         {
-                ret->range.upper[a] = ret->right->range.upper[a];
+            ret->range.upper[a] = ret->right->range.upper[a];
         }
 
         if (ret->range.lower[b] > ret->right->range.lower[b])
         {
-                ret->range.lower[b] = ret->right->range.lower[b];
+            ret->range.lower[b] = ret->right->range.lower[b];
         }
 
         if (ret->range.upper[b] < ret->right->range.upper[b])
         {
-                ret->range.upper[b] = ret->right->range.upper[b];
+            ret->range.upper[b] = ret->right->range.upper[b];
         }
 
         if (ret->range.lower[d] > ret->right->range.lower[d])
         {
-                ret->range.lower[d] = ret->right->range.lower[d];
+            ret->range.lower[d] = ret->right->range.lower[d];
         }
 
         if (ret->range.upper[d] < ret->right->range.upper[d])
         {
-                ret->range.upper[d] = ret->right->range.upper[d];
+            ret->range.upper[d] = ret->right->range.upper[d];
         }
     }
 
@@ -181,25 +181,30 @@ int isIntersection(Box &target, Box &subtree)
 
     for (size_t i = 0; i < k; i++)
     {
-        if (target.lower[i] < subtree.upper[i] || target.upper[i] < subtree.lower[i])
+        if (target.lower[i] > subtree.upper[i] || target.upper[i] < subtree.lower[i])
         {
-                // not
-                ret = 0;
-                break;
+            // not
+            ret = 0;
+            return ret;
         }
         else
         {
-                if (target.lower[i] <= subtree.lower[i] && target.upper[i] >= subtree.upper[i])
-                {
-                    ret++;
-                }
+            if (target.lower[i] <= subtree.lower[i] && target.upper[i] >= subtree.upper[i])
+            {
+                ret++;
+            }
         }
+    }
+
+    if (3 != ret)
+    {
+        ret = 1;
     }
 
     return ret;
 }
 
-bool pairInBox(Pair * parent, Box &box)
+bool pairInBox(Pair *parent, Box &box)
 {
     bool ret = false;
 
@@ -207,19 +212,20 @@ bool pairInBox(Pair * parent, Box &box)
     {
         // parent self
         int i = 0;
-        for (i = 0; i < k; i ++) {
+        for (i = 0; i < k; i++)
+        {
             if (parent->v[i] < box.lower[i] || parent->v[i] > box.upper[i])
             {
                 break;
             }
         }
-        
+
         if (k == i)
         {
             ret = true;
             return ret;
         }
-        
+
         int iRet = isIntersection(box, parent->range);
         if (3 == iRet)
         {
@@ -248,11 +254,11 @@ bool pairInBox(Pair * parent, Box &box)
     return ret;
 }
 
-bool havePair(Pair * root, Pair &p, int dist)
+bool havePair(Pair *root, Pair &p, int dist)
 {
     bool ret = false;
 
-    vector< vector<int> > areas;
+    vector<vector<int>> areas;
 
     // area 0
     {
@@ -268,9 +274,9 @@ bool havePair(Pair * root, Pair &p, int dist)
         {
             if (p.v[b] + dist < c)
             {
-                    // area 1.1.1
-                    areas.push_back({p.v[b] + dist, c - 1});
-                    areas.push_back({0, p.v[a] - dist});
+                // area 1.1.1
+                areas.push_back({p.v[b] + dist, c - 1});
+                areas.push_back({0, p.v[a] - dist});
             }
             else
             {
@@ -287,12 +293,12 @@ bool havePair(Pair * root, Pair &p, int dist)
             // area 1.2
             if (p.v[b] + dist <= (p.v[a] - dist + c) % c)
             {
-                    areas.push_back({p.v[b] + dist, (p.v[a] - dist + c) % c});
+                areas.push_back({p.v[b] + dist, (p.v[a] - dist + c) % c});
             }
         }
     }
 
-    for (vector< vector<int> >::iterator it = areas.begin(); it != areas.end(); it ++)
+    for (vector<vector<int>>::iterator it = areas.begin(); it != areas.end(); it++)
     {
         // 2 points both in *it
         {
@@ -311,7 +317,7 @@ bool havePair(Pair * root, Pair &p, int dist)
             }
         }
 
-        for (vector< vector<int> >::iterator itr = it + 1; itr != areas.end(); itr ++)
+        for (vector<vector<int>>::iterator itr = it + 1; itr != areas.end(); itr++)
         {
             // 1 point in *it, 1 point in *itr
             Box box;
@@ -348,8 +354,6 @@ int main()
 {
     int n;
 
-//    cout << "begin :" << endl;
-    
 #if DEBUG
     ifstream inFile;
     inFile.open("input.txt");
@@ -381,7 +385,7 @@ int main()
     vector<Pair> tree(pairs);
 
     // build kd-tree
-    Pair * root = NULL;
+    Pair *root = NULL;
     root = buildKDTree(tree.begin(), tree.size(), 0);
 
     // find max distance
@@ -404,7 +408,7 @@ int main()
                 break;
             }
 
-            it ++;
+            it++;
         }
 
         if (it == pairs.end())
@@ -420,7 +424,6 @@ int main()
     }
 
     cout << max_dist << endl;
-    
+
     return 0;
 }
-
