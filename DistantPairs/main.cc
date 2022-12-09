@@ -205,6 +205,21 @@ bool pairInBox(Pair * parent, Box &box)
 
     if (parent)
     {
+        // parent self
+        int i = 0;
+        for (i = 0; i < k; i ++) {
+            if (parent->v[i] < box.lower[i] || parent->v[i] > box.upper[i])
+            {
+                break;
+            }
+        }
+        
+        if (k == i)
+        {
+            ret = true;
+            return ret;
+        }
+        
         int iRet = isIntersection(box, parent->range);
         if (3 == iRet)
         {
@@ -243,7 +258,7 @@ bool havePair(Pair * root, Pair &p, int dist)
     {
         if (p.v[a] + dist <= p.v[b] - dist)
         {
-            areas.push_back(vector<int>(p.v[a] + dist, p.v[b] - dist));
+            areas.push_back({p.v[a] + dist, p.v[b] - dist});
         }
     }
 
@@ -254,15 +269,15 @@ bool havePair(Pair * root, Pair &p, int dist)
             if (p.v[b] + dist < c)
             {
                     // area 1.1.1
-                    areas.push_back(vector<int>(p.v[b] + dist, c - 1));
-                    areas.push_back(vector<int>(0, p.v[a] - dist));
+                    areas.push_back({p.v[b] + dist, c - 1});
+                    areas.push_back({0, p.v[a] - dist});
             }
             else
             {
                 if ((p.v[b] + dist) % c <= p.v[a] - dist)
                 {
                     // area 1.1.2
-                    areas.push_back(vector<int>((p.v[b] + dist) % c, p.v[a] - dist));
+                    areas.push_back({(p.v[b] + dist) % c, p.v[a] - dist});
                 }
             }
         }
@@ -272,7 +287,7 @@ bool havePair(Pair * root, Pair &p, int dist)
             // area 1.2
             if (p.v[b] + dist <= (p.v[a] - dist + c) % c)
             {
-                    areas.push_back(vector<int>(p.v[b] + dist, (p.v[a] - dist + c) % c));
+                    areas.push_back({p.v[b] + dist, (p.v[a] - dist + c) % c});
             }
         }
     }
@@ -333,6 +348,8 @@ int main()
 {
     int n;
 
+//    cout << "begin :" << endl;
+    
 #if DEBUG
     ifstream inFile;
     inFile.open("input.txt");
@@ -365,7 +382,7 @@ int main()
 
     // build kd-tree
     Pair * root = NULL;
-    root = buildKDTree(tree.begin(), tree.size(), -1);
+    root = buildKDTree(tree.begin(), tree.size(), 0);
 
     // find max distance
     int max_dist = 0;
@@ -375,7 +392,7 @@ int main()
     {
         int mid = low + (high - low) / 2;
         Pair midInPairs;
-        midInPairs.v[d] = mid; 
+        midInPairs.v[d] = mid;
 
         vector<Pair>::iterator it = lower_bound(pairs.begin(), pairs.end(), midInPairs, cmpD);
 
@@ -406,3 +423,4 @@ int main()
     
     return 0;
 }
+
