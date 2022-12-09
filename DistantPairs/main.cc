@@ -18,6 +18,7 @@ const int k = 3;
 const int a = 0;
 const int b = 1;
 const int d = 2;
+int c;
 
 class Box
 {
@@ -198,16 +199,139 @@ int isIntersection(Box &target, Box &subtree)
     return ret;
 }
 
+bool pairInBox(Pair * parent, Box &box)
+{
+    bool ret = false;
+
+    if (parent)
+    {
+        int iRet = isIntersection(box, parent->range);
+        if (3 == iRet)
+        {
+            // subtree parent in box
+            ret = true;
+        }
+        else if (0 == iRet)
+        {
+            // subtree parent not in box
+        }
+        else
+        {
+            // intersection
+            if (parent->left)
+            {
+                ret = pairInBox(parent->left, box);
+            }
+
+            if (false == ret && parent->right)
+            {
+                ret = pairInBox(parent->right, box);
+            }
+        }
+    }
+
+    return ret;
+}
+
 bool havePair(Pair * root, Pair &p, int dist)
 {
     bool ret = false;
+
+    vector< vector<int> > areas;
+
+    // area 0
+    {
+        if (p.v[a] + dist <= p.v[b] - dist)
+        {
+            areas.push_back(vector<int>(p.v[a] + dist, p.v[b] - dist));
+        }
+    }
+
+    // area 1
+    {
+        if (p.v[a] - dist >= 0)
+        {
+            if (p.v[b] + dist < c)
+            {
+                    // area 1.1.1
+                    areas.push_back(vector<int>(p.v[b] + dist, c - 1));
+                    areas.push_back(vector<int>(0, p.v[a] - dist));
+            }
+            else
+            {
+                if ((p.v[b] + dist) % c <= p.v[a] - dist)
+                {
+                    // area 1.1.2
+                    areas.push_back(vector<int>((p.v[b] + dist) % c, p.v[a] - dist));
+                }
+            }
+        }
+        else
+        {
+            // < 0
+            // area 1.2
+            if (p.v[b] + dist <= (p.v[a] - dist + c) % c)
+            {
+                    areas.push_back(vector<int>(p.v[b] + dist, (p.v[a] - dist + c) % c));
+            }
+        }
+    }
+
+    for (vector< vector<int> >::iterator it = areas.begin(); it != areas.end(); it ++)
+    {
+        // 2 points both in *it
+        {
+            Box box;
+            box.lower[a] = (*it)[0];
+            box.upper[a] = (*it)[1];
+            box.lower[b] = (*it)[0];
+            box.upper[b] = (*it)[1];
+            box.lower[d] = dist;
+            box.upper[d] = c;
+
+            ret = pairInBox(root, box);
+            if (ret)
+            {
+                return ret;
+            }
+        }
+
+        for (vector< vector<int> >::iterator itr = it + 1; itr != areas.end(); itr ++)
+        {
+            // 1 point in *it, 1 point in *itr
+            Box box;
+            box.lower[a] = (*it)[0];
+            box.upper[a] = (*it)[1];
+            box.lower[b] = (*itr)[0];
+            box.upper[b] = (*itr)[1];
+            box.lower[d] = dist;
+            box.upper[d] = c;
+
+            ret = pairInBox(root, box);
+            if (ret)
+            {
+                return ret;
+            }
+
+            box.lower[a] = (*itr)[0];
+            box.upper[a] = (*itr)[1];
+            box.lower[b] = (*it)[0];
+            box.upper[b] = (*it)[1];
+
+            ret = pairInBox(root, box);
+            if (ret)
+            {
+                return ret;
+            }
+        }
+    }
 
     return ret;
 }
 
 int main()
 {
-    int n, c;
+    int n;
 
 #if DEBUG
     ifstream inFile;
