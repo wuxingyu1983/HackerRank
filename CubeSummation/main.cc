@@ -69,6 +69,104 @@ bool cmpZ(const Point &a, const Point &b)
     return a.v[Z] < b.v[Z];
 }
 
+Point *buildKDTree(vector<Point>::iterator ps, int ps_size, int curr_level)
+{
+    Point *ret = NULL;
+
+    int mid_idx = ps_size / 2;
+    if (0 > curr_level || 0 == curr_level % K)
+    {
+        nth_element(ps, ps + mid_idx, ps + ps_size, cmpX);
+    }
+    else if (1 == curr_level % K)
+    {
+        nth_element(ps, ps + mid_idx, ps + ps_size, cmpY);
+    }
+    else
+    {
+        // 2 == curr_level % k
+        nth_element(ps, ps + mid_idx, ps + ps_size, cmpZ);
+    }
+
+    ret = &(*(ps + mid_idx));
+
+    if (0 < mid_idx)
+    {
+        // left
+        ret->left = buildKDTree(ps, mid_idx, curr_level + 1);
+        ret->left->parent = ret;
+
+        if (ret->range.lower[X] > ret->left->range.lower[X])
+        {
+            ret->range.lower[X] = ret->left->range.lower[X];
+        }
+
+        if (ret->range.upper[X] < ret->left->range.upper[X])
+        {
+            ret->range.upper[X] = ret->left->range.upper[X];
+        }
+
+        if (ret->range.lower[Y] > ret->left->range.lower[Y])
+        {
+            ret->range.lower[Y] = ret->left->range.lower[Y];
+        }
+
+        if (ret->range.upper[Y] < ret->left->range.upper[Y])
+        {
+            ret->range.upper[Y] = ret->left->range.upper[Y];
+        }
+
+        if (ret->range.lower[Z] > ret->left->range.lower[Z])
+        {
+            ret->range.lower[Z] = ret->left->range.lower[Z];
+        }
+
+        if (ret->range.upper[Z] < ret->left->range.upper[Z])
+        {
+            ret->range.upper[Z] = ret->left->range.upper[Z];
+        }
+    }
+
+    if (mid_idx + 1 < ps_size)
+    {
+        // right
+        ret->right = buildKDTree(ps + mid_idx + 1, ps_size - mid_idx - 1, curr_level + 1);
+        ret->right->parent = ret;
+
+        if (ret->range.lower[X] > ret->right->range.lower[X])
+        {
+            ret->range.lower[X] = ret->right->range.lower[X];
+        }
+
+        if (ret->range.upper[X] < ret->right->range.upper[X])
+        {
+            ret->range.upper[X] = ret->right->range.upper[X];
+        }
+
+        if (ret->range.lower[Y] > ret->right->range.lower[Y])
+        {
+            ret->range.lower[Y] = ret->right->range.lower[Y];
+        }
+
+        if (ret->range.upper[Y] < ret->right->range.upper[Y])
+        {
+            ret->range.upper[Y] = ret->right->range.upper[Y];
+        }
+
+        if (ret->range.lower[Z] > ret->right->range.lower[Z])
+        {
+            ret->range.lower[Z] = ret->right->range.lower[Z];
+        }
+
+        if (ret->range.upper[Z] < ret->right->range.upper[Z])
+        {
+            ret->range.upper[Z] = ret->right->range.upper[Z];
+        }
+    }
+
+    return ret;
+}
+
 class Operation
 {
 public:
@@ -148,8 +246,9 @@ int main()
             ops.push_back(op);
         }
 
-
-
+        // build kd-tree
+        Point *root = NULL;
+        root = buildKDTree(points.begin(), points.size(), 0);
     }
 
 #if DEBUG
