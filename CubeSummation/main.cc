@@ -30,16 +30,16 @@ public:
 class Point
 {
 public:
-    int v[K]; // v[x][y][z]
-    unsigned long long w;
-    unsigned long long sum;
+    unsigned int v[K]; // v[x][y][z]
+    long long w;
+    long long sum;
     Point *left, *right, *parent;
 
     // box
     Box range;
 
     Point() {}
-    Point(int _x, int _y, int _z)
+    Point(unsigned int _x, unsigned int _y, unsigned int _z)
     {
         v[X] = _x;
         v[Y] = _y;
@@ -167,17 +167,157 @@ Point *buildKDTree(vector<Point>::iterator ps, int ps_size, int curr_level)
     return ret;
 }
 
+void updateKDTree(Point * node, long long offset)
+{
+    if (node)
+    {
+        node->sum += offset;
+        if (node->parent)
+        {
+            updateKDTree(node->parent, offset);
+        }
+    }
+}
+
+bool arePointsSame(unsigned int point1[], unsigned int point2[])
+{
+    for (int i = 0; i < K; ++i)
+        if (point1[i] != point2[i])
+            return false;
+  
+    return true;
+}
+
+Point * searchPoint(Point * root, unsigned int v[], unsigned int depth)
+{
+    Point *ret = NULL;
+    
+    if (root)
+    {
+        if (arePointsSame(root->v, v))
+            return root;
+        
+        // Current dimension is computed using current depth and total
+        // dimensions (k)
+        unsigned int cd = depth % K;
+        
+        // Compare point with root with respect to cd (Current dimension)
+        if (v[cd] == root->v[cd])
+        {
+            if (root->left)
+            {
+                ret = searchPoint(root->left, v, depth + 1);
+            }
+            if (NULL == ret && root->right)
+            {
+                ret = searchPoint(root->right, v, depth + 1);
+            }
+        }
+        else
+        {
+            if (v[cd] < root->v[cd])
+                return searchPoint(root->left, v, depth + 1);
+            
+            return searchPoint(root->right, v, depth + 1);
+        }
+    }
+    
+    return ret;
+}
+
+// intersection -- 1, 2
+// target contain subtree -- 3
+// not -- 0
+int isIntersection(Box &target, Box &subtree)
+{
+    int ret = 0;
+
+    for (size_t i = 0; i < K; i++)
+    {
+        if (target.lower[i] > subtree.upper[i] || target.upper[i] < subtree.lower[i])
+        {
+            // not
+            ret = 0;
+            return ret;
+        }
+        else
+        {
+            if (target.lower[i] <= subtree.lower[i] && target.upper[i] >= subtree.upper[i])
+            {
+                ret ++;
+            }
+        }
+    }
+
+    if (3 != ret)
+    {
+        ret = 1;
+    }
+
+    return ret;
+}
+
+long long querySum(Point * node, Box &target)
+{
+    long long ret = 0;
+
+    if (node)
+    {
+        int iRet = isIntersection(target, node->range);
+        if (3 == iRet)
+        {
+            // subtree node in target
+            ret = node->sum;
+        }
+        else if (0 == iRet)
+        {
+            // subtree node not in target
+        }
+        else
+        {
+            // intersection
+
+            // node self
+            int i = 0;
+            for (i = 0; i < K; i++)
+            {
+                if (node->v[i] < target.lower[i] || node->v[i] > target.upper[i])
+                {
+                    break;
+                }
+            }
+
+            if (K == i)
+            {
+                ret += node->w;
+            }
+
+            if (node->left)
+            {
+                ret += querySum(node->left, target);
+            }
+
+            if (node->right)
+            {
+                ret += querySum(node->right, target);
+            }
+        }
+    }
+
+    return ret;
+}
+
 class Operation
 {
 public:
     string op;
 
     // update
-    int x, y, z;
-    unsigned long long w;
+    unsigned int x, y, z;
+    long long w;
 
     // query
-    int x1, y1, z1, x2, y2, z2;
+    unsigned int x1, y1, z1, x2, y2, z2;
 
     Operation() {}
 };
@@ -186,7 +326,7 @@ int main()
 {
 #if DEBUG
     ifstream inFile;
-    inFile.open("input.txt");
+    inFile.open("/Users/wuxingyu/Documents/work/github/HackerRank/CubeSummation/input.txt");
 #endif
 
     int t;
@@ -249,6 +389,40 @@ int main()
         // build kd-tree
         Point *root = NULL;
         root = buildKDTree(points.begin(), points.size(), 0);
+
+        for (size_t i_m = 0; i_m < m; i_m++)
+        {
+            if (ops[i_m].op == "UPDATE")
+            {
+                unsigned int v[] = {ops[i_m].x, ops[i_m].y, ops[i_m].z};
+                Point * node = searchPoint(root, v, 0);
+                if (node)
+                {
+                    updateKDTree(node, ops[i_m].w - node->w);
+                    node->w = ops[i_m].w;
+                }
+                else
+                {
+                    node = NULL;
+                }
+            }
+            else
+            {
+                // QUERY
+                Box target;
+                target.lower[0] = ops[i_m].x1;
+                target.lower[1] = ops[i_m].y1;
+                target.lower[2] = ops[i_m].z1;
+
+                target.upper[0] = ops[i_m].x2;
+                target.upper[1] = ops[i_m].y2;
+                target.upper[2] = ops[i_m].z2;
+
+                long long sum = querySum(root, target);
+
+                cout << sum << endl;
+            }
+        }
     }
 
 #if DEBUG
