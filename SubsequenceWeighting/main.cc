@@ -28,13 +28,11 @@ public:
 
 unsigned long long update(vector<unsigned long long> &d, unsigned int idx, unsigned long long c, unsigned int s, unsigned int t, unsigned int p)
 {
-    // idx 为修改 index, c 为被修改的元素的变化量, [s, t] 为当前节点包含的区间, p
-    // 为当前节点的编号
     if (idx == s && idx == t)
     {
         d[p] = c;
         return c;
-    } // 当前区间为修改区间的子集时直接修改当前节点的值,然后打标记,结束修改
+    }
     int m = s + ((t - s) >> 1);
     if (idx <= m)
     {
@@ -58,6 +56,10 @@ unsigned long long update(vector<unsigned long long> &d, unsigned int idx, unsig
 
 unsigned long long getMax(vector<unsigned long long> &d, int l, int r, int s, int t, int p)
 {
+    if (l > r)
+    {
+        return 0;
+    }
     if (l <= s && t <= r)
         return d[p];
     int m = s + ((t - s) >> 1);
@@ -140,7 +142,7 @@ int main()
 
         // init segment tree
         unsigned int size = ceil(log((double)n) / log(2.0));
-        size = pow(2, size + 1);
+        size = pow(2, size + 2);
 
         vector<unsigned long long> maxs(size + 1, 0);
 
