@@ -18,7 +18,6 @@ using namespace std;
 map<unsigned int, unsigned long long> dp1;
 map<unsigned int, unsigned long long> dp2;
 map<unsigned int, unsigned long long> dp22;
-map<unsigned int, unsigned long long> dp3;
 
 unsigned long long func_c2(unsigned long n)
 {
@@ -101,6 +100,7 @@ int main()
         }
     }
 
+    unsigned long long cnt = 0;
     if (hasEG2)
     {
         // update dp2, dp22
@@ -133,7 +133,7 @@ int main()
                 {
                     break;
                 }
-                
+
                 if (!dp2[l])
                 {
                     dp2[l] = 0;
@@ -148,12 +148,61 @@ int main()
             }
         }
 
-        // update dp3
+        for (map<unsigned int, unsigned long long>::iterator it = dp1.begin(); it != dp1.end(); it++)
+        {
+            if (2 <= it->second)
+            {
+                unsigned long long cnt3diff = 0;
+
+                for (map<unsigned int, unsigned long long>::iterator pre = dp1.begin(); pre != it; pre++)
+                {
+                    if (3 <= it->second)
+                    {
+                        // 1 1 1 3
+                        unsigned int l = it->first - pre->first;
+                        unsigned long long c = dp2[l];
+
+                        // {l/2, l/2}
+                        if (0 == (l & 1))
+                        {
+                            // l/2
+                            c -= func_c2(dp1[l / 2]);
+                        }
+
+                        // {pre->first, x}
+                        if (l > pre->first && dp1[l - pre->first])
+                        {
+                            if (l != 2 * pre->first)
+                            {
+                                c -= dp1[pre->first] * dp1[l - pre->first];
+                            }
+                        }
+
+                        cnt3diff += c;
+
+                        if (2 * pre->first < it->first && dp1[it->first - 2 * pre->first])
+                        {
+                            cnt += func_c2(pre->second) * dp1[it->first - 2 * pre->first];
+                        }
+
+                        if (3 * pre->first == it->first)
+                        {
+                            cnt += func_c3(pre->second);
+                        }
+                    }
+                }
+                // 1 1 2 2
+                cnt += dp22[it->first] * func_c2(it->second);
+
+                if (cnt3diff)
+                {
+                    cnt += func_c3(it->second) * cnt3diff / 3;
+                }
+            }
+        }
     }
-    else
-    {
-        cout << 0 << endl;
-    }
+
+    cout << cnt << endl;
 
 #if DEBUG
     inFile.close();
