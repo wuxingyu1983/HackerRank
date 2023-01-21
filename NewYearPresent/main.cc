@@ -12,14 +12,27 @@
 
 using namespace std;
 
-#define DEBUG   0
-#define MAX_L   10000000
+#define DEBUG 1
+#define MAX_L 10000000
 
 map<unsigned int, unsigned long long> dp1;
 map<unsigned int, unsigned long long> dp2;
 map<unsigned int, unsigned long long> dp22;
 
-unsigned long long func_c2(unsigned long n)
+unsigned long long getValueForKey(map<unsigned int, unsigned long long> &dp, unsigned int key)
+{
+    unsigned long long ret = 0;
+
+    map<unsigned int, unsigned long long>::iterator it = dp.find(key);
+    if (it != dp.end())
+    {
+        ret = it->second;
+    }
+
+    return ret;
+}
+
+unsigned long long func_c2(unsigned long long n)
 {
     unsigned long long ret = 0;
 
@@ -31,7 +44,7 @@ unsigned long long func_c2(unsigned long n)
     return ret;
 }
 
-unsigned long long func_c3(unsigned long n)
+unsigned long long func_c3(unsigned long long n)
 {
     unsigned long long ret = 0;
 
@@ -43,7 +56,7 @@ unsigned long long func_c3(unsigned long n)
     return ret;
 }
 
-unsigned long long func_c4(unsigned long n)
+unsigned long long func_c4(unsigned long long n)
 {
     unsigned long long ret = 0;
 
@@ -54,6 +67,7 @@ unsigned long long func_c4(unsigned long n)
 
     return ret;
 }
+
 int main()
 {
 #if DEBUG
@@ -127,6 +141,7 @@ int main()
                 dp2[l] += it->second * pre->second;
             }
 
+            if (1 < it->second)
             {
                 unsigned int l = it->first + it->first;
                 if (MAX_L < l)
@@ -160,24 +175,25 @@ int main()
                     {
                         // 1 1 1 3
                         unsigned int l = it->first - pre->first;
-                        unsigned long long c = dp2[l];
+                        unsigned long long c = getValueForKey(dp2, l);
 
                         // {l/2, l/2}
                         if (0 == (l & 1))
                         {
                             // l/2
-                            c -= func_c2(dp1[l / 2]);
+                            c -= func_c2(getValueForKey(dp1, l / 2));
                         }
 
                         // {pre->first, x}
-                        if (l > pre->first && dp1[l - pre->first])
+                        if (l > pre->first && getValueForKey(dp1, l - pre->first))
                         {
                             if (l != 2 * pre->first)
                             {
-                                c -= dp1[pre->first] * dp1[l - pre->first];
+                                c -= getValueForKey(dp1, pre->first) * getValueForKey(dp1, l - pre->first);
                             }
                         }
 
+                        c = c * pre->second;
                         cnt3diff += c;
 
                         if (3 * pre->first == it->first)
@@ -186,15 +202,15 @@ int main()
                         }
                         else
                         {
-                            if (2 * pre->first < it->first && dp1[it->first - 2 * pre->first])
+                            if (2 * pre->first < it->first && getValueForKey(dp1, it->first - 2 * pre->first))
                             {
-                                cnt += func_c2(pre->second) * dp1[it->first - 2 * pre->first];
+                                cnt += func_c2(pre->second) * getValueForKey(dp1, it->first - 2 * pre->first);
                             }
                         }
                     }
                 }
                 // 1 1 2 2
-                cnt += dp22[it->first] * func_c2(it->second);
+                cnt += getValueForKey(dp22, it->first) * func_c2(it->second);
 
                 if (cnt3diff)
                 {
