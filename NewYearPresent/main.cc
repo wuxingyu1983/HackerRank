@@ -180,14 +180,16 @@ int main()
 
                         cnt3diff += c;
 
-                        if (2 * pre->first < it->first && dp1[it->first - 2 * pre->first])
-                        {
-                            cnt += func_c2(pre->second) * dp1[it->first - 2 * pre->first];
-                        }
-
                         if (3 * pre->first == it->first)
                         {
                             cnt += func_c3(pre->second);
+                        }
+                        else
+                        {
+                            if (2 * pre->first < it->first && dp1[it->first - 2 * pre->first])
+                            {
+                                cnt += func_c2(pre->second) * dp1[it->first - 2 * pre->first];
+                            }
                         }
                     }
                 }
