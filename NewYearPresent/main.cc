@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#define DEBUG 1
+#define DEBUG 0
 #define MAX_L 10000000
 
 map<unsigned int, unsigned long long> dp1;
@@ -123,7 +123,7 @@ int main()
             for (map<unsigned int, unsigned long long>::iterator pre = dp1.begin(); pre != it; pre++)
             {
                 unsigned int l = it->first + pre->first;
-                if (MAX_L < l)
+                if (max_l < l)
                 {
                     break;
                 }
@@ -144,9 +144,9 @@ int main()
             if (1 < it->second)
             {
                 unsigned int l = it->first + it->first;
-                if (MAX_L < l)
+                if (max_l < l)
                 {
-                    break;
+                    continue;
                 }
 
                 if (!dp2[l])
@@ -198,13 +198,13 @@ int main()
 
                         if (3 * pre->first == it->first)
                         {
-                            cnt += func_c3(pre->second);
+                            cnt += func_c3(pre->second) * func_c3(it->second);
                         }
                         else
                         {
                             if (2 * pre->first < it->first && getValueForKey(dp1, it->first - 2 * pre->first))
                             {
-                                cnt += func_c2(pre->second) * getValueForKey(dp1, it->first - 2 * pre->first);
+                                cnt += func_c2(pre->second) * getValueForKey(dp1, it->first - 2 * pre->first) * func_c3(it->second);
                             }
                         }
                     }
