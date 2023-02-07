@@ -61,6 +61,30 @@ bool cmp(Road &a, Road &b)
     return a.w < b.w;
 }
 
+int lowbit(int x)
+{
+    return x & (-x);
+}
+
+void add(vector<unsigned long long> &tr, int x, unsigned long long val)
+{
+    int n = tr.size() + 1;
+    for (int i = x; i <= n; i += lowbit(i))
+    {
+        tr[i] += val;
+    }
+}
+
+unsigned long long pre_sum(vector<unsigned long long> &tr, int x)
+{
+    unsigned long long sum = 0;
+    for (int i = x; i > 0; i -= lowbit(i))
+    {
+        sum += tr[i];
+    }
+    return sum;
+}
+
 int main()
 {
 #if DEBUG
@@ -100,7 +124,7 @@ int main()
     sort(weights.begin(), weights.end());
     weights.erase(unique(weights.begin(), weights.end()), weights.end());
 
-    vector<unsigned long long> cnts(weights.size(), 0);
+    vector<unsigned long long> cnts(weights.size() + 1, 0);
 
     for (size_t i = 0; i < n - 1; i++)
     {
@@ -117,7 +141,7 @@ int main()
 
         unsigned int idx = index(weights, cost);
 
-        cnts[idx] += 1 + csizes[pau] + csizes[pav] + csizes[pau] * csizes[pav];
+        add(cnts, idx + 1, 1 + csizes[pau] + csizes[pav] + csizes[pau] * csizes[pav]);
         csizes[pav] += csizes[pau] + 1;
     }
 
@@ -145,10 +169,10 @@ int main()
             }
         }
 
-        unsigned long long out = 0;
-        for (size_t j = idxl; j <= idxr; j++)
+        unsigned long long out = pre_sum(cnts, idxr + 1);
+        if (idxl > 0)
         {
-            out += cnts[j];
+            out -= pre_sum(cnts, idxl);
         }
 
         cout << out << endl;
