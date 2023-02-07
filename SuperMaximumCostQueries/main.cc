@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG       0
+#define DEBUG       1
 
 vector<unsigned int> pa;
 vector<unsigned int> costs;
@@ -30,14 +30,7 @@ unsigned int index(vector<unsigned int> &weights, unsigned int w)
     else
     {
         vector<unsigned int>::iterator it = lower_bound(weights.begin(), weights.end(), w);
-        if (*it == w)
-        {
-            return it - weights.begin();
-        }
-        else
-        {
-            return it - weights.begin() - 1;
-        }
+        return it - weights.begin();
     }
 }
 
@@ -139,7 +132,18 @@ int main()
 
         unsigned int idxl, idxr;
         idxl = index(weights, l);
-        idxr = index(weights, r);
+        if (r > weights[weights.size() - 1])
+        {
+            idxr = weights.size() - 1;
+        }
+        else
+        {
+            idxr = index(weights, r);
+            if (r != weights[idxr])
+            {
+                idxr --;
+            }
+        }
 
         unsigned long long out = 0;
         for (size_t j = idxl; j <= idxr; j++)
