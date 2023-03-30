@@ -15,8 +15,60 @@
 using namespace std;
 
 #define DEBUG       0
-#define MAX_N       200001
-#define MAX_M       100001
+#define MAX_N       200002
+#define MAX_M       100002
+
+// segment tree
+vector<unsigned long long> covers(MAX_N * 4);
+vector<unsigned long long> lazycovers(MAX_N * 4);
+vector<unsigned long long> coversidxes(MAX_N * 4);
+vector<unsigned long long> lazycoversidxes(MAX_N * 4);
+
+void update(vector<unsigned long long>& d, vector<unsigned long long>& b, int l, int r, unsigned long long c, int s, int t, int p)
+{
+    // [l, r] 为修改区间, c 为被修改的元素的变化量, [s, t] 为当前节点包含的区间, p
+    // 为当前节点的编号
+    if (l <= s && t <= r)
+    {
+        d[p] += (t - s + 1) * c, b[p] += c;
+        return;
+    } // 当前区间为修改区间的子集时直接修改当前节点的值,然后打标记,结束修改
+    int m = s + ((t - s) >> 1);
+    if (b[p] && s != t)
+    {
+        // 如果当前节点的懒标记非空,则更新当前节点两个子节点的值和懒标记值
+        d[p * 2] += b[p] * (m - s + 1), d[p * 2 + 1] += b[p] * (t - m);
+        b[p * 2] += b[p], b[p * 2 + 1] += b[p]; // 将标记下传给子节点
+        b[p] = 0;                               // 清空当前节点的标记
+    }
+    if (l <= m)
+        update(d, b, l, r, c, s, m, p * 2);
+    if (r > m)
+        update(d, b, l, r, c, m + 1, t, p * 2 + 1);
+    d[p] = d[p * 2] + d[p * 2 + 1];
+}
+
+unsigned long long getsum(vector<unsigned long long>& d, vector<unsigned long long>& b, int l, int r, int s, int t, int p)
+{
+    // [l, r] 为查询区间, [s, t] 为当前节点包含的区间, p 为当前节点的编号
+    if (l <= s && t <= r)
+        return d[p];
+    // 当前区间为询问区间的子集时直接返回当前区间的和
+    int m = s + ((t - s) >> 1);
+    if (b[p])
+    {
+        // 如果当前节点的懒标记非空,则更新当前节点两个子节点的值和懒标记值
+        d[p * 2] += b[p] * (m - s + 1), d[p * 2 + 1] += b[p] * (t - m);
+        b[p * 2] += b[p], b[p * 2 + 1] += b[p]; // 将标记下传给子节点
+        b[p] = 0;                               // 清空当前节点的标记
+    }
+    unsigned long long sum = 0;
+    if (l <= m)
+        sum = getsum(d, b, l, r, s, m, p * 2);
+    if (r > m)
+        sum += getsum(d, b, l, r, m + 1, t, p * 2 + 1);
+    return sum;
+}
 
 class Town
 {
@@ -62,7 +114,7 @@ int main()
     cin >> n;
 #endif
 
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 1; i <= n; i++)
     {
 #if DEBUG
     inFile >> cities[i].p;
@@ -71,13 +123,16 @@ int main()
 #endif
     }
 
-    for (size_t i = 0; i < n; i++)
+    vector<int> xs(n + 1, 0);
+
+    for (size_t i = 1; i <= n; i++)
     {
 #if DEBUG
     inFile >> cities[i].x;
 #else
     cin >> towns[i].x;
 #endif
+        xs[i] = towns[i].x;
     }
 
     int m;
@@ -87,7 +142,7 @@ int main()
     cin >> m;
 #endif
 
-    for (size_t i = 0; i < m; i++)
+    for (size_t i = 1; i <= m; i++)
     {
 #if DEBUG
     inFile >> clouds[i].y;
@@ -96,7 +151,7 @@ int main()
 #endif
     }
 
-    for (size_t i = 0; i < m; i++)
+    for (size_t i = 1; i <= m; i++)
     {
 #if DEBUG
     inFile >> clouds[i].r;
@@ -106,9 +161,77 @@ int main()
     }
 
     // sort cities
-    sort(towns.begin(), towns.begin() + n, comp);
+    sort(towns.begin() + 1, towns.begin() + n + 1, comp);
+    sort(xs.begin() + 1, xs.end());
 
-    
+    // init segment trees
+    // all 0, do nothing
+
+    // update segment trees
+    for (size_t i = 1; i <= m; i++)
+    {
+        int left = clouds[i].y - clouds[i].r;
+        int right = clouds[i].y + clouds[i].r;
+
+        // find towns in [left, right] 
+        // >= left
+        vector<int>::iterator low;
+        low = lower_bound(xs.begin(), xs.end(), left);
+
+        // > right
+        vector<int>::iterator up;
+        up = upper_bound(xs.begin(), xs.end(), right);
+
+        int idx_left = low - xs.begin();
+        int idx_right = up - xs.begin() - 1;
+
+        update(covers, lazycovers, idx_left, idx_right, 1, 1, n, 1);
+        update(coversidxes, lazycoversidxes, idx_left, idx_right, i, 1, n, 1);
+    }
+
+    unsigned long long sunny = 0;
+    unsigned long long cloudy = 0;
+
+    unsigned long long pre_idx = 0;
+    unsigned long long pre_cloudy = 0;
+
+    for (size_t i = 1; i <= n; i++)
+    {
+        unsigned long long flag = getsum(covers, lazycovers, i, i, 1, n, 1);
+        if (0 == flag)
+        {
+            sunny += towns[i].p;
+        }
+        else
+        {
+            if (1 == flag)
+            {
+                // only one cloud
+                unsigned long long idx = getsum(coversidxes, lazycoversidxes, i, i, 1, n, 1);
+                if (idx == pre_idx)
+                {
+                    pre_cloudy += towns[i].p;
+                }
+                else
+                {
+                    if (pre_cloudy > cloudy)
+                    {
+                        cloudy = pre_cloudy;
+                    }
+
+                    pre_cloudy = towns[i].p;
+                    pre_idx = idx;
+                }
+            }
+        }
+    }
+
+    if (pre_cloudy > cloudy)
+    {
+        cloudy = pre_cloudy;
+    }
+
+    cout << sunny + cloudy << endl;
 
 #if DEBUG
     inFile.close();
