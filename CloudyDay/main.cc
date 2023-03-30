@@ -26,20 +26,17 @@ vector<unsigned long long> lazycoversidxes(MAX_N * 4);
 
 void update(vector<unsigned long long>& d, vector<unsigned long long>& b, int l, int r, unsigned long long c, int s, int t, int p)
 {
-    // [l, r] 为修改区间, c 为被修改的元素的变化量, [s, t] 为当前节点包含的区间, p
-    // 为当前节点的编号
     if (l <= s && t <= r)
     {
         d[p] += (t - s + 1) * c, b[p] += c;
         return;
-    } // 当前区间为修改区间的子集时直接修改当前节点的值,然后打标记,结束修改
+    }
     int m = s + ((t - s) >> 1);
     if (b[p] && s != t)
     {
-        // 如果当前节点的懒标记非空,则更新当前节点两个子节点的值和懒标记值
         d[p * 2] += b[p] * (m - s + 1), d[p * 2 + 1] += b[p] * (t - m);
-        b[p * 2] += b[p], b[p * 2 + 1] += b[p]; // 将标记下传给子节点
-        b[p] = 0;                               // 清空当前节点的标记
+        b[p * 2] += b[p], b[p * 2 + 1] += b[p];
+        b[p] = 0;
     }
     if (l <= m)
         update(d, b, l, r, c, s, m, p * 2);
@@ -50,17 +47,14 @@ void update(vector<unsigned long long>& d, vector<unsigned long long>& b, int l,
 
 unsigned long long getsum(vector<unsigned long long>& d, vector<unsigned long long>& b, int l, int r, int s, int t, int p)
 {
-    // [l, r] 为查询区间, [s, t] 为当前节点包含的区间, p 为当前节点的编号
     if (l <= s && t <= r)
         return d[p];
-    // 当前区间为询问区间的子集时直接返回当前区间的和
     int m = s + ((t - s) >> 1);
     if (b[p])
     {
-        // 如果当前节点的懒标记非空,则更新当前节点两个子节点的值和懒标记值
         d[p * 2] += b[p] * (m - s + 1), d[p * 2 + 1] += b[p] * (t - m);
-        b[p * 2] += b[p], b[p * 2 + 1] += b[p]; // 将标记下传给子节点
-        b[p] = 0;                               // 清空当前节点的标记
+        b[p * 2] += b[p], b[p * 2 + 1] += b[p];
+        b[p] = 0;
     }
     unsigned long long sum = 0;
     if (l <= m)
@@ -117,7 +111,7 @@ int main()
     for (size_t i = 1; i <= n; i++)
     {
 #if DEBUG
-    inFile >> cities[i].p;
+    inFile >> towns[i].p;
 #else
     cin >> towns[i].p;
 #endif
@@ -128,7 +122,7 @@ int main()
     for (size_t i = 1; i <= n; i++)
     {
 #if DEBUG
-    inFile >> cities[i].x;
+    inFile >> towns[i].x;
 #else
     cin >> towns[i].x;
 #endif
@@ -173,20 +167,27 @@ int main()
         int left = clouds[i].y - clouds[i].r;
         int right = clouds[i].y + clouds[i].r;
 
-        // find towns in [left, right] 
+        // find towns in [left, right]
         // >= left
         vector<int>::iterator low;
         low = lower_bound(xs.begin(), xs.end(), left);
-
-        // > right
-        vector<int>::iterator up;
-        up = upper_bound(xs.begin(), xs.end(), right);
-
-        int idx_left = low - xs.begin();
-        int idx_right = up - xs.begin() - 1;
-
-        update(covers, lazycovers, idx_left, idx_right, 1, 1, n, 1);
-        update(coversidxes, lazycoversidxes, idx_left, idx_right, i, 1, n, 1);
+        if (low != xs.end())
+        {
+            // > right
+            vector<int>::iterator up;
+            up = upper_bound(xs.begin(), xs.end(), right);
+            
+            {
+                int idx_left = low - xs.begin();
+                int idx_right = up - xs.begin() - 1;
+                
+                if (idx_left <= idx_right && 0 < idx_right)
+                {
+                    update(covers, lazycovers, idx_left, idx_right, 1, 1, n, 1);
+                    update(coversidxes, lazycoversidxes, idx_left, idx_right, i, 1, n, 1);
+                }
+            }
+        }
     }
 
     unsigned long long sunny = 0;
