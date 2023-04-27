@@ -24,12 +24,12 @@ using namespace std;
 #define MAX_N   100002
 //#define MAX_N   12
 
-unsigned int n;
+int n;
 unsigned int colors[MAX_N];     // color count
 unsigned int nodes[MAX_N];      // color c in node[i]
 vector< vector<unsigned int> > roads(MAX_N);
-unsigned int sz[MAX_N];
-unsigned int sum[MAX_N];
+int sz[MAX_N];
+int sum[MAX_N];
 
 unsigned int dfsPath[MAX_N];
 long long sumNode[MAX_N];       // sum for node
@@ -81,20 +81,20 @@ long long getSum(vector<long long>& d, vector<long long>& b, int l, int r, int s
 }
 
 // init
-unsigned int init(const unsigned int idx, const unsigned int parent, unsigned int &idxInDfs)
+int init(const unsigned int idx, const unsigned int parent, unsigned int &idxInDfs)
 {
     sz[idx] = 1;
     dfsPath[idxInDfs] = idx;
     idxInDfs ++;
 
-    unsigned int all = 0;
+    int all = 0;
     for (vector<unsigned int>::iterator it = roads[idx].begin(); it != roads[idx].end(); it ++)
     {
         if (parent != *it)
         {
-            unsigned int last = sum[nodes[idx]];
+            int last = sum[nodes[idx]];
             sz[idx] += init(*it, idx, idxInDfs);
-            unsigned int add = sum[nodes[idx]] - last;
+            int add = sum[nodes[idx]] - last;
             all += sz[*it] - add;
         }
     }
@@ -103,7 +103,7 @@ unsigned int init(const unsigned int idx, const unsigned int parent, unsigned in
     return sz[idx];
 }
 
-unsigned int func(const unsigned int idx, const unsigned int parent, unsigned int &idxInDfs)
+int func(const unsigned int idx, const unsigned int parent, unsigned int &idxInDfs)
 {
     unsigned int idxCpy = idxInDfs;
     idxInDfs ++;
@@ -111,28 +111,28 @@ unsigned int func(const unsigned int idx, const unsigned int parent, unsigned in
     
     if (0 < szOuterColor[nodes[idx]])
     {
-        update(sumPath, sumPathLazy, idxCpy, idxCpy, szOuterColor[nodes[idx]] - 1, 1, n, 1);
+        update(sumPath, sumPathLazy, idxCpy, idxCpy, szOuterColor[nodes[idx]], 1, n, 1);
     }
 
-    unsigned int all = 0;
+    int all = 0;
     for (vector<unsigned int>::iterator it = roads[idx].begin(); it != roads[idx].end(); it ++)
     {
         if (parent != *it)
         {
-            unsigned int last = sum[nodes[idx]];
+            int last = sum[nodes[idx]];
             sz[idx] += func(*it, idx, idxInDfs);
-            unsigned int add = sum[nodes[idx]] - last;
+            int add = sum[nodes[idx]] - last;
 
             int szInnerColor = sz[*it] - add;
 
             long long tmp = 0;
             if (0 < szOuterColor[nodes[idx]])
             {
-                tmp = szOuterColor[nodes[idx]] - 1 - (szInnerColor - 1);
+                tmp = szOuterColor[nodes[idx]] - (szInnerColor);
             }
             else
             {
-                tmp -= szInnerColor - 1;
+                tmp -= szInnerColor;
             }
 
             update(sumPath, sumPathLazy, idxCpy + 1, idxCpy + szInnerColor, tmp, 1, n, 1);
@@ -150,16 +150,17 @@ unsigned int func(const unsigned int idx, const unsigned int parent, unsigned in
 int main()
 {
 #if DEBUG
-    FILE *fp = fopen("/Users/wuxingyu/Downloads/input02.txt", "r");
+//    FILE *fp = fopen("/Users/wuxingyu/Downloads/input02.txt", "r");
+    FILE *fp = fopen("input.txt", "r");
 #endif
 
 #if DEBUG
-    fscanf(fp, "%u", &n);
+    fscanf(fp, "%d", &n);
 #else
-    scanf("%u", &n);
+    scanf("%d", &n);
 #endif
 
-    unsigned int colorCnt = 0;
+    long long colorCnt = 0;
     for (size_t i = 1; i <= n; i++)
     {
         unsigned int c;
@@ -192,7 +193,7 @@ int main()
     unsigned int idxInDfs = 1;
     init(1, 0, idxInDfs);
 
-    long long tmp = 1 + (n - 1) * colorCnt;
+    long long tmp = (long long)(n) * colorCnt;
 
     for (size_t i = 1; i < MAX_N; i++)
     {
@@ -201,7 +202,7 @@ int main()
             szOuterColor[i] = n - sum[i];
             if (0 < szOuterColor[i])
             {
-                tmp -= szOuterColor[i] - 1;
+                tmp -= szOuterColor[i];
             }
         }
     }
@@ -209,8 +210,8 @@ int main()
     // init segment tree
     update(sumPath, sumPathLazy, 1, n, tmp, 1, n, 1);
 
-    memset(sz, 0, sizeof(unsigned int) * (n + 1));
-    memset(sum, 0, sizeof(unsigned int) * (n + 1));
+    memset(sz, 0, sizeof(int) * (n + 1));
+    memset(sum, 0, sizeof(int) * (n + 1));
     idxInDfs = 1;
     func(1, 0, idxInDfs);
 
