@@ -1,5 +1,6 @@
 // https://www.hackerrank.com/challenges/unique-colors/problem?isFullScreen=false
 // Virtual Tree : https://oi-wiki.org/graph/virtual-tree/
+// Segment Tree : https://oi-wiki.org/ds/seg/
 
 #include <cmath>
 #include <cstdio>
@@ -19,20 +20,137 @@
 
 using namespace std;
 
-#define DEBUG   0
-#define MAX_N   100001
+#define DEBUG   1
+#define MAX_N   100002
+//#define MAX_N   12
 
 unsigned int n;
 unsigned int colors[MAX_N];     // color count
 unsigned int nodes[MAX_N];      // color c in node[i]
 vector< vector<unsigned int> > roads(MAX_N);
 unsigned int sz[MAX_N];
-unsigned long long sum[MAX_N];
+unsigned int sum[MAX_N];
+
+unsigned int dfsPath[MAX_N];
+long long sumNode[MAX_N];       // sum for node
+
+vector<long long> sumPath(MAX_N * 4);        // sum for dfs path, segment tree
+vector<long long> sumPathLazy(MAX_N * 4);
+
+int szOuterColor[MAX_N];   // outer size for color c
+
+// segment tree functions
+void update(vector<long long>& d, vector<long long>& b, int l, int r, long c, int s, int t, int p)
+{
+    if (l <= s && t <= r)
+    {
+        d[p] += (t - s + 1) * c, b[p] += c;
+        return;
+    }
+    int m = s + ((t - s) >> 1);
+    if (b[p] && s != t)
+    {
+        d[p * 2] += b[p] * (m - s + 1), d[p * 2 + 1] += b[p] * (t - m);
+        b[p * 2] += b[p], b[p * 2 + 1] += b[p];
+        b[p] = 0;
+    }
+    if (l <= m)
+        update(d, b, l, r, c, s, m, p * 2);
+    if (r > m)
+        update(d, b, l, r, c, m + 1, t, p * 2 + 1);
+    d[p] = d[p * 2] + d[p * 2 + 1];
+}
+
+long long getSum(vector<long long>& d, vector<long long>& b, int l, int r, int s, int t, int p)
+{
+    if (l <= s && t <= r)
+        return d[p];
+    int m = s + ((t - s) >> 1);
+    if (b[p])
+    {
+        d[p * 2] += b[p] * (m - s + 1), d[p * 2 + 1] += b[p] * (t - m);
+        b[p * 2] += b[p], b[p * 2 + 1] += b[p];
+        b[p] = 0;
+    }
+    long long sum = 0;
+    if (l <= m)
+        sum = getSum(d, b, l, r, s, m, p * 2);
+    if (r > m)
+        sum += getSum(d, b, l, r, m + 1, t, p * 2 + 1);
+    return sum;
+}
+
+// init
+unsigned int init(const unsigned int idx, const unsigned int parent, unsigned int &idxInDfs)
+{
+    sz[idx] = 1;
+    dfsPath[idxInDfs] = idx;
+    idxInDfs ++;
+
+    unsigned int all = 0;
+    for (vector<unsigned int>::iterator it = roads[idx].begin(); it != roads[idx].end(); it ++)
+    {
+        if (parent != *it)
+        {
+            unsigned int last = sum[nodes[idx]];
+            sz[idx] += init(*it, idx, idxInDfs);
+            unsigned int add = sum[nodes[idx]] - last;
+            all += sz[*it] - add;
+        }
+    }
+    sum[nodes[idx]] += all + 1;
+
+    return sz[idx];
+}
+
+unsigned int func(const unsigned int idx, const unsigned int parent, unsigned int &idxInDfs)
+{
+    unsigned int idxCpy = idxInDfs;
+    idxInDfs ++;
+    sz[idx] = 1;
+    
+    if (0 < szOuterColor[nodes[idx]])
+    {
+        update(sumPath, sumPathLazy, idxCpy, idxCpy, szOuterColor[nodes[idx]] - 1, 1, n, 1);
+    }
+
+    unsigned int all = 0;
+    for (vector<unsigned int>::iterator it = roads[idx].begin(); it != roads[idx].end(); it ++)
+    {
+        if (parent != *it)
+        {
+            unsigned int last = sum[nodes[idx]];
+            sz[idx] += func(*it, idx, idxInDfs);
+            unsigned int add = sum[nodes[idx]] - last;
+
+            int szInnerColor = sz[*it] - add;
+
+            long long tmp = 0;
+            if (0 < szOuterColor[nodes[idx]])
+            {
+                tmp = szOuterColor[nodes[idx]] - 1 - (szInnerColor - 1);
+            }
+            else
+            {
+                tmp -= szInnerColor - 1;
+            }
+
+            update(sumPath, sumPathLazy, idxCpy + 1, idxCpy + szInnerColor, tmp, 1, n, 1);
+
+            idxCpy += sz[*it];
+
+            all += szInnerColor;
+        }
+    }
+    sum[nodes[idx]] += all + 1;
+
+    return sz[idx];
+}
 
 int main()
 {
 #if DEBUG
-    FILE *fp = fopen("input.txt", "r");
+    FILE *fp = fopen("/Users/wuxingyu/Downloads/input02.txt", "r");
 #endif
 
 #if DEBUG
@@ -41,13 +159,21 @@ int main()
     scanf("%u", &n);
 #endif
 
+    unsigned int colorCnt = 0;
     for (size_t i = 1; i <= n; i++)
     {
+        unsigned int c;
 #if DEBUG
-        fscanf(fp, "%u", &nodes[i]);
+        fscanf(fp, "%u", &c);
 #else
-        scanf("%u", &nodes[i]);
+        scanf("%u", &c);
 #endif
+        if (0 == colors[c])
+        {
+            colorCnt ++;
+        }
+        colors[c] ++;
+        nodes[i] = c;
     }
 
     for (size_t i = 1; i < n; i++)
@@ -62,7 +188,42 @@ int main()
         roads[b].push_back(a);
     }
 
+    // init dfs path, outer sum for colors
+    unsigned int idxInDfs = 1;
+    init(1, 0, idxInDfs);
+
+    long long tmp = 1 + (n - 1) * colorCnt;
+
+    for (size_t i = 1; i < MAX_N; i++)
+    {
+        if (colors[i])
+        {
+            szOuterColor[i] = n - sum[i];
+            if (0 < szOuterColor[i])
+            {
+                tmp -= szOuterColor[i] - 1;
+            }
+        }
+    }
     
+    // init segment tree
+    update(sumPath, sumPathLazy, 1, n, tmp, 1, n, 1);
+
+    memset(sz, 0, sizeof(unsigned int) * (n + 1));
+    memset(sum, 0, sizeof(unsigned int) * (n + 1));
+    idxInDfs = 1;
+    func(1, 0, idxInDfs);
+
+    for (size_t i = 1; i <= n; i++)
+    {
+        long long tmp = getSum(sumPath, sumPathLazy, i, i, 1, n, 1);
+        sumNode[dfsPath[i]] = tmp;
+    }
+
+    for (size_t i = 1; i <= n; i++)
+    {
+        printf("%lld\n", sumNode[i]);
+    }
 
 #if DEBUG
     fclose(fp);
