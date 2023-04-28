@@ -20,7 +20,7 @@
 
 using namespace std;
 
-#define DEBUG   1
+#define DEBUG   0
 #define MAX_N   100002
 //#define MAX_N   12
 
@@ -103,6 +103,26 @@ int init(const unsigned int idx, const unsigned int parent, unsigned int &idxInD
     return sz[idx];
 }
 
+void coloring(const unsigned int c, const unsigned int idxInDfs, const int szInner, long long offset)
+{
+    unsigned int idx = idxInDfs;
+    int szCpy = szInner;
+
+    while (0 < szCpy)
+    {
+        if (c == nodes[dfsPath[idx]])
+        {
+            idx += sz[dfsPath[idx]];
+        }
+        else
+        {
+            update(sumPath, sumPathLazy, idx, idx, offset, 1, n, 1);
+            idx ++;
+            szCpy --;
+        }
+    }
+}
+
 int func(const unsigned int idx, const unsigned int parent, unsigned int &idxInDfs)
 {
     unsigned int idxCpy = idxInDfs;
@@ -135,7 +155,8 @@ int func(const unsigned int idx, const unsigned int parent, unsigned int &idxInD
                 tmp -= szInnerColor;
             }
 
-            update(sumPath, sumPathLazy, idxCpy + 1, idxCpy + szInnerColor, tmp, 1, n, 1);
+            coloring(nodes[idx], idxCpy + 1, szInnerColor, tmp);
+//            update(sumPath, sumPathLazy, idxCpy + 1, idxCpy + szInnerColor, tmp, 1, n, 1);
 
             idxCpy += sz[*it];
 
@@ -210,8 +231,8 @@ int main()
     // init segment tree
     update(sumPath, sumPathLazy, 1, n, tmp, 1, n, 1);
 
-    memset(sz, 0, sizeof(int) * (n + 1));
-    memset(sum, 0, sizeof(int) * (n + 1));
+    memset(sz, 0, sizeof(sz));
+    memset(sum, 0, sizeof(sum));
     idxInDfs = 1;
     func(1, 0, idxInDfs);
 
