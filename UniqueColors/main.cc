@@ -39,6 +39,8 @@ vector<long long> sumPathLazy(MAX_N * 4);
 
 int szOuterColor[MAX_N];   // outer size for color c
 
+vector< vector<unsigned int> > colorPos(MAX_N);
+
 // segment tree functions
 void update(vector<long long>& d, vector<long long>& b, int l, int r, long c, int s, int t, int p)
 {
@@ -85,6 +87,7 @@ int init(const unsigned int idx, const unsigned int parent, unsigned int &idxInD
 {
     sz[idx] = 1;
     dfsPath[idxInDfs] = idx;
+    colorPos[nodes[idx]].push_back(idxInDfs);
     idxInDfs ++;
 
     int all = 0;
@@ -110,15 +113,23 @@ void coloring(const unsigned int c, const unsigned int idxInDfs, const int szInn
 
     while (0 < szCpy)
     {
-        if (c == nodes[dfsPath[idx]])
+        vector<unsigned int>::iterator it = lower_bound(colorPos[c].begin(), colorPos[c].end(), idx);
+
+        if (colorPos[c].end() == it)
         {
-            idx += sz[dfsPath[idx]];
+            update(sumPath, sumPathLazy, idx, idx + szCpy - 1, offset, 1, n, 1);
+            szCpy = 0;
         }
         else
         {
-            update(sumPath, sumPathLazy, idx, idx, offset, 1, n, 1);
-            idx ++;
-            szCpy --;
+
+            if (*it > idx)
+            {
+                update(sumPath, sumPathLazy, idx, *it - 1, offset, 1, n, 1);
+                szCpy -= *it - idx;
+            }
+
+            idx = *it + sz[*it];
         }
     }
 }
@@ -156,7 +167,6 @@ int func(const unsigned int idx, const unsigned int parent, unsigned int &idxInD
             }
 
             coloring(nodes[idx], idxCpy + 1, szInnerColor, tmp);
-//            update(sumPath, sumPathLazy, idxCpy + 1, idxCpy + szInnerColor, tmp, 1, n, 1);
 
             idxCpy += sz[*it];
 
